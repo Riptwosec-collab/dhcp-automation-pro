@@ -141,7 +141,7 @@
 let pools = [];
 
 function init() {
-  // ลบ Pool ตัวอย่างออกไปเลย เริ่มต้นมาจะเป็น List ว่างๆ
+  // เริ่มต้นมาจะเป็น List ว่างๆ ไม่มีข้อมูลตัวอย่าง
   pools = [];
   renderPools();
   updateConfig();
@@ -221,9 +221,9 @@ function addPool() {
     mac: "",
     ip: "",
     subnet: "255.255.255.0",
-    gateway: pools.length > 0 ? pools[0].gateway : "",
-    vlan: pools.length > 0 ? pools[0].vlan : "2",
-    interfaceName: pools.length > 0 ? pools[0].interfaceName : "PO1"
+    gateway: pools.length > 0 ? pools[pools.length - 1].gateway : "10.10.10.1",
+    vlan: pools.length > 0 ? pools[pools.length - 1].vlan : "2",
+    interfaceName: pools.length > 0 ? pools[pools.length - 1].interfaceName : "PO1"
   });
   renderPools();
   updateConfig();
@@ -281,8 +281,10 @@ function bulkImport() {
     return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
   }
 
-  // ใช้ค่า Gateway และ VLAN จาก Pool ก่อนหน้า ถ้าไม่มีให้ใช้ค่าตั้งต้น
-  const defaultGateway = gatewayLines[0] || (pools.length > 0 ? pools[0].gateway : "10.10.10.1");
+  // กำหนดค่า Default ถ้าผู้ใช้ไม่ได้ใส่ในช่องมา
+  const defaultGateway = gatewayLines[0] || "10.10.10.1";
+  const defaultVlan = vlanLines[0] || "2";
+  const defaultInterface = "PO1";
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
@@ -291,17 +293,22 @@ function bulkImport() {
     ip: ipLines[i] || "",
     subnet: "255.255.255.0",
     gateway: gatewayLines[i] || defaultGateway,
-    vlan: vlanLines[i] || (pools.length > 0 ? pools[0].vlan : "2"),
-    interfaceName: pools.length > 0 ? pools[0].interfaceName : "PO1"
+    vlan: vlanLines[i] || defaultVlan,
+    interfaceName: defaultInterface
   }));
 
-  pools = [...pools, ...newPools];
+  // ==========================================
+  // เคลียร์ของเก่าออกทั้งหมด แล้วเอาของใหม่ใส่เข้าไปแทน!
+  pools = [...newPools];
+  // ==========================================
+
   renderPools();
   updateConfig();
   
-  alert(`✅ เพิ่มสำเร็จ ${newPools.length} Pools แล้วครับ สามารถดู Config ที่กล่องด้านล่างขวาได้เลย`);
-  showMessage(`เพิ่ม ${newPools.length} Pools สำเร็จ ✅`);
+  alert(`✅ สร้างใหม่สำเร็จ ${newPools.length} Pools แล้วครับ (ลบข้อมูลเก่าออกให้แล้ว)`);
+  showMessage(`สร้างใหม่ ${newPools.length} Pools สำเร็จ ✅`);
 
+  // ล้างข้อความในกล่อง Textarea เพื่อให้พร้อมก๊อปปี้ชุดต่อไปมาวางได้เลย
   macElem.value = '';
   ipElem.value = '';
   if(gwElem) gwElem.value = '';
