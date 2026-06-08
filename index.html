@@ -141,7 +141,7 @@
 let pools = [];
 
 function init() {
-  // เริ่มต้นมาจะเป็น List ว่างๆ ไม่มีข้อมูลตัวอย่าง
+  // เริ่มต้นด้วยหน้าจอว่างๆ ไม่มีข้อมูลตัวอย่าง
   pools = [];
   renderPools();
   updateConfig();
@@ -273,18 +273,16 @@ function bulkImport() {
   const bulkDeviceName = devNameElem ? devNameElem.value : "Computer";
 
   if (macLines.length === 0 || ipLines.length === 0) {
-    alert("⚠️ กรุณากรอก MAC Address และ IP Address ในกล่องข้อความก่อนกดปุ่ม Generate");
+    alert("⚠️ กรุณากรอก MAC Address และ IP Address ก่อนกดปุ่ม Generate");
     return showMessage("กรุณากรอก MAC และ IP");
   }
   if (macLines.length !== ipLines.length) {
-    alert(`⚠️ จำนวนไม่ตรงกัน!\nคุณใส่ MAC ไป ${macLines.length} บรรทัด\nแต่ใส่ IP ไป ${ipLines.length} บรรทัด\nกรุณาตรวจสอบให้เท่ากันครับ`);
+    alert(`⚠️ จำนวนไม่ตรงกัน!\nMAC: ${macLines.length} บรรทัด\nIP: ${ipLines.length} บรรทัด\nกรุณาตรวจสอบให้เท่ากันครับ`);
     return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
   }
 
-  // กำหนดค่า Default ถ้าผู้ใช้ไม่ได้ใส่ในช่องมา
   const defaultGateway = gatewayLines[0] || "10.10.10.1";
   const defaultVlan = vlanLines[0] || "2";
-  const defaultInterface = "PO1";
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
@@ -294,21 +292,18 @@ function bulkImport() {
     subnet: "255.255.255.0",
     gateway: gatewayLines[i] || defaultGateway,
     vlan: vlanLines[i] || defaultVlan,
-    interfaceName: defaultInterface
+    interfaceName: "PO1"
   }));
 
-  // ==========================================
-  // เคลียร์ของเก่าออกทั้งหมด แล้วเอาของใหม่ใส่เข้าไปแทน!
-  pools = [...newPools];
-  // ==========================================
+  // เคลียร์ข้อมูลเก่าทิ้งทั้งหมด แล้วแทนที่ด้วยข้อมูลชุดใหม่
+  pools = newPools;
 
   renderPools();
   updateConfig();
   
-  alert(`✅ สร้างใหม่สำเร็จ ${newPools.length} Pools แล้วครับ (ลบข้อมูลเก่าออกให้แล้ว)`);
+  alert(`✅ สร้าง ${newPools.length} Pools ใหม่เรียบร้อยแล้ว (ลบของเก่าออกให้แล้วครับ)`);
   showMessage(`สร้างใหม่ ${newPools.length} Pools สำเร็จ ✅`);
 
-  // ล้างข้อความในกล่อง Textarea เพื่อให้พร้อมก๊อปปี้ชุดต่อไปมาวางได้เลย
   macElem.value = '';
   ipElem.value = '';
   if(gwElem) gwElem.value = '';
