@@ -141,16 +141,8 @@
 let pools = [];
 
 function init() {
-  pools = [{
-    id: Date.now(),
-    name: "Computer",
-    mac: "0100.1500.2560.aa",
-    ip: "11.11.11.11",
-    subnet: "255.255.255.0",
-    gateway: "11.11.11.111",
-    vlan: "2",
-    interfaceName: "PO1"
-  }];
+  // ลบ Pool ตัวอย่างออกไปเลย เริ่มต้นมาจะเป็น List ว่างๆ
+  pools = [];
   renderPools();
   updateConfig();
 }
@@ -225,13 +217,13 @@ function updateField(id, field, value) {
 function addPool() {
   pools.push({
     id: Date.now(),
-    name: "Computer",
+    name: document.getElementById('bulkDeviceName')?.value || "Computer",
     mac: "",
     ip: "",
     subnet: "255.255.255.0",
-    gateway: pools[0]?.gateway || "",
-    vlan: pools[0]?.vlan || "2",
-    interfaceName: pools[0]?.interfaceName || "PO1"
+    gateway: pools.length > 0 ? pools[0].gateway : "",
+    vlan: pools.length > 0 ? pools[0].vlan : "2",
+    interfaceName: pools.length > 0 ? pools[0].interfaceName : "PO1"
   });
   renderPools();
   updateConfig();
@@ -289,11 +281,8 @@ function bulkImport() {
     return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
   }
 
-  // === ลบ "ตัวโชว์" ออกจากระบบ (เช็คจาก IP 11.11.11.11) ===
-  pools = pools.filter(p => p.ip !== "11.11.11.11");
-
-  // หา Default Gateway ให้ Pool ใหม่ (ถ้าไม่ได้ใส่มา)
-  const defaultGateway = gatewayLines[0] || (pools[0] ? pools[0].gateway : "10.10.10.1");
+  // ใช้ค่า Gateway และ VLAN จาก Pool ก่อนหน้า ถ้าไม่มีให้ใช้ค่าตั้งต้น
+  const defaultGateway = gatewayLines[0] || (pools.length > 0 ? pools[0].gateway : "10.10.10.1");
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
@@ -302,8 +291,8 @@ function bulkImport() {
     ip: ipLines[i] || "",
     subnet: "255.255.255.0",
     gateway: gatewayLines[i] || defaultGateway,
-    vlan: vlanLines[i] || (pools[0] ? pools[0].vlan : "2"),
-    interfaceName: pools[0] ? pools[0].interfaceName : "PO1"
+    vlan: vlanLines[i] || (pools.length > 0 ? pools[0].vlan : "2"),
+    interfaceName: pools.length > 0 ? pools[0].interfaceName : "PO1"
   }));
 
   pools = [...pools, ...newPools];
