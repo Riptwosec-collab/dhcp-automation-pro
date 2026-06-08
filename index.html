@@ -103,14 +103,14 @@
         <button onclick="copyAllConfig()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-2xl transition font-medium">📋 Copy All</button>
       </div>
       
-      <div class="p-4 border-b border-gray-700 bg-gray-950 flex items-center gap-6">
+      <div class="p-4 border-b border-gray-700 bg-gray-950 flex flex-wrap items-center gap-6">
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer">
-          <label for="includeUpdateArp" class="text-sm cursor-pointer">รวม update arp</label>
+          <input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer accent-blue-500">
+          <label for="includeUpdateArp" class="text-sm cursor-pointer font-medium">รวม update arp</label>
         </div>
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer">
-          <label for="includeSourceBinding" class="text-sm cursor-pointer">รวม ip source binding</label>
+          <input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer accent-blue-500">
+          <label for="includeSourceBinding" class="text-sm cursor-pointer font-medium">รวม ip source binding</label>
         </div>
       </div>
 
@@ -269,8 +269,8 @@ function bulkImport() {
   const ipLines = document.getElementById('bulkIp').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
   const gatewayLines = document.getElementById('bulkGateway').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
   const vlanLines = document.getElementById('bulkVlan').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  
-  // Get Selected Device Name from Dropdown
+
+  // ดึงค่าจาก Dropdown
   const bulkDeviceName = document.getElementById('bulkDeviceName').value;
 
   if (macLines.length === 0 || ipLines.length === 0) return showMessage("กรุณากรอก MAC และ IP");
@@ -280,7 +280,7 @@ function bulkImport() {
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
-    name: bulkDeviceName, // Use selected name
+    name: bulkDeviceName, // ใช้ค่าที่เลือกจาก Dropdown
     mac: formatMac(mac),
     ip: ipLines[i] || "",
     subnet: "255.255.255.0",
@@ -300,5 +300,150 @@ function bulkImport() {
   document.getElementById('bulkVlan').value = '';
 }
 
+function filterPools() {
+  const term = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.pool-card');
+  cards.forEach((card, index) => {
+    const p = pools[index];
+    if (!p) return;
+    const text = `${p.ip} ${p.mac} ${p.name}`.toLowerCase();
+    card.style.display = text.includes(term) ? 'block' : 'none';
+  });
+}
+
 function generateConfig() {
-  if (pools.length === 0) return "ยังไม่มี
+  if (pools.length === 0) return "ยังไม่มี Pool";
+
+  const validPools = pools.filter(p => {
+    const macClean = cleanMac(p.mac);
+    return macClean.length >= 12 && p.ip && isValidIP(p.ip) && p.gateway && isValidIP(p.gateway);
+  });
+
+  if (validPools.length === 0) return "กรุณากรอกข้อมูลให้ครบ (MAC 12 ตัว, IP และ Gateway)";
+
+  const dns = document.getElementById('dnsInput').value.trim() || "10.20.100.2 10.26.100.2";
+  
+  // ตรวจสอบสถานะของ Checkbox อย่างปลอดภัย
+  const bindingCheckbox = document.getElementById('includeSourceBinding');
+  const includeBinding = bindingCheckbox ? bindingCheckbox.checked : true;
+  
+  const arpCheckbox = document.getElementById('includeUpdateArp');
+  const includeUpdateArp = arpCheckbox ? arpCheckbox.checked : false;
+
+  return validPools.map(p => {
+    const macClean = cleanMac(p.mac).slice(0, 12).padEnd(12, "0");
+    const dotMac = `01${macClean}`.match(/.{1,4}/g)?.join(".") || "";
+
+    let config = [
+      `ip dhcp pool ${p.ip}_${p.name}`,
+      ` host ${p.ip} ${p.subnet}`,
+      ` client-identifier ${dotMac}`,
+      ` default-router ${p.gateway}`,
+      ` dns-server ${dns}`
+    ];
+
+    if (includeUpdateArp) {
+      config.push(``);
+      config.push(` update arp`);
+    }
+
+    if (includeBinding) {
+      config.push(``);
+      config.push(` ip source binding ${dotMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
+    }
+
+    return config.join("\n");
+  }).join("\n\n!\n\n");
+}
+
+function updateConfig() {
+  document.getElementById('configOutput').textContent = generateConfig();
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-999999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return true;
+  }
+}
+
+async function copySingle(id) {
+  const p = pools.find(pool => pool.id === id);
+  if (!p) return;
+  const status = getPoolStatus(p);
+  if (!status.isValid) return showMessage("ข้อมูล Pool ไม่ครบ ไม่สามารถ Copy ได้");
+  
+  const dns = document.getElementById('dnsInput').value.trim() || "10.20.100.2 10.26.100.2";
+  const bindingCheckbox = document.getElementById('includeSourceBinding');
+  const includeBinding = bindingCheckbox ? bindingCheckbox.checked : true;
+  const arpCheckbox = document.getElementById('includeUpdateArp');
+  const includeUpdateArp = arpCheckbox ? arpCheckbox.checked : false;
+  
+  const macClean = cleanMac(p.mac).slice(0, 12).padEnd(12, "0");
+  const dotMac = `01${macClean}`.match(/.{1,4}/g)?.join(".") || "";
+
+  let config = [
+    `ip dhcp pool ${p.ip}_${p.name}`,
+    ` host ${p.ip} ${p.subnet}`,
+    ` client-identifier ${dotMac}`,
+    ` default-router ${p.gateway}`,
+    ` dns-server ${dns}`
+  ];
+
+  if (includeUpdateArp) {
+    config.push(``);
+    config.push(` update arp`);
+  }
+
+  if (includeBinding) {
+    config.push(``);
+    config.push(` ip source binding ${dotMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
+  }
+
+  const success = await copyToClipboard(config.join("\n"));
+  if (success) showMessage("✅ Copy Pool สำเร็จ");
+}
+
+async function copyAllConfig() {
+  const config = generateConfig();
+  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") return showMessage("ยังไม่มี Config ที่สมบูรณ์");
+  
+  const success = await copyToClipboard(config);
+  showMessage(success ? "✅ Copy All สำเร็จ" : "❌ Copy ไม่สำเร็จ");
+}
+
+function exportCfg() {
+  const config = generateConfig();
+  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") return showMessage("ไม่มี Config ให้ Export");
+  
+  const blob = new Blob([config], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dhcp_config_${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showMessage(text) {
+  const msg = document.getElementById('message');
+  msg.textContent = text;
+  setTimeout(() => msg.textContent = '', 2500);
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
