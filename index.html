@@ -271,7 +271,6 @@ function bulkImport() {
   const vlanElem = document.getElementById('bulkVlan');
   const devNameElem = document.getElementById('bulkDeviceName');
 
-  // ตรวจสอบว่ามีช่องกรอกข้อมูลหรือไม่
   if(!macElem || !ipElem) return;
 
   const macLines = macElem.value.trim().split("\n").map(l => l.trim()).filter(Boolean);
@@ -281,7 +280,6 @@ function bulkImport() {
   
   const bulkDeviceName = devNameElem ? devNameElem.value : "Computer";
 
-  // เพิ่มการเด้งเตือน (Alert) ถ้าลืมกรอกข้อมูล
   if (macLines.length === 0 || ipLines.length === 0) {
     alert("⚠️ กรุณากรอก MAC Address และ IP Address ในกล่องข้อความก่อนกดปุ่ม Generate");
     return showMessage("กรุณากรอก MAC และ IP");
@@ -304,15 +302,16 @@ function bulkImport() {
     interfaceName: pools[0] ? pools[0].interfaceName : "PO1"
   }));
 
+  // === ลบ "ตัวโชว์" ออกจากระบบก่อนเอาของใหม่เข้าไป ===
+  pools = pools.filter(p => !(p.ip === "11.11.11.11" && cleanMac(p.mac) === "010015002560aa"));
+
   pools = [...pools, ...newPools];
   renderPools();
   updateConfig();
   
-  // แจ้งเตือนเมื่อสำเร็จ
   alert(`✅ เพิ่มสำเร็จ ${newPools.length} Pools แล้วครับ สามารถดู Config ที่กล่องด้านล่างขวาได้เลย`);
   showMessage(`เพิ่ม ${newPools.length} Pools สำเร็จ ✅`);
 
-  // เคลียร์ช่องกรอก
   macElem.value = '';
   ipElem.value = '';
   if(gwElem) gwElem.value = '';
