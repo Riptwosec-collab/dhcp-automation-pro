@@ -265,22 +265,37 @@ function autoFillAll() {
 }
 
 function bulkImport() {
-  const macLines = document.getElementById('bulkMac').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  const ipLines = document.getElementById('bulkIp').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  const gatewayLines = document.getElementById('bulkGateway').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  const vlanLines = document.getElementById('bulkVlan').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
+  const macElem = document.getElementById('bulkMac');
+  const ipElem = document.getElementById('bulkIp');
+  const gwElem = document.getElementById('bulkGateway');
+  const vlanElem = document.getElementById('bulkVlan');
+  const devNameElem = document.getElementById('bulkDeviceName');
 
-  // ดึงค่าจาก Dropdown
-  const bulkDeviceName = document.getElementById('bulkDeviceName').value;
+  // ตรวจสอบว่ามีช่องกรอกข้อมูลหรือไม่
+  if(!macElem || !ipElem) return;
 
-  if (macLines.length === 0 || ipLines.length === 0) return showMessage("กรุณากรอก MAC และ IP");
-  if (macLines.length !== ipLines.length) return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
+  const macLines = macElem.value.trim().split("\n").map(l => l.trim()).filter(Boolean);
+  const ipLines = ipElem.value.trim().split("\n").map(l => l.trim()).filter(Boolean);
+  const gatewayLines = gwElem ? gwElem.value.trim().split("\n").map(l => l.trim()).filter(Boolean) : [];
+  const vlanLines = vlanElem ? vlanElem.value.trim().split("\n").map(l => l.trim()).filter(Boolean) : [];
+  
+  const bulkDeviceName = devNameElem ? devNameElem.value : "Computer";
+
+  // เพิ่มการเด้งเตือน (Alert) ถ้าลืมกรอกข้อมูล
+  if (macLines.length === 0 || ipLines.length === 0) {
+    alert("⚠️ กรุณากรอก MAC Address และ IP Address ในกล่องข้อความก่อนกดปุ่ม Generate");
+    return showMessage("กรุณากรอก MAC และ IP");
+  }
+  if (macLines.length !== ipLines.length) {
+    alert(`⚠️ จำนวนไม่ตรงกัน!\nคุณใส่ MAC ไป ${macLines.length} บรรทัด\nแต่ใส่ IP ไป ${ipLines.length} บรรทัด\nกรุณาตรวจสอบให้เท่ากันครับ`);
+    return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
+  }
 
   const defaultGateway = gatewayLines[0] || (pools[0] ? pools[0].gateway : "10.10.10.1");
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
-    name: bulkDeviceName, // ใช้ค่าที่เลือกจาก Dropdown
+    name: bulkDeviceName,
     mac: formatMac(mac),
     ip: ipLines[i] || "",
     subnet: "255.255.255.0",
@@ -292,12 +307,16 @@ function bulkImport() {
   pools = [...pools, ...newPools];
   renderPools();
   updateConfig();
+  
+  // แจ้งเตือนเมื่อสำเร็จ
+  alert(`✅ เพิ่มสำเร็จ ${newPools.length} Pools แล้วครับ สามารถดู Config ที่กล่องด้านล่างขวาได้เลย`);
   showMessage(`เพิ่ม ${newPools.length} Pools สำเร็จ ✅`);
 
-  document.getElementById('bulkMac').value = '';
-  document.getElementById('bulkIp').value = '';
-  document.getElementById('bulkGateway').value = '';
-  document.getElementById('bulkVlan').value = '';
+  // เคลียร์ช่องกรอก
+  macElem.value = '';
+  ipElem.value = '';
+  if(gwElem) gwElem.value = '';
+  if(vlanElem) vlanElem.value = '';
 }
 
 function filterPools() {
@@ -321,9 +340,9 @@ function generateConfig() {
 
   if (validPools.length === 0) return "กรุณากรอกข้อมูลให้ครบ (MAC 12 ตัว, IP และ Gateway)";
 
-  const dns = document.getElementById('dnsInput').value.trim() || "10.20.100.2 10.26.100.2";
+  const dnsElem = document.getElementById('dnsInput');
+  const dns = dnsElem ? dnsElem.value.trim() : "10.20.100.2 10.26.100.2";
   
-  // ตรวจสอบสถานะของ Checkbox อย่างปลอดภัย
   const bindingCheckbox = document.getElementById('includeSourceBinding');
   const includeBinding = bindingCheckbox ? bindingCheckbox.checked : true;
   
@@ -357,7 +376,8 @@ function generateConfig() {
 }
 
 function updateConfig() {
-  document.getElementById('configOutput').textContent = generateConfig();
+  const outputElem = document.getElementById('configOutput');
+  if(outputElem) outputElem.textContent = generateConfig();
 }
 
 async function copyToClipboard(text) {
@@ -381,9 +401,13 @@ async function copySingle(id) {
   const p = pools.find(pool => pool.id === id);
   if (!p) return;
   const status = getPoolStatus(p);
-  if (!status.isValid) return showMessage("ข้อมูล Pool ไม่ครบ ไม่สามารถ Copy ได้");
+  if (!status.isValid) {
+    alert("ข้อมูล Pool ไม่ครบ ไม่สามารถ Copy ได้ (โปรดเช็ค MAC หรือ IP)");
+    return showMessage("ข้อมูล Pool ไม่ครบ ไม่สามารถ Copy ได้");
+  }
   
-  const dns = document.getElementById('dnsInput').value.trim() || "10.20.100.2 10.26.100.2";
+  const dnsElem = document.getElementById('dnsInput');
+  const dns = dnsElem ? dnsElem.value.trim() : "10.20.100.2 10.26.100.2";
   const bindingCheckbox = document.getElementById('includeSourceBinding');
   const includeBinding = bindingCheckbox ? bindingCheckbox.checked : true;
   const arpCheckbox = document.getElementById('includeUpdateArp');
@@ -416,7 +440,10 @@ async function copySingle(id) {
 
 async function copyAllConfig() {
   const config = generateConfig();
-  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") return showMessage("ยังไม่มี Config ที่สมบูรณ์");
+  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") {
+    alert("ยังไม่มี Config ที่สมบูรณ์ ให้คัดลอกครับ");
+    return showMessage("ยังไม่มี Config ที่สมบูรณ์");
+  }
   
   const success = await copyToClipboard(config);
   showMessage(success ? "✅ Copy All สำเร็จ" : "❌ Copy ไม่สำเร็จ");
@@ -424,7 +451,10 @@ async function copyAllConfig() {
 
 function exportCfg() {
   const config = generateConfig();
-  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") return showMessage("ไม่มี Config ให้ Export");
+  if (config.includes("กรุณากรอก") || config === "ยังไม่มี Pool") {
+    alert("ไม่มี Config ให้ Export ครับ");
+    return showMessage("ไม่มี Config ให้ Export");
+  }
   
   const blob = new Blob([config], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -439,6 +469,7 @@ function exportCfg() {
 
 function showMessage(text) {
   const msg = document.getElementById('message');
+  if(!msg) return;
   msg.textContent = text;
   setTimeout(() => msg.textContent = '', 2500);
 }
