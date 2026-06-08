@@ -289,6 +289,10 @@ function bulkImport() {
     return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
   }
 
+  // === ลบ "ตัวโชว์" ออกจากระบบ (เช็คจาก IP 11.11.11.11) ===
+  pools = pools.filter(p => p.ip !== "11.11.11.11");
+
+  // หา Default Gateway ให้ Pool ใหม่ (ถ้าไม่ได้ใส่มา)
   const defaultGateway = gatewayLines[0] || (pools[0] ? pools[0].gateway : "10.10.10.1");
 
   const newPools = macLines.map((mac, i) => ({
@@ -301,9 +305,6 @@ function bulkImport() {
     vlan: vlanLines[i] || (pools[0] ? pools[0].vlan : "2"),
     interfaceName: pools[0] ? pools[0].interfaceName : "PO1"
   }));
-
-  // === ลบ "ตัวโชว์" ออกจากระบบก่อนเอาของใหม่เข้าไป ===
-  pools = pools.filter(p => !(p.ip === "11.11.11.11" && cleanMac(p.mac) === "010015002560aa"));
 
   pools = [...pools, ...newPools];
   renderPools();
