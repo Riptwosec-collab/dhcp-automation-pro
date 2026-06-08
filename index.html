@@ -22,7 +22,6 @@
 
 <div class="max-w-7xl mx-auto space-y-6">
 
-  <!-- Header -->
   <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-gray-900 rounded-3xl p-8 shadow-2xl">
     <div class="flex flex-wrap justify-between items-center gap-4">
       <div class="flex items-center gap-4">
@@ -46,20 +45,32 @@
     </div>
   </div>
 
-  <!-- DNS Server -->
   <div class="bg-gray-900 rounded-3xl p-5 flex items-center gap-4">
     <span class="font-bold w-32 flex items-center gap-2"><i class="fas fa-server"></i> DNS Server:</span>
     <input id="dnsInput" value="10.20.100.2 10.26.100.2" onchange="updateConfig()"
            class="flex-1 p-3 bg-gray-800 border border-gray-700 rounded-2xl font-mono focus:outline-none focus:border-blue-500">
   </div>
 
-  <!-- Search -->
   <input id="searchInput" placeholder="🔍 Search IP, MAC or Name..." onkeyup="filterPools()" 
          class="w-full p-4 rounded-2xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-blue-500 text-base">
 
-  <!-- Mass Pool Import -->
   <div class="bg-gray-900 rounded-3xl p-6">
-    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-file-import"></i> Mass Pool Import</h2>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+      <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-file-import"></i> Mass Pool Import</h2>
+      
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-gray-300">Device Name:</span>
+        <select id="bulkDeviceName" class="p-2 px-4 rounded-xl bg-gray-800 border border-gray-700 text-white font-medium focus:outline-none focus:border-blue-500">
+          <option value="CCTV">CCTV</option>
+          <option value="Computer" selected>Computer</option>
+          <option value="Inspector">Inspector</option>
+          <option value="Printer">Printer</option>
+          <option value="Data_Lake">Data_Lake</option>
+          <option value="IP_Phone">IP_Phone</option>
+        </select>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
         <p class="mb-2 font-bold">MAC Address</p>
@@ -84,19 +95,23 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Left: Pools -->
     <div id="poolsContainer" class="space-y-4"></div>
 
-    <!-- Right: Output -->
     <div class="bg-black border border-gray-800 rounded-3xl overflow-hidden">
       <div class="flex justify-between items-center p-5 border-b border-gray-700">
         <h2 class="font-bold flex items-center gap-2"><i class="fas fa-terminal"></i> Cisco Configuration Output</h2>
         <button onclick="copyAllConfig()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-2xl transition font-medium">📋 Copy All</button>
       </div>
       
-      <div class="p-4 border-b border-gray-700 bg-gray-950 flex items-center gap-2">
-        <input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()">
-        <label for="includeSourceBinding" class="text-sm cursor-pointer">รวม ip source binding</label>
+      <div class="p-4 border-b border-gray-700 bg-gray-950 flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer">
+          <label for="includeUpdateArp" class="text-sm cursor-pointer">รวม update arp</label>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()" class="w-4 h-4 cursor-pointer">
+          <label for="includeSourceBinding" class="text-sm cursor-pointer">รวม ip source binding</label>
+        </div>
       </div>
 
       <pre id="configOutput" class="terminal text-green-400 p-6 text-sm overflow-auto min-h-[600px] whitespace-pre-wrap bg-gray-950"></pre>
@@ -104,7 +119,6 @@
     </div>
   </div>
 
-  <!-- About Developer -->
   <div class="bg-gray-900 rounded-3xl p-8 text-center">
     <h2 class="text-2xl font-bold mb-4 flex items-center justify-center gap-3">
       <i class="fas fa-user-circle text-blue-400"></i> About Developer
@@ -255,6 +269,9 @@ function bulkImport() {
   const ipLines = document.getElementById('bulkIp').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
   const gatewayLines = document.getElementById('bulkGateway').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
   const vlanLines = document.getElementById('bulkVlan').value.trim().split("\n").map(l => l.trim()).filter(Boolean);
+  
+  // Get Selected Device Name from Dropdown
+  const bulkDeviceName = document.getElementById('bulkDeviceName').value;
 
   if (macLines.length === 0 || ipLines.length === 0) return showMessage("กรุณากรอก MAC และ IP");
   if (macLines.length !== ipLines.length) return showMessage("จำนวน MAC และ IP ไม่ตรงกัน");
@@ -263,7 +280,7 @@ function bulkImport() {
 
   const newPools = macLines.map((mac, i) => ({
     id: Date.now() + i,
-    name: "Computer",
+    name: bulkDeviceName, // Use selected name
     mac: formatMac(mac),
     ip: ipLines[i] || "",
     subnet: "255.255.255.0",
@@ -284,77 +301,4 @@ function bulkImport() {
 }
 
 function generateConfig() {
-  if (pools.length === 0) return "ยังไม่มี Pool";
-
-  const validPools = pools.filter(p => {
-    const macClean = cleanMac(p.mac);
-    return macClean.length >= 12 && p.ip && isValidIP(p.ip) && p.gateway && isValidIP(p.gateway);
-  });
-
-  if (validPools.length === 0) return "กรุณากรอกข้อมูลให้ครบ (MAC 12 ตัว, IP และ Gateway)";
-
-  const dns = document.getElementById('dnsInput').value.trim() || "10.20.100.2 10.26.100.2";
-  const includeBinding = document.getElementById('includeSourceBinding').checked;
-
-  return validPools.map(p => {
-    const macClean = cleanMac(p.mac).slice(0, 12).padEnd(12, "0");
-    const dotMac = `01${macClean}`.match(/.{1,4}/g)?.join(".") || "";
-
-    let config = [
-      `ip dhcp pool ${p.ip}_${p.name}`,
-      ` host ${p.ip} ${p.subnet}`,
-      ` client-identifier ${dotMac}`,
-      ` default-router ${p.gateway}`,
-      ` dns-server ${dns}`,
-      ``,
-      ` update arp`
-    ];
-
-    if (includeBinding) {
-      config.push(``);
-      config.push(` ip source binding ${dotMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
-    }
-
-    return config.join("\n");
-  }).join("\n\n!\n\n");
-}
-
-function updateConfig() {
-  document.getElementById('configOutput').textContent = generateConfig();
-}
-
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.left = "-999999px";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return true;
-  }
-}
-
-async function copyAllConfig() {
-  const config = generateConfig();
-  if (config.includes("กรุณากรอก")) return showMessage("ยังไม่มี Config ที่สมบูรณ์");
-  
-  const success = await copyToClipboard(config);
-  showMessage(success ? "✅ Copy All สำเร็จ" : "❌ Copy ไม่สำเร็จ");
-}
-
-function showMessage(text) {
-  const msg = document.getElementById('message');
-  msg.textContent = text;
-  setTimeout(() => msg.textContent = '', 2500);
-}
-
-window.onload = init;
-</script>
-</body>
-</html>
+  if (pools.length === 0) return "ยังไม่มี
