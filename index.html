@@ -159,6 +159,21 @@ function cleanMac(mac) {
   return mac.replace(/[^a-fA-F0-9]/g, "").toLowerCase().replace(/^01/, "");
 }
 
+function getMacClean12(mac) {
+  return cleanMac(mac).slice(0, 12).padEnd(12, "0");
+}
+
+function formatClientIdentifierMac(mac) {
+  const macClean = getMacClean12(mac);
+  const clientIdentifier = `01${macClean}`;
+  return clientIdentifier.match(/.{1,4}/g)?.join(".") || "";
+}
+
+function formatSourceBindingMac(mac) {
+  const macClean = getMacClean12(mac);
+  return macClean.match(/.{1,4}/g)?.join(".") || "";
+}
+
 function isValidIP(ip) {
   return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(ip);
 }
@@ -341,13 +356,13 @@ function generateConfig() {
   const includeUpdateArp = arpCheckbox ? arpCheckbox.checked : false;
 
   return validPools.map(p => {
-    const macClean = cleanMac(p.mac).slice(0, 12).padEnd(12, "0");
-    const dotMac = `01${macClean}`.match(/.{1,4}/g)?.join(".") || "";
+    const clientIdentifierMac = formatClientIdentifierMac(p.mac);
+    const sourceBindingMac = formatSourceBindingMac(p.mac);
 
     let config = [
       `ip dhcp pool ${p.ip}_${p.name}`,
       ` host ${p.ip} ${p.subnet}`,
-      ` client-identifier ${dotMac}`,
+      ` client-identifier ${clientIdentifierMac}`,
       ` default-router ${p.gateway}`,
       ` dns-server ${dns}`
     ];
@@ -359,7 +374,7 @@ function generateConfig() {
 
     if (includeBinding) {
       config.push(``);
-      config.push(` ip source binding ${dotMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
+      config.push(` ip source binding ${sourceBindingMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
     }
 
     return config.join("\n");
@@ -404,13 +419,13 @@ async function copySingle(id) {
   const arpCheckbox = document.getElementById('includeUpdateArp');
   const includeUpdateArp = arpCheckbox ? arpCheckbox.checked : false;
   
-  const macClean = cleanMac(p.mac).slice(0, 12).padEnd(12, "0");
-  const dotMac = `01${macClean}`.match(/.{1,4}/g)?.join(".") || "";
+  const clientIdentifierMac = formatClientIdentifierMac(p.mac);
+  const sourceBindingMac = formatSourceBindingMac(p.mac);
 
   let config = [
     `ip dhcp pool ${p.ip}_${p.name}`,
     ` host ${p.ip} ${p.subnet}`,
-    ` client-identifier ${dotMac}`,
+    ` client-identifier ${clientIdentifierMac}`,
     ` default-router ${p.gateway}`,
     ` dns-server ${dns}`
   ];
@@ -422,7 +437,7 @@ async function copySingle(id) {
 
   if (includeBinding) {
     config.push(``);
-    config.push(` ip source binding ${dotMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
+    config.push(` ip source binding ${sourceBindingMac} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
   }
 
   const success = await copyToClipboard(config.join("\n"));
