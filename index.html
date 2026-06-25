@@ -1,55 +1,638 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DHCP Automation PRO v2.3</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DHCP Automation PRO v2.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <style>
-body{font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(circle at top left,rgba(59,130,246,.18),transparent 30%),radial-gradient(circle at top right,rgba(168,85,247,.16),transparent 28%),radial-gradient(circle at bottom center,rgba(34,197,94,.12),transparent 30%),linear-gradient(135deg,#020617 0%,#0f172a 45%,#111827 100%);overflow-x:hidden;position:relative}.terminal{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.app-shell{position:relative;z-index:10}.glass-panel{background:rgba(17,24,39,.68)!important;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(16px);box-shadow:0 24px 80px rgba(0,0,0,.28)}.pool-card{transition:all .3s cubic-bezier(.4,0,.2,1);background:rgba(17,24,39,.72)!important;backdrop-filter:blur(14px)}.pool-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 25px 50px -12px rgb(0 0 0/.45)}.animated-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}.bg-noise{position:absolute;inset:0;opacity:.05;background-image:radial-gradient(circle at 20% 20%,white .6px,transparent .7px),radial-gradient(circle at 80% 40%,white .6px,transparent .7px),radial-gradient(circle at 40% 70%,white .6px,transparent .7px);background-size:120px 120px,160px 160px,200px 200px}.orb{position:absolute;border-radius:9999px;filter:blur(10px);opacity:.7;transform-style:preserve-3d;animation:floatOrb 12s ease-in-out infinite;box-shadow:inset -20px -20px 60px rgba(255,255,255,.12),inset 20px 20px 40px rgba(255,255,255,.05),0 0 60px rgba(255,255,255,.08)}.orb-1{width:280px;height:280px;top:8%;left:6%;background:radial-gradient(circle at 30% 30%,rgba(96,165,250,.9),rgba(37,99,235,.18) 65%,transparent 100%)}.orb-2{width:220px;height:220px;top:16%;right:10%;background:radial-gradient(circle at 30% 30%,rgba(192,132,252,.85),rgba(126,34,206,.16) 65%,transparent 100%);animation-delay:-3s}.orb-3{width:320px;height:320px;bottom:10%;left:22%;background:radial-gradient(circle at 30% 30%,rgba(52,211,153,.75),rgba(5,150,105,.16) 65%,transparent 100%);animation-delay:-6s}.orb-4{width:180px;height:180px;bottom:18%;right:18%;background:radial-gradient(circle at 35% 35%,rgba(251,191,36,.75),rgba(217,119,6,.14) 65%,transparent 100%);animation-delay:-2s}.floating-ring{position:absolute;border-radius:9999px;border:1px solid rgba(255,255,255,.12);box-shadow:0 0 40px rgba(59,130,246,.08);animation:spinSlow 18s linear infinite}.ring-1{width:420px;height:420px;top:-60px;right:-120px}.ring-2{width:300px;height:300px;bottom:20px;left:-80px;animation-direction:reverse;animation-duration:22s}.grid-floor{position:absolute;left:-10%;bottom:-18%;width:120%;height:60%;transform:perspective(900px) rotateX(72deg);transform-origin:bottom;background-image:linear-gradient(rgba(59,130,246,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.22) 1px,transparent 1px);background-size:80px 80px;mask-image:linear-gradient(to top,rgba(255,255,255,.95),transparent 85%);-webkit-mask-image:linear-gradient(to top,rgba(255,255,255,.95),transparent 85%);animation:gridMove 9s linear infinite;opacity:.55}.light-beam{position:absolute;width:40vw;height:40vw;background:radial-gradient(circle,rgba(59,130,246,.12),transparent 70%);filter:blur(30px);animation:pulseGlow 8s ease-in-out infinite}.beam-1{top:-10%;left:20%}.beam-2{bottom:-10%;right:12%;animation-delay:-4s}#particleCanvas{position:absolute;inset:0;width:100%;height:100%}@keyframes floatOrb{0%,100%{transform:translate3d(0,0,0) scale(1) rotate(0)}25%{transform:translate3d(18px,-24px,0) scale(1.04) rotate(4deg)}50%{transform:translate3d(-10px,18px,0) scale(.98) rotate(-3deg)}75%{transform:translate3d(14px,8px,0) scale(1.03) rotate(2deg)}}@keyframes spinSlow{from{transform:rotate(0)}to{transform:rotate(360deg)}}@keyframes gridMove{from{background-position:0 0,0 0}to{background-position:0 80px,80px 0}}@keyframes pulseGlow{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.6;transform:scale(1.08)}}
+:root{
+  color-scheme:dark;
+  --panel:rgba(8,13,30,.72);
+  --panel-strong:rgba(5,10,24,.88);
+  --line:rgba(148,163,184,.18);
+  --cyan:rgba(34,211,238,.9);
+  --blue:rgba(59,130,246,.9);
+  --violet:rgba(168,85,247,.85);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  color:white;
+  background:#020617;
+  overflow-x:hidden;
+  position:relative;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(56,189,248,.20),transparent 26%),
+    radial-gradient(circle at 78% 12%,rgba(168,85,247,.22),transparent 30%),
+    radial-gradient(circle at 70% 78%,rgba(34,197,94,.10),transparent 25%),
+    linear-gradient(135deg,#020617 0%,#081129 44%,#0f172a 72%,#020617 100%);
+}
+.terminal{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.app-shell{position:relative;z-index:10}
+.glass-panel{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(8,13,30,.62))!important;
+  border:1px solid rgba(148,163,184,.18)!important;
+  backdrop-filter:blur(20px) saturate(135%);
+  box-shadow:0 30px 100px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.glass-panel::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(110deg,transparent,rgba(255,255,255,.08),transparent);
+  transform:translateX(-120%);
+  animation:panelSweep 8s ease-in-out infinite;
+}
+.pool-card{
+  transition:transform .35s cubic-bezier(.4,0,.2,1),box-shadow .35s,border-color .35s;
+  background:linear-gradient(135deg,rgba(15,23,42,.86),rgba(8,13,30,.72))!important;
+  backdrop-filter:blur(16px);
+  box-shadow:0 20px 60px rgba(0,0,0,.30);
+}
+.pool-card:hover{
+  transform:translateY(-8px) rotateX(1.2deg) rotateY(-1deg) scale(1.01);
+  box-shadow:0 30px 80px rgba(15,23,42,.55),0 0 45px rgba(59,130,246,.12);
+}
+.space-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  perspective:1000px;
+}
+#starCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.nebula{
+  position:absolute;
+  border-radius:9999px;
+  filter:blur(35px);
+  opacity:.75;
+  mix-blend-mode:screen;
+  animation:nebulaFloat 18s ease-in-out infinite;
+}
+.nebula-1{width:52vw;height:52vw;left:-16vw;top:-10vw;background:radial-gradient(circle,rgba(56,189,248,.38),rgba(29,78,216,.16) 42%,transparent 70%)}
+.nebula-2{width:46vw;height:46vw;right:-12vw;top:2vw;background:radial-gradient(circle,rgba(217,70,239,.34),rgba(88,28,135,.18) 45%,transparent 72%);animation-delay:-5s}
+.nebula-3{width:42vw;height:42vw;left:38vw;bottom:-16vw;background:radial-gradient(circle,rgba(34,197,94,.18),rgba(20,184,166,.12) 48%,transparent 74%);animation-delay:-9s}
+.planet{
+  position:absolute;
+  border-radius:50%;
+  transform-style:preserve-3d;
+  box-shadow:inset -42px -34px 70px rgba(0,0,0,.42),inset 22px 16px 40px rgba(255,255,255,.10),0 0 80px rgba(96,165,250,.16);
+  animation:planetFloat 14s ease-in-out infinite;
+}
+.planet::after{
+  content:"";
+  position:absolute;
+  inset:18%;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.38),transparent 12%),radial-gradient(circle at 60% 70%,rgba(255,255,255,.10),transparent 18%);
+}
+.planet-main{
+  width:220px;
+  height:220px;
+  right:8%;
+  top:12%;
+  background:
+    radial-gradient(circle at 28% 25%,rgba(191,219,254,.95),rgba(59,130,246,.50) 32%,rgba(30,64,175,.22) 58%,rgba(2,6,23,.35) 100%),
+    repeating-linear-gradient(14deg,rgba(255,255,255,.08) 0 8px,transparent 8px 18px);
+}
+.planet-small{
+  width:120px;
+  height:120px;
+  left:8%;
+  bottom:18%;
+  background:
+    radial-gradient(circle at 30% 25%,rgba(253,224,71,.95),rgba(249,115,22,.45) 38%,rgba(124,45,18,.25) 72%,rgba(2,6,23,.22)),
+    repeating-linear-gradient(-18deg,rgba(255,255,255,.08) 0 6px,transparent 6px 14px);
+  animation-delay:-6s;
+}
+.ringed{
+  position:absolute;
+  width:320px;
+  height:92px;
+  right:4%;
+  top:18%;
+  border:1px solid rgba(224,242,254,.28);
+  border-radius:50%;
+  transform:rotate(-18deg) rotateX(68deg);
+  box-shadow:0 0 40px rgba(56,189,248,.12),inset 0 0 20px rgba(255,255,255,.10);
+  animation:ringSpin 18s linear infinite;
+}
+.holo-grid{
+  position:absolute;
+  left:-10%;
+  bottom:-22%;
+  width:120%;
+  height:62%;
+  transform:perspective(900px) rotateX(70deg);
+  transform-origin:bottom;
+  background-image:
+    linear-gradient(rgba(56,189,248,.22) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,189,248,.22) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(to top,rgba(255,255,255,.88),transparent 84%);
+  -webkit-mask-image:linear-gradient(to top,rgba(255,255,255,.88),transparent 84%);
+  animation:gridTravel 7s linear infinite;
+  opacity:.48;
+}
+.orbit{
+  position:absolute;
+  border:1px solid rgba(148,163,184,.12);
+  border-radius:50%;
+  transform-style:preserve-3d;
+  animation:orbitRotate 26s linear infinite;
+}
+.orbit-1{width:600px;height:600px;right:-180px;top:-160px}
+.orbit-2{width:420px;height:420px;left:-140px;bottom:-80px;animation-duration:31s;animation-direction:reverse}
+.shooting-star{
+  position:absolute;
+  width:140px;
+  height:2px;
+  border-radius:9999px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),rgba(34,211,238,.3));
+  filter:drop-shadow(0 0 10px rgba(56,189,248,.75));
+  transform:rotate(-28deg);
+  opacity:0;
+  animation:shoot 8s ease-in-out infinite;
+}
+.star-1{top:18%;left:18%;animation-delay:1s}
+.star-2{top:34%;left:70%;animation-delay:4.5s}
+.star-3{top:62%;left:32%;animation-delay:7s}
+.space-badge{
+  display:inline-flex;
+  gap:.5rem;
+  align-items:center;
+  padding:.45rem .85rem;
+  border-radius:9999px;
+  background:rgba(14,165,233,.12);
+  border:1px solid rgba(56,189,248,.26);
+  color:#bae6fd;
+  font-size:.82rem;
+}
+input,textarea,select,button{position:relative;z-index:1}
+input,textarea,select{
+  color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+input:focus,textarea:focus,select:focus{
+  outline:none;
+  border-color:rgba(56,189,248,.75)!important;
+  box-shadow:0 0 0 3px rgba(56,189,248,.16);
+}
+@keyframes panelSweep{0%,55%{transform:translateX(-120%)}75%,100%{transform:translateX(120%)}}
+@keyframes nebulaFloat{0%,100%{transform:translate3d(0,0,-60px) scale(1)}50%{transform:translate3d(28px,-18px,80px) scale(1.08)}}
+@keyframes planetFloat{0%,100%{transform:translate3d(0,0,0) rotate(0)}50%{transform:translate3d(-18px,22px,50px) rotate(5deg)}}
+@keyframes ringSpin{from{transform:rotate(-18deg) rotateX(68deg) rotateZ(0)}to{transform:rotate(-18deg) rotateX(68deg) rotateZ(360deg)}}
+@keyframes gridTravel{from{background-position:0 0,0 0}to{background-position:0 72px,72px 0}}
+@keyframes orbitRotate{from{transform:rotateX(65deg) rotateZ(0)}to{transform:rotateX(65deg) rotateZ(360deg)}}
+@keyframes shoot{0%,72%{opacity:0;transform:translate3d(0,0,0) rotate(-28deg)}76%{opacity:1}88%,100%{opacity:0;transform:translate3d(360px,180px,0) rotate(-28deg)}}
+@media (max-width:768px){
+  body{padding:1rem}
+  .planet-main{width:150px;height:150px;right:-20px;top:70px}
+  .ringed{width:220px;height:64px;right:-58px;top:118px}
+  .planet-small{width:82px;height:82px}
+  .nebula{opacity:.55}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body class="text-white min-h-screen p-6">
-<div class="animated-bg"><div class="bg-noise"></div><div class="light-beam beam-1"></div><div class="light-beam beam-2"></div><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="orb orb-4"></div><div class="floating-ring ring-1"></div><div class="floating-ring ring-2"></div><div class="grid-floor"></div><canvas id="particleCanvas"></canvas></div>
-<div class="app-shell max-w-7xl mx-auto space-y-6">
-<div class="glass-panel bg-gradient-to-r from-blue-900/80 via-indigo-900/75 to-gray-900/75 rounded-3xl p-8 shadow-2xl"><div class="flex flex-wrap justify-between items-center gap-4"><div><h1 class="text-4xl font-bold">🌐 DHCP Automation PRO</h1><p class="text-gray-300 mt-2">Cisco DHCP Pool Generator • 3D Animated UI • Validate MAC / IP / VLAN ก่อน Generate</p></div><div class="flex gap-3"><button onclick="addPool()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-plus"></i> Add Pool</button><button onclick="autoFillAll()" class="bg-orange-600 hover:bg-orange-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-magic"></i> Auto Fill</button><button onclick="exportCfg()" class="bg-purple-600 hover:bg-purple-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-download"></i> Export CFG</button></div></div></div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"><div class="glass-panel bg-emerald-950/50 border border-emerald-500/30 rounded-3xl p-5"><h3 class="font-bold text-emerald-300"><i class="fas fa-shield-halved"></i> Validate ก่อน Generate</h3><p class="text-sm text-emerald-100/80 mt-1">เช็ก MAC 12 หลัก, IP ถูกต้อง และ VLAN 1-4094 อัตโนมัติ</p></div><div class="glass-panel bg-gray-900 rounded-3xl p-5 flex items-center gap-4 lg:col-span-2"><span class="font-bold w-32"><i class="fas fa-server"></i> DNS Server:</span><input id="dnsInput" value="10.20.100.2 10.26.100.2" oninput="updateConfig()" class="flex-1 p-3 bg-gray-800/80 border border-gray-700 rounded-2xl font-mono focus:outline-none focus:border-blue-500"></div></div>
-<input id="searchInput" placeholder="🔍 Search IP, MAC or Name..." onkeyup="filterPools()" class="w-full p-4 rounded-2xl bg-gray-900/75 border border-gray-700 focus:outline-none focus:border-blue-500 backdrop-blur-xl">
-<div class="glass-panel bg-gray-900 rounded-3xl p-6"><div class="flex flex-wrap justify-between items-center mb-4 gap-4"><h2 class="text-2xl font-bold"><i class="fas fa-file-import"></i> Mass Pool Import</h2><div class="flex items-center gap-3"><span class="font-bold text-gray-300">Device Name:</span><select id="bulkDeviceName" class="p-2 px-4 rounded-xl bg-gray-800 border border-gray-700"><option value="CCTV">CCTV</option><option value="Computer" selected>Computer</option><option value="Inspector">Inspector</option><option value="Printer">Printer</option><option value="Data_Lake">Data_Lake</option><option value="IP_Phone">IP_Phone</option></select></div></div><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div><p class="mb-2 font-bold">MAC Address</p><textarea id="bulkMac" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="6c3b.e524.91f8"></textarea></div><div><p class="mb-2 font-bold">IP Address</p><textarea id="bulkIp" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="10.36.2.134"></textarea></div><div><p class="mb-2 font-bold">Gateway</p><textarea id="bulkGateway" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="10.36.2.1"></textarea></div><div><p class="mb-2 font-bold">VLAN</p><textarea id="bulkVlan" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="2"></textarea></div></div><div id="bulkValidationBox" class="mt-4 hidden rounded-2xl border p-4 text-sm"></div><button id="bulkGenerateBtn" onclick="bulkImport()" class="mt-4 bg-cyan-600 hover:bg-cyan-500 px-6 py-3 rounded-2xl font-medium disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed transition"><i class="fas fa-bolt"></i> Generate & Add Pools</button></div>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div id="poolsContainer" class="space-y-4"></div><div class="glass-panel bg-black/80 border border-gray-800 rounded-3xl overflow-hidden"><div class="flex justify-between items-center p-5 border-b border-gray-700"><h2 class="font-bold"><i class="fas fa-terminal"></i> Cisco Configuration Output</h2><button onclick="copyAllConfig()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-2xl transition">📋 Copy All</button></div><div class="p-4 border-b border-gray-700 bg-gray-950/80 flex flex-wrap items-center gap-6"><label class="text-sm font-medium"><input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()" class="accent-blue-500"> รวม update arp</label><label class="text-sm font-medium"><input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()" class="accent-blue-500"> รวม ip source binding</label></div><pre id="configOutput" class="terminal text-green-400 p-6 text-sm overflow-auto min-h-[600px] whitespace-pre-wrap bg-gray-950/90"></pre><div id="message" class="text-center py-3 text-emerald-400 text-sm"></div></div></div>
+<div class="space-bg">
+  <canvas id="starCanvas"></canvas>
+  <div class="nebula nebula-1"></div>
+  <div class="nebula nebula-2"></div>
+  <div class="nebula nebula-3"></div>
+  <div class="orbit orbit-1"></div>
+  <div class="orbit orbit-2"></div>
+  <div class="planet planet-main"></div>
+  <div class="ringed"></div>
+  <div class="planet planet-small"></div>
+  <div class="holo-grid"></div>
+  <div class="shooting-star star-1"></div>
+  <div class="shooting-star star-2"></div>
+  <div class="shooting-star star-3"></div>
 </div>
+
+<div class="app-shell max-w-7xl mx-auto space-y-6">
+  <div class="glass-panel rounded-3xl p-8 shadow-2xl">
+    <div class="flex flex-wrap justify-between items-center gap-4">
+      <div>
+        <div class="space-badge mb-3"><i class="fas fa-satellite"></i> Space 3D Interface • v2.4</div>
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight">🌐 DHCP Automation PRO</h1>
+        <p class="text-slate-300 mt-2">Cisco DHCP Pool Generator • 3D Animated Space UI • Validate MAC / IP / VLAN ก่อน Generate</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="addPool()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-plus"></i> Add Pool</button>
+        <button onclick="autoFillAll()" class="bg-orange-600 hover:bg-orange-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-magic"></i> Auto Fill</button>
+        <button onclick="exportCfg()" class="bg-purple-600 hover:bg-purple-500 px-5 py-3 rounded-2xl transition"><i class="fas fa-download"></i> Export CFG</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="glass-panel bg-emerald-950/50 border border-emerald-500/30 rounded-3xl p-5">
+      <h3 class="font-bold text-emerald-300"><i class="fas fa-shield-halved"></i> Validate ก่อน Generate</h3>
+      <p class="text-sm text-emerald-100/80 mt-1">เช็ก MAC 12 หลัก, IP ถูกต้อง และ VLAN 1-4094 อัตโนมัติ</p>
+    </div>
+    <div class="glass-panel bg-gray-900 rounded-3xl p-5 flex flex-col md:flex-row md:items-center gap-4 lg:col-span-2">
+      <span class="font-bold md:w-32"><i class="fas fa-server"></i> DNS Server:</span>
+      <input id="dnsInput" value="10.20.100.2 10.26.100.2" oninput="updateConfig()" class="flex-1 p-3 bg-gray-800/80 border border-gray-700 rounded-2xl font-mono">
+    </div>
+  </div>
+
+  <input id="searchInput" placeholder="🔍 Search IP, MAC or Name..." onkeyup="filterPools()" class="w-full p-4 rounded-2xl bg-gray-900/75 border border-gray-700 backdrop-blur-xl">
+
+  <div class="glass-panel bg-gray-900 rounded-3xl p-6">
+    <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+      <h2 class="text-2xl font-bold"><i class="fas fa-file-import"></i> Mass Pool Import</h2>
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-gray-300">Device Name:</span>
+        <select id="bulkDeviceName" class="p-2 px-4 rounded-xl bg-gray-800 border border-gray-700">
+          <option value="CCTV">CCTV</option>
+          <option value="Computer" selected>Computer</option>
+          <option value="Inspector">Inspector</option>
+          <option value="Printer">Printer</option>
+          <option value="Data_Lake">Data_Lake</option>
+          <option value="IP_Phone">IP_Phone</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div><p class="mb-2 font-bold">MAC Address</p><textarea id="bulkMac" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="6c3b.e524.91f8"></textarea></div>
+      <div><p class="mb-2 font-bold">IP Address</p><textarea id="bulkIp" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="10.36.2.134"></textarea></div>
+      <div><p class="mb-2 font-bold">Gateway</p><textarea id="bulkGateway" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="10.36.2.1"></textarea></div>
+      <div><p class="mb-2 font-bold">VLAN</p><textarea id="bulkVlan" rows="8" oninput="validateBulkInputs()" class="w-full p-4 rounded-2xl bg-gray-950/85 border border-gray-700 font-mono" placeholder="2"></textarea></div>
+    </div>
+    <div id="bulkValidationBox" class="mt-4 hidden rounded-2xl border p-4 text-sm"></div>
+    <button id="bulkGenerateBtn" onclick="bulkImport()" class="mt-4 bg-cyan-600 hover:bg-cyan-500 px-6 py-3 rounded-2xl font-medium disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed transition"><i class="fas fa-bolt"></i> Generate & Add Pools</button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div id="poolsContainer" class="space-y-4"></div>
+    <div class="glass-panel bg-black/80 border border-gray-800 rounded-3xl overflow-hidden">
+      <div class="flex justify-between items-center p-5 border-b border-gray-700">
+        <h2 class="font-bold"><i class="fas fa-terminal"></i> Cisco Configuration Output</h2>
+        <button onclick="copyAllConfig()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-2xl transition">📋 Copy All</button>
+      </div>
+      <div class="p-4 border-b border-gray-700 bg-gray-950/80 flex flex-wrap items-center gap-6">
+        <label class="text-sm font-medium"><input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()" class="accent-blue-500"> รวม update arp</label>
+        <label class="text-sm font-medium"><input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()" class="accent-blue-500"> รวม ip source binding</label>
+      </div>
+      <pre id="configOutput" class="terminal text-green-400 p-6 text-sm overflow-auto min-h-[600px] whitespace-pre-wrap bg-gray-950/90"></pre>
+      <div id="message" class="text-center py-3 text-emerald-400 text-sm"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 let pools=[];
-function init(){pools=[];renderPools();validateBulkInputs();updateConfig();}
-function cleanMac(mac){return String(mac||'').replace(/[^a-fA-F0-9]/g,'').toLowerCase().replace(/^01/,'');}
+
+function init(){
+  pools=[];
+  renderPools();
+  validateBulkInputs();
+  updateConfig();
+}
+
+function cleanMac(mac){
+  return String(mac||'').replace(/[^a-fA-F0-9]/g,'').toLowerCase().replace(/^01/,'');
+}
 function isValidMac(mac){return cleanMac(mac).length===12;}
-function formatMac(value){const c=cleanMac(value).slice(0,12);return c?(c.match(/.{1,4}/g)?.join('.')||c):'';}
+function formatMac(value){
+  const c=cleanMac(value).slice(0,12);
+  return c?(c.match(/.{1,4}/g)?.join('.')||c):'';
+}
 function getMacClean12(mac){return cleanMac(mac).slice(0,12);}
-function formatClientIdentifierMac(mac){const c=getMacClean12(mac);if(c.length!==12)return'';return(`01${c}`).match(/.{1,4}/g)?.join('.')||'';}
-function formatSourceBindingMac(mac){const c=getMacClean12(mac);if(c.length!==12)return'';return c.match(/.{1,4}/g)?.join('.')||'';}
-function isValidIP(ip){return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(String(ip||'').trim());}
-function isValidVlan(vlan){const v=String(vlan||'').trim();if(!/^\d+$/.test(v))return false;const n=Number(v);return n>=1&&n<=4094;}
-function line(ok,text){return`<div class="flex items-center gap-2 ${ok?'text-emerald-400':'text-red-400'}"><i class="fas ${ok?'fa-circle-check':'fa-triangle-exclamation'}"></i><span>${text}</span></div>`;}
-function getPoolStatus(p){const s={isMacValid:isValidMac(p.mac),isIpValid:isValidIP(p.ip),isGwValid:isValidIP(p.gateway),isVlanValid:isValidVlan(p.vlan)};s.isValid=s.isMacValid&&s.isIpValid&&s.isGwValid&&s.isVlanValid;return s;}
-function poolHelp(s){return`<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">${line(s.isMacValid,s.isMacValid?'MAC ถูกต้อง 12 หลัก':'MAC ต้องมี 12 หลัก เช่น 6c3b.e524.91f8')}${line(s.isIpValid,s.isIpValid?'IP ถูกต้อง':'IP ไม่ถูกต้อง เช่น 10.36.2.134')}${line(s.isGwValid,s.isGwValid?'Gateway ถูกต้อง':'Gateway ไม่ถูกต้อง')}${line(s.isVlanValid,s.isVlanValid?'VLAN ถูกต้อง':'VLAN ต้องเป็นเลข 1-4094')}</div>`;}
-function renderPools(){const c=document.getElementById('poolsContainer');let html='';pools.forEach((p,i)=>{const s=getPoolStatus(p);html+=`<div class="pool-card bg-gray-900 rounded-3xl p-6 border ${s.isValid?'border-green-500/40':'border-red-500/40'}"><div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><span class="text-2xl">${s.isValid?'✅':'⚠️'}</span><div><h3 class="text-xl font-bold">Pool #${i+1}</h3><span class="text-xs px-3 py-1 rounded-full ${s.isValid?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}">${s.isValid?'พร้อม Generate / Copy':'ต้องแก้ข้อมูลก่อน Generate'}</span></div></div><div class="flex gap-4"><button onclick="copySingle(${p.id})" class="${s.isValid?'text-blue-400 hover:text-blue-300':'text-gray-600 cursor-not-allowed'}"><i class="fas fa-copy"></i></button><button onclick="removePool(${p.id})" class="text-red-500 hover:text-red-600"><i class="fas fa-trash"></i></button></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><input value="${p.name}" placeholder="Device Name" oninput="updateField(${p.id},'name',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl"><input value="${p.mac}" placeholder="MAC Address" oninput="updateField(${p.id},'macRaw',this.value)" onblur="updateField(${p.id},'mac',this.value)" class="p-3 bg-gray-800/80 border ${s.isMacValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono"><input value="${p.ip}" placeholder="IP Address" oninput="updateField(${p.id},'ip',this.value)" class="p-3 bg-gray-800/80 border ${s.isIpValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono"><input value="${p.gateway}" placeholder="Gateway" oninput="updateField(${p.id},'gateway',this.value)" class="p-3 bg-gray-800/80 border ${s.isGwValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono"><input value="${p.subnet}" placeholder="Subnet" oninput="updateField(${p.id},'subnet',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl font-mono"><input value="${p.vlan}" placeholder="VLAN" oninput="updateField(${p.id},'vlan',this.value)" class="p-3 bg-gray-800/80 border ${s.isVlanValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono"><input value="${p.interfaceName}" placeholder="Interface (PO1)" oninput="updateField(${p.id},'interfaceName',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl md:col-span-2 font-mono"></div>${poolHelp(s)}</div>`;});c.innerHTML=html||'<div class="glass-panel bg-gray-900 rounded-3xl p-8 text-center text-gray-400 border border-gray-800">กด Add Pool หรือใส่ข้อมูลใน Mass Pool Import เพื่อเริ่ม Generate</div>';}
-function updateField(id,field,value){pools=pools.map(p=>{if(p.id!==id)return p;if(field==='mac')return{...p,mac:formatMac(value)};if(field==='macRaw')return{...p,mac:value};return{...p,[field]:value};});renderPools();updateConfig();}
-function addPool(){pools.push({id:Date.now(),name:document.getElementById('bulkDeviceName')?.value||'Computer',mac:'',ip:'',subnet:'255.255.255.0',gateway:pools.length?pools[pools.length-1].gateway:'10.36.2.1',vlan:pools.length?pools[pools.length-1].vlan:'2',interfaceName:pools.length?pools[pools.length-1].interfaceName:'PO1'});renderPools();updateConfig();}
-function removePool(id){pools=pools.filter(p=>p.id!==id);renderPools();updateConfig();}
-function autoFillAll(){if(!pools.length)return showMessage('ยังไม่มี Pool ให้ Auto Fill');const f=pools[0];let prefix='',start=0;const s=f.ip.split('.');if(s.length===4){prefix=`${s[0]}.${s[1]}.${s[2]}`;start=Number(s[3]);}pools=pools.map((p,i)=>({...p,gateway:f.gateway||p.gateway,vlan:f.vlan||p.vlan,subnet:f.subnet||p.subnet,interfaceName:f.interfaceName||p.interfaceName,ip:prefix&&Number.isFinite(start)?`${prefix}.${start+i}`:p.ip}));renderPools();updateConfig();showMessage('Auto Fill สำเร็จ ✅');}
-function getLines(id){const e=document.getElementById(id);return e?e.value.trim().split('\n').map(l=>l.trim()).filter(Boolean):[];}
-function validateBulkInputs(){const mac=getLines('bulkMac'),ip=getLines('bulkIp'),gw=getLines('bulkGateway'),vlan=getLines('bulkVlan');const box=document.getElementById('bulkValidationBox'),btn=document.getElementById('bulkGenerateBtn');if(!box||!btn)return true;const msg=[];const hasAny=mac.length||ip.length||gw.length||vlan.length;if(!hasAny){box.className='mt-4 hidden rounded-2xl border p-4 text-sm';btn.disabled=false;return true;}if(!mac.length)msg.push('ต้องกรอก MAC Address อย่างน้อย 1 บรรทัด');if(!ip.length)msg.push('ต้องกรอก IP Address อย่างน้อย 1 บรรทัด');if(mac.length&&ip.length&&mac.length!==ip.length)msg.push(`จำนวน MAC (${mac.length}) และ IP (${ip.length}) ต้องเท่ากัน`);mac.forEach((m,i)=>{if(!isValidMac(m))msg.push(`MAC บรรทัด ${i+1} ไม่ถูกต้อง: ${m}`);});ip.forEach((v,i)=>{if(!isValidIP(v))msg.push(`IP บรรทัด ${i+1} ไม่ถูกต้อง: ${v}`);});gw.forEach((v,i)=>{if(!isValidIP(v))msg.push(`Gateway บรรทัด ${i+1} ไม่ถูกต้อง: ${v}`);});vlan.forEach((v,i)=>{if(!isValidVlan(v))msg.push(`VLAN บรรทัด ${i+1} ต้องเป็นเลข 1-4094: ${v}`);});const ok=!msg.length;box.className=`mt-4 rounded-2xl border p-4 text-sm ${ok?'border-emerald-500/40 bg-emerald-950/40 text-emerald-200':'border-red-500/40 bg-red-950/40 text-red-200'}`;box.innerHTML=ok?'<div class="flex items-center gap-2"><i class="fas fa-circle-check"></i><strong>ข้อมูลถูกต้อง พร้อม Generate</strong></div>':`<div class="font-bold mb-2"><i class="fas fa-triangle-exclamation"></i> พบข้อมูลไม่ถูกต้อง กรุณาแก้ก่อน Generate</div><ul class="list-disc pl-6 space-y-1">${msg.map(m=>`<li>${m}</li>`).join('')}</ul>`;btn.disabled=!ok;return ok;}
-function bulkImport(){if(!validateBulkInputs()){alert('⚠️ พบข้อมูลไม่ถูกต้อง กรุณาแก้ MAC / IP / VLAN ก่อนกด Generate');return showMessage('พบข้อมูลไม่ถูกต้อง');}const mac=getLines('bulkMac'),ip=getLines('bulkIp'),gw=getLines('bulkGateway'),vlan=getLines('bulkVlan');if(!mac.length||!ip.length){alert('⚠️ กรุณากรอก MAC Address และ IP Address ก่อนกด Generate');return;}const defGw=gw[0]||'10.36.2.1',defVlan=vlan[0]||'2',name=document.getElementById('bulkDeviceName')?.value||'Computer';pools=mac.map((m,i)=>({id:Date.now()+i,name,mac:formatMac(m),ip:ip[i]||'',subnet:'255.255.255.0',gateway:gw[i]||defGw,vlan:vlan[i]||defVlan,interfaceName:'PO1'}));['bulkMac','bulkIp','bulkGateway','bulkVlan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderPools();updateConfig();validateBulkInputs();alert(`✅ สร้าง ${pools.length} Pools ใหม่เรียบร้อยแล้ว`);showMessage(`สร้างใหม่ ${pools.length} Pools สำเร็จ ✅`);}
-function filterPools(){const term=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('.pool-card').forEach((card,i)=>{const p=pools[i];if(!p)return;card.style.display=`${p.ip} ${p.mac} ${p.name}`.toLowerCase().includes(term)?'block':'none';});}
-function generateConfig(){if(!pools.length)return'ยังไม่มี Pool';const bad=pools.map((p,i)=>({i:i+1,s:getPoolStatus(p)})).filter(x=>!x.s.isValid);if(bad.length)return`พบข้อมูลไม่ถูกต้องใน Pool #${bad.map(x=>x.i).join(', ')}\nกรุณาแก้ MAC / IP / Gateway / VLAN ก่อน Generate`;const dns=document.getElementById('dnsInput')?.value.trim()||'10.20.100.2 10.26.100.2';const includeBinding=document.getElementById('includeSourceBinding')?.checked??true;const includeArp=document.getElementById('includeUpdateArp')?.checked??false;return pools.map(p=>{const cid=formatClientIdentifierMac(p.mac),sb=formatSourceBindingMac(p.mac);const cfg=[`ip dhcp pool ${p.ip}_${p.name}`,` host ${p.ip} ${p.subnet}`,` client-identifier ${cid}`,` default-router ${p.gateway}`,` dns-server ${dns}`];if(includeArp)cfg.push('', ' update arp');if(includeBinding)cfg.push('',` ip source binding ${sb} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);return cfg.join('\n');}).join('\n\n!\n\n');}
-function updateConfig(){const o=document.getElementById('configOutput');if(o)o.textContent=generateConfig();}
-async function copyToClipboard(text){try{await navigator.clipboard.writeText(text);return true;}catch{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.left='-999999px';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);return true;}}
-async function copySingle(id){const p=pools.find(x=>x.id===id);if(!p)return;if(!getPoolStatus(p).isValid){alert('ข้อมูล Pool ไม่ถูกต้อง ไม่สามารถ Copy ได้');return;}const old=pools;pools=[p];const config=generateConfig();pools=old;if(await copyToClipboard(config))showMessage('✅ Copy Pool สำเร็จ');}
-async function copyAllConfig(){const cfg=generateConfig();if(cfg.includes('พบข้อมูลไม่ถูกต้อง')||cfg==='ยังไม่มี Pool'){alert('ยังไม่มี Config ที่สมบูรณ์ ให้แก้ข้อมูลก่อน');return;}if(await copyToClipboard(cfg))showMessage('✅ Copy All สำเร็จ');}
-function exportCfg(){const cfg=generateConfig();if(cfg.includes('พบข้อมูลไม่ถูกต้อง')||cfg==='ยังไม่มี Pool'){alert('ไม่มี Config ให้ Export กรุณาแก้ข้อมูลก่อน');return;}const blob=new Blob([cfg],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`dhcp_config_${Date.now()}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
-function showMessage(text){const m=document.getElementById('message');if(!m)return;m.textContent=text;setTimeout(()=>m.textContent='',2500);}
-function initParticleBackground(){const canvas=document.getElementById('particleCanvas');if(!canvas)return;const ctx=canvas.getContext('2d');let particles=[];function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}function create(){particles=[];const count=window.innerWidth<768?40:75;for(let i=0;i<count;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2.2+.6,dx:(Math.random()-.5)*.35,dy:(Math.random()-.5)*.35,alpha:Math.random()*.5+.15});}}function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<particles.length;i++){const p=particles[i];p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>canvas.width)p.dx*=-1;if(p.y<0||p.y>canvas.height)p.dy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(148,163,184,${p.alpha})`;ctx.fill();for(let j=i+1;j<particles.length;j++){const p2=particles[j],dist=Math.hypot(p.x-p2.x,p.y-p2.y);if(dist<120){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=`rgba(59,130,246,${0.12-dist/1200})`;ctx.lineWidth=1;ctx.stroke();}}}requestAnimationFrame(draw);}window.addEventListener('resize',()=>{resize();create();});window.addEventListener('mousemove',e=>{const moveX=(e.clientX/window.innerWidth-.5)*30,moveY=(e.clientY/window.innerHeight-.5)*30;document.querySelectorAll('.orb').forEach((orb,i)=>{const d=(i+1)*.35;orb.style.translate=`${moveX*d}px ${moveY*d}px`;});document.querySelectorAll('.floating-ring').forEach((ring,i)=>{const d=(i+1)*.2;ring.style.translate=`${-moveX*d}px ${-moveY*d}px`;});});resize();create();draw();}
-window.onload=()=>{init();initParticleBackground();};
+function formatClientIdentifierMac(mac){
+  const c=getMacClean12(mac);
+  if(c.length!==12)return'';
+  return(`01${c}`).match(/.{1,4}/g)?.join('.')||'';
+}
+function formatSourceBindingMac(mac){
+  const c=getMacClean12(mac);
+  if(c.length!==12)return'';
+  return c.match(/.{1,4}/g)?.join('.')||'';
+}
+function isValidIP(ip){
+  return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(String(ip||'').trim());
+}
+function isValidVlan(vlan){
+  const v=String(vlan||'').trim();
+  if(!/^\d+$/.test(v))return false;
+  const n=Number(v);
+  return n>=1&&n<=4094;
+}
+function line(ok,text){
+  return`<div class="flex items-center gap-2 ${ok?'text-emerald-400':'text-red-400'}"><i class="fas ${ok?'fa-circle-check':'fa-triangle-exclamation'}"></i><span>${text}</span></div>`;
+}
+function getPoolStatus(p){
+  const s={isMacValid:isValidMac(p.mac),isIpValid:isValidIP(p.ip),isGwValid:isValidIP(p.gateway),isVlanValid:isValidVlan(p.vlan)};
+  s.isValid=s.isMacValid&&s.isIpValid&&s.isGwValid&&s.isVlanValid;
+  return s;
+}
+function poolHelp(s){
+  return`<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">${line(s.isMacValid,s.isMacValid?'MAC ถูกต้อง 12 หลัก':'MAC ต้องมี 12 หลัก เช่น 6c3b.e524.91f8')}${line(s.isIpValid,s.isIpValid?'IP ถูกต้อง':'IP ไม่ถูกต้อง เช่น 10.36.2.134')}${line(s.isGwValid,s.isGwValid?'Gateway ถูกต้อง':'Gateway ไม่ถูกต้อง')}${line(s.isVlanValid,s.isVlanValid?'VLAN ถูกต้อง':'VLAN ต้องเป็นเลข 1-4094')}</div>`;
+}
+function renderPools(){
+  const c=document.getElementById('poolsContainer');
+  let html='';
+  pools.forEach((p,i)=>{
+    const s=getPoolStatus(p);
+    html+=`<div class="pool-card bg-gray-900 rounded-3xl p-6 border ${s.isValid?'border-green-500/40':'border-red-500/40'}">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${s.isValid?'✅':'⚠️'}</span>
+          <div>
+            <h3 class="text-xl font-bold">Pool #${i+1}</h3>
+            <span class="text-xs px-3 py-1 rounded-full ${s.isValid?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}">${s.isValid?'พร้อม Generate / Copy':'ต้องแก้ข้อมูลก่อน Generate'}</span>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <button onclick="copySingle(${p.id})" class="${s.isValid?'text-blue-400 hover:text-blue-300':'text-gray-600 cursor-not-allowed'}"><i class="fas fa-copy"></i></button>
+          <button onclick="removePool(${p.id})" class="text-red-500 hover:text-red-600"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input value="${p.name}" placeholder="Device Name" oninput="updateField(${p.id},'name',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl">
+        <input value="${p.mac}" placeholder="MAC Address" oninput="updateField(${p.id},'macRaw',this.value)" onblur="updateField(${p.id},'mac',this.value)" class="p-3 bg-gray-800/80 border ${s.isMacValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono">
+        <input value="${p.ip}" placeholder="IP Address" oninput="updateField(${p.id},'ip',this.value)" class="p-3 bg-gray-800/80 border ${s.isIpValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono">
+        <input value="${p.gateway}" placeholder="Gateway" oninput="updateField(${p.id},'gateway',this.value)" class="p-3 bg-gray-800/80 border ${s.isGwValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono">
+        <input value="${p.subnet}" placeholder="Subnet" oninput="updateField(${p.id},'subnet',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl font-mono">
+        <input value="${p.vlan}" placeholder="VLAN" oninput="updateField(${p.id},'vlan',this.value)" class="p-3 bg-gray-800/80 border ${s.isVlanValid?'border-gray-700':'border-red-500'} rounded-2xl font-mono">
+        <input value="${p.interfaceName}" placeholder="Interface (PO1)" oninput="updateField(${p.id},'interfaceName',this.value)" class="p-3 bg-gray-800/80 border border-gray-700 rounded-2xl md:col-span-2 font-mono">
+      </div>${poolHelp(s)}</div>`;
+  });
+  c.innerHTML=html||'<div class="glass-panel bg-gray-900 rounded-3xl p-8 text-center text-gray-400 border border-gray-800">กด Add Pool หรือใส่ข้อมูลใน Mass Pool Import เพื่อเริ่ม Generate</div>';
+}
+function updateField(id,field,value){
+  pools=pools.map(p=>{
+    if(p.id!==id)return p;
+    if(field==='mac')return{...p,mac:formatMac(value)};
+    if(field==='macRaw')return{...p,mac:value};
+    return{...p,[field]:value};
+  });
+  renderPools();
+  updateConfig();
+}
+function addPool(){
+  pools.push({id:Date.now(),name:document.getElementById('bulkDeviceName')?.value||'Computer',mac:'',ip:'',subnet:'255.255.255.0',gateway:pools.length?pools[pools.length-1].gateway:'10.36.2.1',vlan:pools.length?pools[pools.length-1].vlan:'2',interfaceName:pools.length?pools[pools.length-1].interfaceName:'PO1'});
+  renderPools();
+  updateConfig();
+}
+function removePool(id){
+  pools=pools.filter(p=>p.id!==id);
+  renderPools();
+  updateConfig();
+}
+function autoFillAll(){
+  if(!pools.length)return showMessage('ยังไม่มี Pool ให้ Auto Fill');
+  const f=pools[0];
+  let prefix='',start=0;
+  const s=f.ip.split('.');
+  if(s.length===4){prefix=`${s[0]}.${s[1]}.${s[2]}`;start=Number(s[3]);}
+  pools=pools.map((p,i)=>({...p,gateway:f.gateway||p.gateway,vlan:f.vlan||p.vlan,subnet:f.subnet||p.subnet,interfaceName:f.interfaceName||p.interfaceName,ip:prefix&&Number.isFinite(start)?`${prefix}.${start+i}`:p.ip}));
+  renderPools();
+  updateConfig();
+  showMessage('Auto Fill สำเร็จ ✅');
+}
+function getLines(id){
+  const e=document.getElementById(id);
+  return e?e.value.trim().split('\n').map(l=>l.trim()).filter(Boolean):[];
+}
+function validateBulkInputs(){
+  const mac=getLines('bulkMac'),ip=getLines('bulkIp'),gw=getLines('bulkGateway'),vlan=getLines('bulkVlan');
+  const box=document.getElementById('bulkValidationBox'),btn=document.getElementById('bulkGenerateBtn');
+  if(!box||!btn)return true;
+  const msg=[];
+  const hasAny=mac.length||ip.length||gw.length||vlan.length;
+  if(!hasAny){
+    box.className='mt-4 hidden rounded-2xl border p-4 text-sm';
+    btn.disabled=false;
+    return true;
+  }
+  if(!mac.length)msg.push('ต้องกรอก MAC Address อย่างน้อย 1 บรรทัด');
+  if(!ip.length)msg.push('ต้องกรอก IP Address อย่างน้อย 1 บรรทัด');
+  if(mac.length&&ip.length&&mac.length!==ip.length)msg.push(`จำนวน MAC (${mac.length}) และ IP (${ip.length}) ต้องเท่ากัน`);
+  mac.forEach((m,i)=>{if(!isValidMac(m))msg.push(`MAC บรรทัด ${i+1} ไม่ถูกต้อง: ${m}`);});
+  ip.forEach((v,i)=>{if(!isValidIP(v))msg.push(`IP บรรทัด ${i+1} ไม่ถูกต้อง: ${v}`);});
+  gw.forEach((v,i)=>{if(!isValidIP(v))msg.push(`Gateway บรรทัด ${i+1} ไม่ถูกต้อง: ${v}`);});
+  vlan.forEach((v,i)=>{if(!isValidVlan(v))msg.push(`VLAN บรรทัด ${i+1} ต้องเป็นเลข 1-4094: ${v}`);});
+  const ok=!msg.length;
+  box.className=`mt-4 rounded-2xl border p-4 text-sm ${ok?'border-emerald-500/40 bg-emerald-950/40 text-emerald-200':'border-red-500/40 bg-red-950/40 text-red-200'}`;
+  box.innerHTML=ok?'<div class="flex items-center gap-2"><i class="fas fa-circle-check"></i><strong>ข้อมูลถูกต้อง พร้อม Generate</strong></div>':`<div class="font-bold mb-2"><i class="fas fa-triangle-exclamation"></i> พบข้อมูลไม่ถูกต้อง กรุณาแก้ก่อน Generate</div><ul class="list-disc pl-6 space-y-1">${msg.map(m=>`<li>${m}</li>`).join('')}</ul>`;
+  btn.disabled=!ok;
+  return ok;
+}
+function bulkImport(){
+  if(!validateBulkInputs()){
+    alert('⚠️ พบข้อมูลไม่ถูกต้อง กรุณาแก้ MAC / IP / VLAN ก่อนกด Generate');
+    return showMessage('พบข้อมูลไม่ถูกต้อง');
+  }
+  const mac=getLines('bulkMac'),ip=getLines('bulkIp'),gw=getLines('bulkGateway'),vlan=getLines('bulkVlan');
+  if(!mac.length||!ip.length){
+    alert('⚠️ กรุณากรอก MAC Address และ IP Address ก่อนกด Generate');
+    return;
+  }
+  const defGw=gw[0]||'10.36.2.1',defVlan=vlan[0]||'2',name=document.getElementById('bulkDeviceName')?.value||'Computer';
+  pools=mac.map((m,i)=>({id:Date.now()+i,name,mac:formatMac(m),ip:ip[i]||'',subnet:'255.255.255.0',gateway:gw[i]||defGw,vlan:vlan[i]||defVlan,interfaceName:'PO1'}));
+  ['bulkMac','bulkIp','bulkGateway','bulkVlan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderPools();
+  updateConfig();
+  validateBulkInputs();
+  alert(`✅ สร้าง ${pools.length} Pools ใหม่เรียบร้อยแล้ว`);
+  showMessage(`สร้างใหม่ ${pools.length} Pools สำเร็จ ✅`);
+}
+function filterPools(){
+  const term=document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.pool-card').forEach((card,i)=>{
+    const p=pools[i];
+    if(!p)return;
+    card.style.display=`${p.ip} ${p.mac} ${p.name}`.toLowerCase().includes(term)?'block':'none';
+  });
+}
+function generateConfig(){
+  if(!pools.length)return'ยังไม่มี Pool';
+  const bad=pools.map((p,i)=>({i:i+1,s:getPoolStatus(p)})).filter(x=>!x.s.isValid);
+  if(bad.length)return`พบข้อมูลไม่ถูกต้องใน Pool #${bad.map(x=>x.i).join(', ')}
+กรุณาแก้ MAC / IP / Gateway / VLAN ก่อน Generate`;
+  const dns=document.getElementById('dnsInput')?.value.trim()||'10.20.100.2 10.26.100.2';
+  const includeBinding=document.getElementById('includeSourceBinding')?.checked??true;
+  const includeArp=document.getElementById('includeUpdateArp')?.checked??false;
+  return pools.map(p=>{
+    const cid=formatClientIdentifierMac(p.mac),sb=formatSourceBindingMac(p.mac);
+    const cfg=[`ip dhcp pool ${p.ip}_${p.name}`,` host ${p.ip} ${p.subnet}`,` client-identifier ${cid}`,` default-router ${p.gateway}`,` dns-server ${dns}`];
+    if(includeArp)cfg.push('', ' update arp');
+    if(includeBinding)cfg.push('',` ip source binding ${sb} vlan ${p.vlan} ${p.ip} interface ${p.interfaceName}`);
+    return cfg.join('\n');
+  }).join('\n\n!\n\n');
+}
+function updateConfig(){
+  const o=document.getElementById('configOutput');
+  if(o)o.textContent=generateConfig();
+}
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch{
+    const t=document.createElement('textarea');
+    t.value=text;
+    t.style.position='fixed';
+    t.style.left='-999999px';
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand('copy');
+    document.body.removeChild(t);
+    return true;
+  }
+}
+async function copySingle(id){
+  const p=pools.find(x=>x.id===id);
+  if(!p)return;
+  if(!getPoolStatus(p).isValid){
+    alert('ข้อมูล Pool ไม่ถูกต้อง ไม่สามารถ Copy ได้');
+    return;
+  }
+  const old=pools;
+  pools=[p];
+  const config=generateConfig();
+  pools=old;
+  if(await copyToClipboard(config))showMessage('✅ Copy Pool สำเร็จ');
+}
+async function copyAllConfig(){
+  const cfg=generateConfig();
+  if(cfg.includes('พบข้อมูลไม่ถูกต้อง')||cfg==='ยังไม่มี Pool'){
+    alert('ยังไม่มี Config ที่สมบูรณ์ ให้แก้ข้อมูลก่อน');
+    return;
+  }
+  if(await copyToClipboard(cfg))showMessage('✅ Copy All สำเร็จ');
+}
+function exportCfg(){
+  const cfg=generateConfig();
+  if(cfg.includes('พบข้อมูลไม่ถูกต้อง')||cfg==='ยังไม่มี Pool'){
+    alert('ไม่มี Config ให้ Export กรุณาแก้ข้อมูลก่อน');
+    return;
+  }
+  const blob=new Blob([cfg],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;
+  a.download=`dhcp_config_${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function showMessage(text){
+  const m=document.getElementById('message');
+  if(!m)return;
+  m.textContent=text;
+  setTimeout(()=>m.textContent='',2500);
+}
+function initSpaceBackground(){
+  const canvas=document.getElementById('starCanvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let stars=[];
+  let mouse={x:0,y:0};
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize(){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.floor(window.innerWidth*dpr);
+    canvas.height=Math.floor(window.innerHeight*dpr);
+    canvas.style.width=window.innerWidth+'px';
+    canvas.style.height=window.innerHeight+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    createStars();
+  }
+  function createStars(){
+    const count=window.innerWidth<768?90:170;
+    stars=Array.from({length:count},()=>({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      z:Math.random()*1+.25,
+      r:Math.random()*1.8+.25,
+      vx:(Math.random()-.5)*.12,
+      vy:(Math.random()-.5)*.12,
+      a:Math.random()*.65+.18,
+      tw:Math.random()*Math.PI*2
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    const cx=(mouse.x-window.innerWidth/2)*0.018;
+    const cy=(mouse.y-window.innerHeight/2)*0.018;
+    stars.forEach((s,i)=>{
+      if(!reduced){
+        s.x+=s.vx*s.z;
+        s.y+=s.vy*s.z;
+        s.tw+=.018;
+      }
+      if(s.x<0)s.x=window.innerWidth;
+      if(s.x>window.innerWidth)s.x=0;
+      if(s.y<0)s.y=window.innerHeight;
+      if(s.y>window.innerHeight)s.y=0;
+      const x=s.x+cx*s.z;
+      const y=s.y+cy*s.z;
+      const alpha=s.a+Math.sin(s.tw)*.18;
+      ctx.beginPath();
+      ctx.arc(x,y,s.r*s.z,0,Math.PI*2);
+      ctx.fillStyle=`rgba(226,232,240,${Math.max(.08,alpha)})`;
+      ctx.fill();
+      for(let j=i+1;j<stars.length;j++){
+        const s2=stars[j];
+        if(Math.abs(s.x-s2.x)>92||Math.abs(s.y-s2.y)>92)continue;
+        const dist=Math.hypot(s.x-s2.x,s.y-s2.y);
+        if(dist<92&&s.z>.78&&s2.z>.78){
+          ctx.beginPath();
+          ctx.moveTo(x,y);
+          ctx.lineTo(s2.x+cx*s2.z,s2.y+cy*s2.z);
+          ctx.strokeStyle=`rgba(56,189,248,${0.10-dist/920})`;
+          ctx.lineWidth=.7;
+          ctx.stroke();
+        }
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  window.addEventListener('mousemove',e=>{
+    mouse={x:e.clientX,y:e.clientY};
+    const moveX=(e.clientX/window.innerWidth-.5)*34;
+    const moveY=(e.clientY/window.innerHeight-.5)*34;
+    document.querySelectorAll('.planet,.ringed').forEach((el,i)=>{
+      const d=(i+1)*.18;
+      el.style.translate=`${moveX*d}px ${moveY*d}px`;
+    });
+    document.querySelectorAll('.nebula').forEach((el,i)=>{
+      const d=(i+1)*.10;
+      el.style.translate=`${-moveX*d}px ${-moveY*d}px`;
+    });
+  });
+  resize();
+  draw();
+}
+window.onload=()=>{init();initSpaceBackground();};
 </script>
 </body>
 </html>
