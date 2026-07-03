@@ -134,7 +134,7 @@ for (const directory of ["public", "dist"]) {
   let html = await readFile(path, "utf8");
   if (!html.includes("Interactive black-gold 3D command-center background")) html = html.replace("  </style>", `${styles}  </style>`);
   if (!html.includes('id="gold3dStage"')) html = html.replace(/<body([^>]*)>/, `<body$1>${markup}`);
-  if (!html.includes("--gold-x")) html = html.replace("</body>", `${runtime}</body>`);
+  if (!html.includes("deviceorientation")) html = html.replace("</body>", `${runtime}</body>`);
   const required = ["gold-3d-stage","gold-command-center.webp","--gold-x","deviceorientation"];
   const missing = required.filter(value => !html.includes(value));
   if (missing.length) throw new Error(`Gold 3D background build failed in ${path}: ${missing.join(", ")}`);
