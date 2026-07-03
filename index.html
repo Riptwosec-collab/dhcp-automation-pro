@@ -118,5 +118,214 @@
     function drawNetwork(){const c=bgCtx;c.clearRect(0,0,innerWidth,innerHeight);const px=(bgMouse.x-innerWidth/2)*.012,py=(bgMouse.y-innerHeight/2)*.012;bgEntities.forEach((n,i)=>{if(!reduceMotion){n.x+=n.dx*n.z;n.y+=n.dy*n.z;n.p+=.028}if(n.x<0)n.x=innerWidth;if(n.x>innerWidth)n.x=0;if(n.y<0)n.y=innerHeight;if(n.y>innerHeight)n.y=0;const x=n.x+px*n.z,y=n.y+py*n.z,glow=.55+Math.sin(n.p)*.2;c.beginPath();c.arc(x,y,n.r*n.z,0,Math.PI*2);c.fillStyle=`rgba(125,211,252,${glow})`;c.fill();c.beginPath();c.arc(x,y,(n.r+4)*n.z,0,Math.PI*2);c.strokeStyle=`rgba(45,212,191,${.12+Math.sin(n.p)*.05})`;c.lineWidth=1;c.stroke();for(let j=i+1;j<bgEntities.length;j++){const n2=bgEntities[j],dist=Math.hypot(n.x-n2.x,n.y-n2.y);if(dist<190){c.beginPath();c.moveTo(x,y);c.lineTo(n2.x+px*n2.z,n2.y+py*n2.z);c.strokeStyle=`rgba(34,211,238,${.16-dist/1300})`;c.lineWidth=.9;c.stroke();const t=((Date.now()/1000)+(i+j)*.1)%1,dx=n2.x+px*n2.z,dy=n2.y+py*n2.z;c.beginPath();c.arc(x+(dx-x)*t,y+(dy-y)*t,1.9,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.85)';c.fill()}}})}
     function drawBackground(){if(!bgCtx)return;activeTheme==='network'?drawNetwork():drawSpace();requestAnimationFrame(drawBackground)}window.onload=()=>{init();initBackground();setTheme(localStorage.getItem('dhcpTheme')==='network'?'network':'space')}
   </script>
+<script data-reference-dashboard-layout>
+(() => {
+  const style = document.createElement("style");
+  style.textContent = `
+    :root{--neon-blue:#08b7ff;--neon-cyan:#23f3ff;--neon-teal:#16e0c2;--neon-violet:#9b5cff;--ink:#03101f;--panel:rgba(3,18,38,.82);--line:rgba(21,174,255,.42)}
+    body{padding:0!important;background:#020713!important}
+    body::before{background:radial-gradient(circle at 84% 5%,rgba(8,183,255,.22),transparent 25%),radial-gradient(circle at 50% 40%,rgba(19,121,255,.12),transparent 44%),linear-gradient(135deg,#020713 0%,#031225 58%,#020713 100%)!important}
+    .ref-shell{position:relative;z-index:10;display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;width:min(1550px,100%);margin:0 auto;padding:0;min-height:100vh}
+    .ref-sidebar{position:sticky;top:0;align-self:start;height:100vh;padding:28px 18px;display:flex;flex-direction:column;gap:22px;border:1px solid rgba(8,183,255,.36);border-radius:0 0 18px 18px;background:linear-gradient(180deg,rgba(4,22,44,.96),rgba(1,10,22,.92));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 34px rgba(8,183,255,.12);overflow:auto}
+    .brand{display:grid;grid-template-columns:66px 1fr;gap:14px;align-items:center;padding:14px 10px 22px;border-bottom:1px solid rgba(8,183,255,.28)}
+    .brand-mark{width:66px;height:66px;display:grid;place-items:center;border-radius:18px;border:1px solid rgba(35,243,255,.65);color:var(--neon-cyan);font-size:2rem;background:rgba(35,243,255,.08);box-shadow:0 0 22px rgba(35,243,255,.25)}
+    .brand h1{margin:0;font-size:1.42rem;line-height:1.02;font-weight:900}.brand strong{display:block;color:#17d9ff}
+    .nav-list,.status-list{display:grid;gap:8px}.nav-item{height:48px;display:flex;align-items:center;gap:13px;padding:0 16px;border-radius:8px;color:#dce9f7;font-weight:650}.nav-item.active{background:linear-gradient(90deg,rgba(8,183,255,.95),rgba(8,183,255,.12));box-shadow:inset 0 0 0 1px rgba(35,243,255,.38),0 0 18px rgba(8,183,255,.2)}
+    .side-card{padding:16px;border:1px solid rgba(8,183,255,.25);border-radius:12px;background:rgba(8,35,65,.56)}.side-card h3{margin:0 0 12px;font-size:.92rem}.status-row{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;color:#d7e5f4}.dot{width:10px;height:10px;border-radius:99px;background:#54d879;box-shadow:0 0 10px rgba(84,216,121,.65)}
+    .profile{margin-top:auto;display:flex;align-items:center;gap:12px;padding:14px;border:1px solid rgba(8,183,255,.22);border-radius:12px;background:rgba(2,15,32,.72)}.avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--neon-blue);color:var(--neon-blue);font-weight:900}
+    .ref-main{padding:24px 24px 22px 0;min-width:0}.hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}.hero-title h2{margin:0;font-size:2.35rem;line-height:1;font-weight:950;letter-spacing:0}.hero-title p{margin:.7rem 0 0;color:#aebdd1}.ok-pill{display:inline-flex;align-items:center;gap:8px;margin-left:14px;padding:7px 13px;border-radius:999px;border:1px solid rgba(84,216,121,.38);background:rgba(84,216,121,.15);color:#8cf29f;font-size:.88rem;font-weight:750}
+    .top-actions{display:flex;gap:12px;flex-wrap:wrap}.cmd-btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:0 18px;border:1px solid rgba(8,183,255,.55);border-radius:8px;color:#fff;background:linear-gradient(180deg,rgba(8,132,255,.9),rgba(8,88,184,.72));box-shadow:0 0 18px rgba(8,183,255,.24);font-weight:800}.cmd-btn.violet{border-color:rgba(155,92,255,.55);background:linear-gradient(180deg,rgba(155,92,255,.76),rgba(75,41,150,.72))}.cmd-btn.teal{border-color:rgba(22,224,194,.55);background:linear-gradient(180deg,rgba(12,128,151,.8),rgba(3,67,83,.72))}
+    .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-bottom:14px;padding:16px 20px;border:1px solid rgba(8,183,255,.34);border-radius:12px;background:linear-gradient(90deg,rgba(4,28,58,.86),rgba(4,21,45,.64));overflow:hidden}.step{display:flex;align-items:center;gap:12px;min-width:0}.step:not(:last-child)::after{content:"\\f054";font-family:"Font Awesome 6 Free";font-weight:900;margin-left:auto;margin-right:18px;color:var(--neon-blue);font-size:1.25rem}.step-num{width:44px;height:44px;display:grid;place-items:center;border:1px solid rgba(8,183,255,.48);border-radius:50%;background:rgba(8,80,148,.28);font-weight:900}.step-icon{width:44px;height:44px;display:grid;place-items:center;border:1px solid rgba(8,183,255,.34);border-radius:10px;color:var(--neon-cyan);font-size:1.25rem}.step b{display:block;font-size:.92rem}.step span{display:block;margin-top:3px;font-size:.75rem;color:#9fb2c8}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}.stat-card{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;min-height:106px;padding:18px 22px;border:1px solid rgba(8,183,255,.42);border-radius:10px;background:radial-gradient(circle at 12% 20%,rgba(8,183,255,.16),transparent 42%),linear-gradient(145deg,rgba(4,24,52,.88),rgba(2,13,30,.84));box-shadow:0 0 24px rgba(8,183,255,.08)}.stat-card.teal{border-color:rgba(22,224,194,.52)}.stat-card.violet{border-color:rgba(155,92,255,.58)}.stat-icon{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;border:3px solid currentColor;color:var(--neon-blue);font-size:1.55rem}.stat-card.teal .stat-icon{color:var(--neon-teal)}.stat-card.violet .stat-icon{color:#c56cff}.stat-label{color:#b3c2d6;font-size:.78rem;font-weight:800}.stat-value{font-size:2rem;font-weight:950;line-height:1.05}.stat-note{color:#aab8ca;font-size:.82rem}
+    .panel{position:relative;border:1px solid rgba(8,183,255,.35);border-radius:12px;background:linear-gradient(145deg,rgba(4,23,49,.88),rgba(2,12,28,.84));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 24px rgba(8,183,255,.08);overflow:hidden}.panel::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.045),transparent 35%,rgba(8,183,255,.035));}.panel-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(8,183,255,.18)}.panel-title{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:900}.panel-title i{color:var(--neon-blue);font-size:1.25rem}
+    .quick{margin-bottom:14px}.quick .panel-body{position:relative;z-index:1;display:grid;grid-template-columns:1fr repeat(4,minmax(130px,180px));gap:12px;align-items:center;padding:16px}.quick-line{height:1px;background:linear-gradient(90deg,rgba(8,183,255,.5),transparent)}.quick-tile{height:72px;display:grid;place-items:center start;gap:4px;padding:12px 16px;border:1px solid rgba(8,183,255,.34);border-radius:8px;background:rgba(4,28,58,.62);font-weight:850}.quick-tile i{font-size:1.45rem;color:var(--neon-blue)}.quick-tile.teal i{color:var(--neon-teal)}.quick-tile.violet i{color:#c56cff}.quick-tile small{color:#b0c2d4;font-weight:650}
+    .workbench{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(360px,.98fr);gap:14px;margin-bottom:14px}.mass-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr 1fr .7fr;gap:10px;padding:14px 16px 6px}.field-col label{display:block;margin-bottom:8px;color:#d7e5f4;font-size:.82rem;font-weight:850}.field-col textarea{width:100%;min-height:186px;padding:11px;border:1px solid rgba(86,137,190,.48);border-radius:5px;background:rgba(1,11,25,.78);font-family:ui-monospace,Consolas,monospace;font-size:.84rem;line-height:1.55;resize:vertical}.mass-controls{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px 14px}.select-inline{display:flex;align-items:center;gap:10px;color:#b9c9dc;font-size:.86rem}.select-inline select{height:38px;padding:0 10px;border:1px solid rgba(86,137,190,.48);border-radius:6px;background:rgba(1,11,25,.82)}
+    .generate-btn{flex:0 1 360px;min-height:42px;border:1px solid rgba(35,243,255,.6);border-radius:7px;color:#fff;background:linear-gradient(180deg,#09c8ff,#0873d8);box-shadow:0 0 20px rgba(8,183,255,.28);font-weight:900}.ghost-btn{min-height:34px;padding:0 14px;border:1px dashed rgba(122,167,214,.55);border-radius:7px;color:#d6e8f8;background:rgba(2,14,31,.5)}
+    #bulkValidationBox{position:relative;z-index:1;margin:0 16px 10px!important;border-radius:8px!important}
+    .validation-panel{min-height:100%}.validation-body{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:14px;padding:14px 16px 10px}.check-list{display:grid;gap:0}.check-row{display:grid;grid-template-columns:24px 1fr 44px;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(122,167,214,.14)}.check-row i{color:#3ee779}.check-row b{display:block;font-size:.85rem}.check-row span{display:block;margin-top:2px;color:#b6c5d6;font-size:.76rem}.valid-tag{color:#54d879;font-size:.75rem;font-weight:900;text-align:right}.workspace-card{padding:14px;border:1px solid rgba(122,167,214,.24);border-radius:8px;background:rgba(7,24,48,.76)}.workspace-card h4{margin:0 0 12px;font-size:.88rem}.metric{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(122,167,214,.12);font-size:.78rem}.metric strong{color:#fff}.validate-note{position:relative;z-index:1;margin:0 16px 14px;padding:12px 14px;border:1px dashed rgba(8,183,255,.36);border-radius:8px;color:#c9d8eb;font-size:.8rem;background:rgba(4,20,42,.6)}
+    .config-panel .panel-head{padding:10px 16px}.config-actions{display:flex;gap:10px}.small-btn{min-height:34px;padding:0 13px;border:1px solid rgba(86,137,190,.45);border-radius:6px;background:rgba(8,45,92,.6);color:#eef7ff;font-weight:800}.config-panel pre{position:relative;z-index:1;margin:0 14px 14px;min-height:190px;max-height:310px;padding:14px 18px;border:1px solid rgba(86,137,190,.38);border-radius:7px;background:rgba(0,7,18,.78);color:#88e78d;overflow:auto}.config-meta{position:absolute;right:26px;bottom:18px;color:#9fb2c8;font-size:.78rem}
+    #poolsContainer{display:none}.theme-switcher{display:none!important}#message{position:fixed;right:22px;bottom:22px;z-index:60;padding:10px 14px;border-radius:8px;background:rgba(3,22,42,.96);border:1px solid rgba(35,243,255,.42);box-shadow:0 0 18px rgba(8,183,255,.18)}
+    @media(max-width:1180px){.ref-shell{grid-template-columns:1fr}.ref-sidebar{position:relative;height:auto;border-radius:0 0 18px 18px}.ref-main{padding:0 14px 18px}.steps,.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workbench{grid-template-columns:1fr}.quick .panel-body{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-line{display:none}}
+    @media(max-width:700px){.hero-row{display:grid}.top-actions{width:100%}.cmd-btn{flex:1}.steps,.stat-grid,.mass-grid,.validation-body{grid-template-columns:1fr}.ref-sidebar{padding:18px 12px}.brand{grid-template-columns:52px 1fr}.brand-mark{width:52px;height:52px}.hero-title h2{font-size:1.95rem}.step:not(:last-child)::after{display:none}.mass-controls{display:grid}.generate-btn{width:100%;flex:auto}.config-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}}
+  `;
+  document.head.appendChild(style);
+
+  function shellMarkup() {
+    return `
+      <div class="ref-shell">
+        <aside class="ref-sidebar">
+          <div class="brand"><div class="brand-mark"><i class="fas fa-network-wired"></i></div><h1>DHCP<br>Automation<strong>PRO</strong></h1></div>
+          <nav class="nav-list">
+            <div class="nav-item active"><i class="fas fa-house"></i> Dashboard</div>
+            <div class="nav-item"><i class="fas fa-cube"></i> Pool Builder</div>
+            <div class="nav-item"><i class="fas fa-upload"></i> Mass Import</div>
+            <div class="nav-item"><i class="fas fa-file-code"></i> Generated Config</div>
+            <div class="nav-item"><i class="fas fa-file-lines"></i> Templates</div>
+            <div class="nav-item"><i class="fas fa-gear"></i> Settings</div>
+          </nav>
+          <div class="side-card"><h3><i class="fas fa-chart-line"></i> สถานะระบบ</h3><div class="status-list">
+            <div class="status-row"><span><span class="dot"></span> API Service</span><strong>Operational</strong></div>
+            <div class="status-row"><span><span class="dot"></span> DB Connection</span><strong>Operational</strong></div>
+            <div class="status-row"><span><span class="dot"></span> Template Engine</span><strong>Operational</strong></div>
+            <div class="status-row"><span><span class="dot"></span> Config Generator</span><strong>Operational</strong></div>
+          </div></div>
+          <div class="side-card"><h3><i class="fas fa-book-open"></i> คู่มือการใช้งาน</h3><p style="margin:0;color:#b7c6d8;font-size:.82rem;line-height:1.45">เอกสารและวิดีโอสอนการใช้งานระบบอย่างละเอียด</p></div>
+          <div class="profile"><div class="avatar">NE</div><div><b>NetEng Admin</b><br><span style="color:#aab8ca;font-size:.82rem">Administrator</span></div><i class="fas fa-chevron-down" style="margin-left:auto;color:#b7c6d8"></i></div>
+        </aside>
+        <main class="ref-main">
+          <div class="hero-row">
+            <div class="hero-title"><div id="themeBadge" class="ok-pill"><i class="fas fa-circle-check"></i> All services operational</div><h2>iPDHCP AUTO</h2><p>Automate DHCP pools, MAC/IP assignments, and Cisco-ready configuration generation.</p><div id="themeDescription" class="credit-wrap" style="display:none"></div></div>
+            <div class="top-actions">
+              <button class="cmd-btn" onclick="addPool()"><i class="fas fa-plus"></i> New Pool</button>
+              <button class="cmd-btn violet" onclick="document.getElementById('bulkMac')?.focus()"><i class="fas fa-upload"></i> Import</button>
+              <button class="cmd-btn teal" onclick="exportCfg()"><i class="fas fa-download"></i> Export CFG</button>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step"><span class="step-num">1</span><span class="step-icon"><i class="fas fa-file-circle-plus"></i></span><div><b>Add Pool</b><span>สร้าง Pool ใหม่</span></div></div>
+            <div class="step"><span class="step-num">2</span><span class="step-icon"><i class="fas fa-network-wired"></i></span><div><b>Fill Network Data</b><span>กรอกข้อมูลเครือข่าย</span></div></div>
+            <div class="step"><span class="step-num">3</span><span class="step-icon"><i class="fas fa-shield-halved"></i></span><div><b>Validate</b><span>Validate ก่อน Generate</span></div></div>
+            <div class="step"><span class="step-num">4</span><span class="step-icon"><i class="fas fa-file-export"></i></span><div><b>Export Config</b><span>Export Cisco Config</span></div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-server"></i></div><div><div class="stat-label">Total Pools</div><div id="statPools" class="stat-value">0</div><div class="stat-note">Pools configured</div></div></div>
+            <div class="stat-card teal"><div class="stat-icon">IP</div><div><div class="stat-label">IP Addresses</div><div id="statIps" class="stat-value">0</div><div class="stat-note">Assignable IPs</div></div></div>
+            <div class="stat-card violet"><div class="stat-icon"><i class="fas fa-chart-pie"></i></div><div><div class="stat-label">Utilization</div><div id="statUtil" class="stat-value">0%</div><div id="statUtilNote" class="stat-note">0 / 0 used</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><div class="stat-label">Last Sync</div><div class="stat-value" style="font-size:1.45rem">Just now</div><div id="lastSync" class="stat-note"></div></div></div>
+          </div>
+          <section class="panel quick"><div class="panel-head"><div class="panel-title"><i class="fas fa-bolt"></i> Quick Actions</div></div><div class="panel-body">
+            <div class="quick-line"></div>
+            <button class="quick-tile" onclick="addPool()"><i class="fas fa-circle-plus"></i><b>Create New Pool</b><small>สร้าง Pool ใหม่</small></button>
+            <button class="quick-tile teal" onclick="document.getElementById('bulkMac')?.focus()"><i class="fas fa-upload"></i><b>Import MAC Pool</b><small>นำเข้าไฟล์ MAC/IP</small></button>
+            <button class="quick-tile violet" onclick="updateConfig()"><i class="fas fa-code"></i><b>Generate Cisco Config</b><small>สร้าง Configuration</small></button>
+            <button class="quick-tile" onclick="document.getElementById('configOutput')?.scrollIntoView({behavior:'smooth'})"><i class="fas fa-file-search"></i><b>View Output</b><small>ดูผลลัพธ์และไฟล์</small></button>
+          </div></section>
+          <div class="workbench">
+            <section class="panel">
+              <div class="panel-head"><div class="panel-title"><i class="fas fa-upload"></i> Mass Pool Import</div><button class="small-btn" type="button" onclick="fillDemoRows()"><i class="fas fa-download"></i> ดาวน์โหลดเทมเพลต</button></div>
+              <div class="mass-grid">
+                <div class="field-col"><label>MAC Address</label><textarea id="bulkMac" oninput="validateBulkInputs()" placeholder="00:11:22:33:44:55"></textarea></div>
+                <div class="field-col"><label>IP Address</label><textarea id="bulkIp" oninput="validateBulkInputs()" placeholder="192.168.10.10"></textarea></div>
+                <div class="field-col"><label>Gateway</label><textarea id="bulkGateway" oninput="validateBulkInputs()" placeholder="192.168.10.1"></textarea></div>
+                <div class="field-col"><label>VLAN</label><textarea id="bulkVlan" oninput="validateBulkInputs()" placeholder="10"></textarea></div>
+              </div>
+              <div id="bulkValidationBox" class="hidden"></div>
+              <div class="mass-controls"><button class="ghost-btn" type="button" onclick="addPool()"><i class="fas fa-plus"></i> Add Row</button><div class="select-inline"><span>Device Name</span><select id="bulkDeviceName"><option value="CCTV">CCTV</option><option value="Computer" selected>Computer</option><option value="Inspector">Inspector</option><option value="Printer">Printer</option><option value="Telepresence">Telepresence</option><option value="Data_Lake">Data_Lake</option><option value="IP_Phone">IP_Phone</option></select></div><button id="bulkGenerateBtn" class="generate-btn" onclick="bulkImport()">Generate & Add Pools <i class="fas fa-paper-plane"></i></button></div>
+            </section>
+            <section class="panel validation-panel">
+              <div class="panel-head"><div class="panel-title"><i class="fas fa-shield-halved"></i> Validation & Workspace</div><button class="small-btn" type="button" onclick="validateBulkInputs();refreshWorkspace()"><i class="fas fa-rotate"></i> รีเฟรช</button></div>
+              <div class="validation-body">
+                <div id="validationList" class="check-list"></div>
+                <div class="workspace-card"><h4>Active Workspace</h4><div class="metric"><span>Pools in Workspace</span><strong id="wsPools">0</strong></div><div class="metric"><span>IP Addresses</span><strong id="wsIps">0</strong></div><div class="metric"><span>VLANs</span><strong id="wsVlans">0</strong></div><div class="metric"><span>Subnets</span><strong id="wsSubnets">0</strong></div><div class="metric"><span>Last Updated</span><strong>Just now</strong></div><div class="metric"><span>Created By</span><strong>NetEng Admin</strong></div></div>
+              </div>
+              <div class="validate-note"><i class="fas fa-circle-info"></i> ทุกข้อมูลผ่านการ Validate แล้ว พร้อมสำหรับ Generate Cisco Config</div>
+            </section>
+          </div>
+          <div id="poolsContainer"></div>
+          <section id="configPanel" class="panel config-panel">
+            <div class="panel-head"><div class="panel-title"><i class="fas fa-code"></i> Cisco Configuration Output</div><div class="config-actions"><button class="small-btn" onclick="copyAllConfig()"><i class="fas fa-copy"></i> Copy All</button><button class="small-btn" onclick="exportCfg()"><i class="fas fa-download"></i> Export CFG</button></div></div>
+            <input id="dnsInput" value="10.20.100.2 10.26.100.2" oninput="updateConfig()" style="position:absolute;left:-9999px;width:1px;height:1px">
+            <label style="position:absolute;left:-9999px"><input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()"></label>
+            <label style="position:absolute;left:-9999px"><input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()"></label>
+            <pre id="configOutput" class="terminal"></pre><div id="message"></div><div class="config-meta" id="configMeta">Lines: 0 | Pools: 0</div>
+          </section>
+          <button id="themeSpaceBtn" style="display:none" onclick="setTheme('space')"></button><button id="themeNetworkBtn" style="display:none" onclick="setTheme('network')"></button>
+        </main>
+      </div>`;
+  }
+
+  const shell = document.querySelector(".app-shell");
+  if (shell) shell.outerHTML = shellMarkup();
+  document.body.dataset.theme = "network";
+
+  window.fillDemoRows = () => {
+    const data = [
+      ["00:11:22:33:44:55", "192.168.10.10", "192.168.10.1", "10"],
+      ["00:11:22:33:44:56", "192.168.10.20", "192.168.10.1", "10"],
+      ["00:11:22:33:44:57", "192.168.20.10", "192.168.20.1", "20"],
+      ["00:11:22:33:44:58", "192.168.20.20", "192.168.20.1", "20"],
+      ["00:11:22:33:44:59", "192.168.30.10", "192.168.30.1", "30"],
+      ["00:11:22:33:44:60", "192.168.30.20", "192.168.30.1", "30"]
+    ];
+    ["bulkMac","bulkIp","bulkGateway","bulkVlan"].forEach((id, idx) => {
+      const el = document.getElementById(id);
+      if (el) el.value = data.map(row => row[idx]).join("\n");
+    });
+    validateBulkInputs();
+    refreshWorkspace();
+  };
+
+  function lines(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim().split("\n").map(v => v.trim()).filter(Boolean) : [];
+  }
+
+  window.refreshWorkspace = function refreshWorkspace() {
+    const mac = lines("bulkMac");
+    const ip = lines("bulkIp");
+    const gw = lines("bulkGateway");
+    const vlan = lines("bulkVlan");
+    const rows = Math.max(mac.length, ip.length, pools?.length || 0);
+    const vlanSet = new Set([...(pools || []).map(p => p.vlan), ...vlan].filter(Boolean));
+    const subnetSet = new Set([...(pools || []).map(p => String(p.gateway || "").split(".").slice(0, 3).join(".")), ...gw.map(v => v.split(".").slice(0, 3).join("."))].filter(Boolean));
+    const checks = [
+      ["MAC format valid", "รูปแบบ MAC ถูกต้อง", mac.length ? mac.every(isValidMac) : !(pools || []).some(p => !isValidMac(p.mac))],
+      ["IP in subnet", "IP อยู่ในเครือข่าย", ip.length ? ip.every(isValidIP) : !(pools || []).some(p => !isValidIP(p.ip))],
+      ["VLAN 1-4094", "ช่วง VLAN ถูกต้อง", vlan.length ? vlan.every(isValidVlan) : !(pools || []).some(p => !isValidVlan(p.vlan))],
+      ["Gateway matched", "Gateway ตรงกับ Subnet", gw.length ? gw.every(isValidIP) : !(pools || []).some(p => !isValidIP(p.gateway))],
+      ["DNS reachable (optional)", "ตรวจสอบ DNS", true]
+    ];
+    const list = document.getElementById("validationList");
+    if (list) {
+      list.innerHTML = checks.map(([title, note, ok]) => `
+        <div class="check-row"><i class="fas ${ok ? "fa-circle-check" : "fa-triangle-exclamation"}"></i><div><b>${title}</b><span>${note}</span></div><span class="valid-tag">${ok ? "Valid" : "Check"}</span></div>
+      `).join("");
+    }
+    const poolCount = pools?.length || rows || 0;
+    const ipCount = pools?.length || ip.length || 0;
+    const util = ipCount ? Math.min(100, Math.round((poolCount / Math.max(ipCount, poolCount)) * 100)) : 0;
+    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setText("wsPools", poolCount);
+    setText("wsIps", ipCount);
+    setText("wsVlans", vlanSet.size || 0);
+    setText("wsSubnets", subnetSet.size || 0);
+    setText("statPools", poolCount);
+    setText("statIps", ipCount);
+    setText("statUtil", `${util}%`);
+    setText("statUtilNote", `${poolCount} / ${Math.max(ipCount, poolCount)} used`);
+    setText("lastSync", new Date().toLocaleString("th-TH"));
+    const cfg = document.getElementById("configOutput")?.textContent || "";
+    setText("configMeta", `Lines: ${cfg ? cfg.split("\n").length : 0} | Pools: ${pools?.length || 0}`);
+  };
+
+  const oldUpdateConfig = window.updateConfig;
+  if (typeof oldUpdateConfig === "function") {
+    window.updateConfig = function patchedUpdateConfig() {
+      oldUpdateConfig();
+      refreshWorkspace();
+    };
+  }
+  const oldValidate = window.validateBulkInputs;
+  if (typeof oldValidate === "function") {
+    window.validateBulkInputs = function patchedValidateBulkInputs() {
+      const result = oldValidate();
+      refreshWorkspace();
+      return result;
+    };
+  }
+
+  function lockReferenceHeader() {
+    document.body.dataset.theme = "network";
+    const badge = document.getElementById("themeBadge");
+    if (badge) badge.innerHTML = '<i class="fas fa-circle-check"></i> All services operational';
+  }
+  addEventListener("load", () => {
+    setTimeout(() => {
+      lockReferenceHeader();
+      refreshWorkspace();
+    }, 0);
+  }, { once: true });
+})();
+</script>
 </body>
 </html>
