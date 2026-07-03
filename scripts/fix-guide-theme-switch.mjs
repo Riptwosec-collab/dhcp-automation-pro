@@ -64,6 +64,32 @@ const styles = `
       image-rendering:auto!important;
       background:#020202!important;
     }
+    body[data-theme="network"] .guide-modal{
+      background:rgba(0,4,12,.92)!important;
+    }
+    body[data-theme="network"] .guide-modal-dialog{
+      border-color:rgba(0,183,255,.58)!important;
+      background:linear-gradient(145deg,rgba(2,14,34,.98),rgba(1,5,14,.99))!important;
+      box-shadow:0 0 48px rgba(0,183,255,.20),0 32px 90px rgba(0,0,0,.72)!important;
+    }
+    body[data-theme="network"] .guide-modal-head{
+      border-color:rgba(0,183,255,.38)!important;
+      background:linear-gradient(135deg,rgba(4,30,63,.96),rgba(1,8,22,.98))!important;
+    }
+    body[data-theme="network"] .guide-modal-title i,
+    body[data-theme="network"] .guide-modal-title{
+      color:#53E7FF!important;
+    }
+    body[data-theme="network"] .guide-modal-close{
+      border-color:rgba(83,231,255,.58)!important;
+      background:linear-gradient(135deg,#176BFF,#00B7FF)!important;
+      color:#fff!important;
+      box-shadow:0 0 18px rgba(0,183,255,.30)!important;
+    }
+    body[data-theme="network"] .guide-modal-image{
+      border-color:rgba(0,183,255,.42)!important;
+      box-shadow:0 18px 58px rgba(0,0,0,.52),0 0 28px rgba(0,183,255,.12)!important;
+    }
     body[data-theme="space"] .guide-modal{
       background:rgba(0,0,0,.92)!important;
     }
@@ -102,20 +128,25 @@ const guideButton = `<button id="guideMenuBtn" type="button" class="guide-menu-b
 const runtime = `
   <script>
     (() => {
-      const syncGoldGuide = () => {
+      const syncThemeGuide = () => {
         const image = document.querySelector('#usageGuideModal .guide-modal-image');
         if (!image) return;
+        const isSpace = document.body?.dataset?.theme === 'space';
         image.id = 'usageGuideImage';
-        image.src = '/assets/usage-guide-gold.webp';
-        image.alt = 'คู่มือการกรอกข้อมูล Mass Pool Import ธีมดำทอง';
+        image.src = isSpace
+          ? '/assets/usage-guide-gold.webp'
+          : '/assets/usage-guide.svg';
+        image.alt = isSpace
+          ? 'คู่มือการกรอกข้อมูล Mass Pool Import ธีมดำทอง'
+          : 'คู่มือการกรอกข้อมูล Mass Pool Import ธีม Network';
       };
-      addEventListener('load', syncGoldGuide);
+      addEventListener('load', syncThemeGuide);
       const originalOpen = window.openUsageGuide;
       window.openUsageGuide = () => {
-        syncGoldGuide();
+        syncThemeGuide();
         if (typeof originalOpen === 'function') originalOpen();
       };
-      new MutationObserver(syncGoldGuide).observe(document.body, {
+      new MutationObserver(syncThemeGuide).observe(document.body, {
         attributes:true,
         attributeFilter:['data-theme']
       });
@@ -130,7 +161,7 @@ for (const directory of ["public", "dist"]) {
 
   if (!html.includes("Full guide modal and restored Space / Network theme controls")) {
     html = html.replace("  </style>", `${styles}  </style>`);
-  } else if (!html.includes('body[data-theme="space"] .guide-modal-dialog')) {
+  } else if (!html.includes('body[data-theme="network"] .guide-modal-dialog')) {
     html = html.replace("  </style>", `${styles}  </style>`);
   }
 
@@ -139,14 +170,14 @@ for (const directory of ["public", "dist"]) {
   if (!switchMatch) throw new Error(`Theme switcher not found in ${path}`);
   html = html.replace(switchMatch[0], `${switchMatch[0]}${guideButton}`);
 
-  html = html.replaceAll('/assets/usage-guide.svg', '/assets/usage-guide-gold.webp');
-  html = html.replaceAll('/assets/usage-guide-full.webp', '/assets/usage-guide-gold.webp');
+  html = html.replaceAll('/assets/usage-guide-full.webp', '/assets/usage-guide.svg');
+  html = html.replaceAll('/assets/usage-guide-gold.webp', '/assets/usage-guide.svg');
   html = html.replace(
     '<img class="guide-modal-image"',
     '<img id="usageGuideImage" class="guide-modal-image"'
   );
 
-  if (!html.includes("const syncGoldGuide")) {
+  if (!html.includes("const syncThemeGuide")) {
     html = html.replace("</body>", `${runtime}</body>`);
   }
 
@@ -155,11 +186,12 @@ for (const directory of ["public", "dist"]) {
     'id="themeNetworkBtn"',
     'id="guideMenuBtn"',
     'id="usageGuideImage"',
+    '/assets/usage-guide.svg',
     '/assets/usage-guide-gold.webp',
     '#usageGuide{display:none!important}',
     'setTheme(\'space\')',
     'setTheme(\'network\')',
-    'syncGoldGuide'
+    'syncThemeGuide'
   ];
   const missing = required.filter((value) => !html.includes(value));
   if (missing.length) throw new Error(`Guide/theme fix failed in ${path}: ${missing.join(", ")}`);
@@ -167,4 +199,4 @@ for (const directory of ["public", "dist"]) {
   await writeFile(path, html, "utf8");
 }
 
-console.log("Black-gold illustrated guide installed and Space/Network theme buttons restored.");
+console.log("Theme-specific Network and black-gold guide images installed.");
