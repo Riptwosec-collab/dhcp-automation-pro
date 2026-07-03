@@ -3,7 +3,7 @@
   "version": "3.4.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-site.mjs"
+    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs"
   },
   "engines": {
     "node": "22.x"
