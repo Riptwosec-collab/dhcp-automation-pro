@@ -7,14 +7,14 @@ const css = `
 html,body{max-width:100%!important;overflow-x:hidden!important}
 body.final-layout-v5{padding:18px!important}
 body.final-layout-v5 *{box-sizing:border-box}
-.final-layout-v5 #networkDashboard{display:none!important}
-.final-layout-v5 .final-v5-shell{display:grid!important;grid-template-columns:minmax(280px,320px) minmax(0,1fr)!important;gap:18px!important;align-items:start!important;width:min(1560px,100%)!important;max-width:1560px!important;margin:0 auto!important}
+.final-layout-v5 #networkDashboard{display:block!important;min-height:0!important;padding:16px!important;border-radius:14px!important}
+.final-layout-v5 .final-v5-shell{display:grid!important;grid-template-columns:minmax(230px,250px) minmax(0,760px)!important;gap:12px!important;align-items:start!important;width:min(1034px,calc(100vw - 18px))!important;max-width:1034px!important;margin:0 auto!important}
 .final-layout-v5 .final-v5-shell>*{min-width:0!important;max-width:100%!important}
-.final-layout-v5 .final-v5-side{grid-column:1!important;position:sticky!important;top:18px!important;align-self:start!important;width:100%!important;max-height:calc(100vh - 36px)!important;overflow:auto!important;padding:24px!important;border-radius:26px!important}
+.final-layout-v5 .final-v5-side{grid-column:1!important;position:sticky!important;top:12px!important;align-self:start!important;width:100%!important;max-height:calc(100vh - 24px)!important;overflow:auto!important;padding:18px!important;border-radius:18px!important}
 .final-layout-v5 .final-v5-main{grid-column:2!important;display:grid!important;gap:16px!important;min-width:0!important;width:100%!important}
-.final-layout-v5 .final-v5-top{display:grid!important;grid-template-columns:minmax(270px,.82fr) minmax(0,1.42fr)!important;gap:16px!important;align-items:stretch!important;width:100%!important}
+.final-layout-v5 .final-v5-top{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;align-items:stretch!important;width:100%!important}
 .final-layout-v5 .final-v5-top>*{min-width:0!important;height:100%!important}
-.final-layout-v5 .final-v5-results{display:grid!important;grid-template-columns:minmax(0,.94fr) minmax(420px,1.06fr)!important;gap:16px!important;align-items:start!important;width:100%!important}
+.final-layout-v5 .final-v5-results{display:grid!important;grid-template-columns:1fr!important;gap:16px!important;align-items:start!important;width:100%!important}
 .final-layout-v5 .final-v5-results.no-pools{grid-template-columns:minmax(0,1fr)!important}
 .final-layout-v5 .final-v5-results.no-pools #poolsContainer{display:none!important}
 .final-layout-v5 .final-v5-results.no-pools #configPanel{grid-column:1!important;width:100%!important}
@@ -42,7 +42,20 @@ body[data-theme="network"].final-layout-v5 .credit-text{color:#53E7FF!important;
 .final-layout-v5 .final-v5-actions button{width:100%!important;min-width:0!important;min-height:44px!important;padding:9px 10px!important;font-size:.78rem!important;white-space:normal!important}
 .final-layout-v5 .final-v5-actions button:last-child:nth-child(odd){grid-column:1/-1!important}
 
-.final-layout-v5 .final-v5-validate,.final-layout-v5 .final-v5-dns{min-width:0!important;min-height:176px!important;padding:22px!important;border-radius:22px!important;overflow:hidden!important}
+.final-layout-v5 #networkDashboard .network-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.final-layout-v5 #networkDashboard .network-stat-card{min-height:86px!important;padding:12px!important;border-radius:8px!important}
+.final-layout-v5 #networkDashboard .network-stat-icon{width:28px!important;height:28px!important;margin-bottom:8px!important}
+.final-layout-v5 #networkDashboard .network-stat-value{font-size:1.35rem!important;margin-top:5px!important}
+.final-layout-v5 #networkDashboard .network-stat-note{font-size:.68rem!important;margin-top:5px!important}
+.final-layout-v5 #networkDashboard .network-action-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.final-layout-v5 #networkDashboard .network-action{min-height:48px!important;padding:8px!important;border-radius:7px!important}
+.final-layout-v5 #networkDashboard .network-action span{font-size:.62rem!important;margin-top:3px!important}
+.final-layout-v5 #networkDashboard .network-block{margin-top:12px!important}
+.final-layout-v5 #networkDashboard .network-section-title{margin-bottom:8px!important}
+.final-layout-v5 #networkDashboard .network-config-summary{display:none!important}
+.final-layout-v5 #networkDashboard .network-status-strip{margin-top:10px!important;padding:9px 11px!important}
+
+.final-layout-v5 .final-v5-validate,.final-layout-v5 .final-v5-dns{min-width:0!important;min-height:126px!important;padding:18px!important;border-radius:14px!important;overflow:hidden!important}
 .final-layout-v5 .final-v5-validate{display:flex!important;flex-direction:column!important;justify-content:center!important}
 .final-layout-v5 .final-v5-validate::before,.final-layout-v5 .final-v5-validate::after{content:none!important;display:none!important}
 .final-layout-v5 .final-v5-validate h3{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important;margin:0!important;font-size:clamp(1.08rem,1.4vw,1.4rem)!important;line-height:1.24!important;overflow-wrap:anywhere!important}
@@ -52,16 +65,16 @@ body[data-theme="network"].final-layout-v5 .credit-text{color:#53E7FF!important;
 .final-layout-v5 .final-v5-dns>span{width:auto!important;min-width:0!important;font-size:clamp(.98rem,1.2vw,1.16rem)!important;font-weight:800!important;overflow-wrap:anywhere!important}
 .final-layout-v5 .final-v5-dns #dnsInput{width:100%!important;min-width:0!important;min-height:60px!important;padding:14px 17px!important;border-radius:15px!important;font-size:clamp(.92rem,1.12vw,1.08rem)!important}
 .final-layout-v5 #searchInput{display:block!important;width:100%!important;min-width:0!important;min-height:54px!important;padding:0 18px!important;border-radius:16px!important;font-size:.95rem!important}
-.final-layout-v5 .final-v5-import{width:100%!important;min-width:0!important;padding:22px!important;border-radius:22px!important}
+.final-layout-v5 .final-v5-import{width:100%!important;min-width:0!important;padding:16px!important;border-radius:14px!important}
 .final-layout-v5 .final-v5-import h2{font-size:clamp(1.2rem,1.55vw,1.52rem)!important}
 .final-layout-v5 .final-v5-import .grid:has(textarea){display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important}
-.final-layout-v5 .final-v5-import textarea{width:100%!important;min-width:0!important;min-height:190px!important;padding:14px!important;border-radius:15px!important;font-size:.9rem!important;line-height:1.5!important;resize:vertical!important}
+.final-layout-v5 .final-v5-import textarea{width:100%!important;min-width:0!important;min-height:150px!important;padding:12px!important;border-radius:10px!important;font-size:.86rem!important;line-height:1.5!important;resize:vertical!important}
 .final-layout-v5 .final-v5-import select{min-height:44px!important}
 .final-layout-v5 .final-v5-import button{min-height:48px!important}
 .final-layout-v5 #poolsContainer{min-width:0!important;display:flex!important;flex-direction:column!important;gap:16px!important}
 .final-layout-v5 .pool-card{min-width:0!important;padding:20px!important;border-radius:20px!important}
 .final-layout-v5 .pool-card input{width:100%!important;min-width:0!important;min-height:46px!important}
-.final-layout-v5 #configPanel{min-width:0!important;width:100%!important;border-radius:22px!important;overflow:hidden!important}
+.final-layout-v5 #configPanel{min-width:0!important;width:100%!important;border-radius:14px!important;overflow:hidden!important}
 .final-layout-v5 #configPanel>.flex:first-child{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:14px!important;min-height:78px!important;padding:17px 21px!important}
 .final-layout-v5 #configPanel>.flex:first-child h2{display:flex!important;align-items:center!important;gap:12px!important;flex:1 1 300px!important;min-width:0!important;margin:0!important;font-size:clamp(1.24rem,1.8vw,1.78rem)!important;overflow-wrap:anywhere!important}
 .final-layout-v5 #configPanel>.flex:first-child button{flex:0 0 auto!important;min-width:145px!important;min-height:46px!important;padding:0 19px!important}
@@ -69,13 +82,20 @@ body[data-theme="network"].final-layout-v5 .credit-text{color:#53E7FF!important;
 .final-layout-v5 #configPanel>.p-4 label{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;font-size:.9rem!important}
 .final-layout-v5 #configOutput{width:100%!important;min-width:0!important;min-height:250px!important;max-height:520px!important;padding:19px 21px!important;overflow:auto!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font-size:.9rem!important;line-height:1.58!important}
 
+body.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(230px,250px) minmax(0,760px)!important;width:min(1034px,calc(100vw - 18px))!important;max-width:1034px!important;gap:12px!important}
+body.final-layout-v5 .final-v5-side{width:100%!important;min-width:0!important;max-width:250px!important}
+body.final-layout-v5 .final-v5-main{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;max-width:760px!important}
+body.final-layout-v5 .final-v5-main>*{flex:0 0 auto!important;grid-column:auto!important;grid-row:auto!important;width:100%!important;max-width:100%!important}
+body.final-layout-v5 #networkDashboard{grid-column:1!important;grid-row:auto!important;width:100%!important;max-width:100%!important}
+body.final-layout-v5 #searchInput,body.final-layout-v5 .final-v5-import,body.final-layout-v5 .final-v5-results,body.final-layout-v5 #configPanel{grid-column:1!important;width:100%!important}
+
 .final-layout-v5 .guide-modal.is-open{display:flex!important}
 .final-layout-v5 .guide-modal-dialog{width:min(1680px,97vw)!important;max-height:96vh!important;overflow:auto!important;padding:10px!important}
 .final-layout-v5 .guide-theme-image{width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;background:#020202!important}
 .final-layout-v5 .guide-network-image,.final-layout-v5 .guide-space-image,.final-layout-v5 .guide-image-error{display:none!important}
 body[data-theme="network"].final-layout-v5 .guide-network-image,body[data-theme="space"].final-layout-v5 .guide-space-image,.final-layout-v5 .guide-fallback-visible{display:block!important}
 
-@media(max-width:1100px){.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(260px,285px) minmax(0,1fr)!important;gap:15px!important}.final-layout-v5 .final-v5-top{grid-template-columns:minmax(245px,.82fr) minmax(0,1.35fr)!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}.final-layout-v5 .final-v5-results{grid-template-columns:1fr!important}.final-layout-v5 #configPanel{grid-column:1!important}}
+@media(max-width:1100px){.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(230px,250px) minmax(0,1fr)!important;gap:12px!important}.final-layout-v5 .final-v5-top{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}.final-layout-v5 .final-v5-results{grid-template-columns:1fr!important}.final-layout-v5 #configPanel{grid-column:1!important}.final-layout-v5 #networkDashboard .network-stat-grid,.final-layout-v5 #networkDashboard .network-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:860px){body.final-layout-v5{padding:13px!important}.final-layout-v5 .final-v5-shell{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-side{grid-column:1!important;position:relative!important;top:auto!important;max-height:none!important}.final-layout-v5 .final-v5-main{grid-column:1!important}.final-layout-v5 .final-v5-top,.final-layout-v5 .final-v5-results{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.final-layout-v5 .final-v5-actions button:last-child:nth-child(odd){grid-column:auto!important}}
 @media(max-width:640px){body.final-layout-v5{padding:9px!important}.final-layout-v5 .final-v5-shell,.final-layout-v5 .final-v5-main{gap:12px!important}.final-layout-v5 .final-v5-side{padding:18px!important}.final-layout-v5 .final-v5-side .credit-glass{grid-template-columns:46px 1px minmax(0,1fr)!important;gap:11px!important;min-height:74px!important;padding:11px 14px!important;border-radius:17px!important}.final-layout-v5 .credit-icon{width:46px!important;height:46px!important}.final-layout-v5 .credit-divider{height:42px!important}.final-layout-v5 .credit-text{font-size:.79rem!important}.final-layout-v5 .final-v5-actions{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-validate,.final-layout-v5 .final-v5-dns{min-height:0!important;padding:19px!important}.final-layout-v5 .final-v5-validate p{margin-left:0!important;max-width:none!important}.final-layout-v5 .final-v5-dns{grid-template-columns:1fr!important;gap:11px!important}.final-layout-v5 .final-v5-import{padding:17px!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:1fr!important}.final-layout-v5 .final-v5-import textarea{min-height:150px!important}.final-layout-v5 #configPanel>.flex:first-child{align-items:stretch!important;padding:15px!important}.final-layout-v5 #configPanel>.flex:first-child h2{flex-basis:100%!important;font-size:1.2rem!important}.final-layout-v5 #configPanel>.flex:first-child button{width:100%!important;min-width:0!important}.final-layout-v5 #configPanel>.p-4{padding:13px 15px!important}.final-layout-v5 #configPanel>.p-4 label{width:100%!important}.final-layout-v5 #configOutput{min-height:210px!important;padding:15px!important;font-size:.84rem!important}.final-layout-v5 .guide-modal{padding:6px!important}.final-layout-v5 .guide-modal-dialog{width:100%!important;max-height:97vh!important;padding:6px!important}}
 `;
@@ -166,6 +186,7 @@ const runtime = `<script data-final-layout-v5>
     const dns = panelFor(document.getElementById("dnsInput"));
     const search = document.getElementById("searchInput");
     const importer = document.querySelector("#massImportPanel") || panelFor(headingWith("Mass Pool Import"));
+    const dashboard = document.getElementById("networkDashboard");
     const pools = document.getElementById("poolsContainer");
     const config = document.querySelector("#configPanel") || panelFor(headingWith("Cisco Configuration Output"));
 
@@ -195,8 +216,20 @@ const runtime = `<script data-final-layout-v5>
 
     top.append(validate, dns);
     results.append(...(pools ? [pools] : []), config);
-    main.append(top, search, importer, results);
+    main.append(...(dashboard ? [dashboard] : []), top, search, importer, results);
     shell.replaceChildren(side, main);
+
+    shell.style.gridTemplateColumns = "minmax(230px,250px) minmax(0,760px)";
+    shell.style.width = "min(1034px, calc(100vw - 18px))";
+    main.style.display = "flex";
+    main.style.flexDirection = "column";
+    main.style.maxWidth = "760px";
+    for (const node of [dashboard, top, search, importer, results, pools, config].filter(Boolean)) {
+      node.style.gridColumn = "1 / -1";
+      node.style.width = "100%";
+      node.style.maxWidth = "100%";
+      node.style.minWidth = "0";
+    }
 
     const actionButtons = ["Add Pool", "Auto Fill", "Export CFG"]
       .map((label) => [...side.querySelectorAll("button")].find((button) => normalizedText(button).includes(label)))
