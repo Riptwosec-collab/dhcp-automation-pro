@@ -1,0 +1,11 @@
+{
+  "name": "dhcp-automation-pro",
+  "version": "3.4.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-check.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
