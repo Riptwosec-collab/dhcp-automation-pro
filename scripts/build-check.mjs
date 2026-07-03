@@ -35,7 +35,9 @@ if (syntaxCheck.status !== 0) {
   throw new Error(syntaxCheck.stderr || syntaxCheck.stdout || "Inline JavaScript syntax check failed");
 }
 
-await rm("dist", { recursive: true, force: true });
-await mkdir("dist", { recursive: true });
-await cp("index.html", "dist/index.html");
-console.log("Build passed: validated Spline hero, responsive heights, unique ids, and inline JavaScript syntax.");
+for (const directory of ["dist", "public"]) {
+  await rm(directory, { recursive: true, force: true });
+  await mkdir(directory, { recursive: true });
+  await cp("index.html", `${directory}/index.html`);
+}
+console.log("Build passed: validated Spline hero, responsive heights, unique ids, inline JavaScript syntax, and generated dist/public outputs.");
