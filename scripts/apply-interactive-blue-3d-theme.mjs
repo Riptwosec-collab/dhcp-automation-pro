@@ -34,3 +34,5 @@ const runtime = `<script>(()=>{const r=document.documentElement,b=document.body,
 
 for(const directory of ["public","dist"]){const path=`${directory}/index.html`;let html=await readFile(path,"utf8");if(!html.includes(MARKER)){if(!html.includes("</style>"))throw new Error(`Cannot find closing style tag in ${path}`);html=html.replace("</style>",`${styles}\n</style>`)}if(!html.includes('id="interactiveCommandBackground"'))html=html.replace(/(<body[^>]*>)/i,`$1\n${background}`);if(!html.includes('const r=document.documentElement'))html=html.replace("</body>",`${runtime}\n</body>`);const required=[MARKER,"interactiveCommandBackground","ixGrid","--ix","--px"];const missing=required.filter(x=>!html.includes(x));if(missing.length)throw new Error(`Interactive theme injection failed in ${path}: ${missing.join(", ")}`);await writeFile(path,html,"utf8")}
 console.log("Interactive blue 3D command center theme applied.");
+
+await import("./apply-blue-network-reference-layout.mjs");
