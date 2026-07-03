@@ -3,7 +3,7 @@
   "version": "3.4.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs"
+    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs && node scripts/apply-space-dashboard.mjs"
   },
   "engines": {
     "node": "22.x"
