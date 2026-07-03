@@ -3,7 +3,7 @@
   "version": "3.4.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs && node scripts/apply-space-dashboard.mjs && node scripts/apply-grand-dual-theme.mjs && node scripts/add-usage-guide.mjs && node scripts/add-guide-modal.mjs && node scripts/apply-interactive-gold-background.mjs && node scripts/fix-guide-theme-switch.mjs && node scripts/apply-interactive-blue-3d-theme.mjs && node scripts/fix-guide-assets-v5.mjs && node scripts/apply-black-gold-reference-layout-v2.mjs"
+    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs && node scripts/apply-space-dashboard.mjs && node scripts/apply-grand-dual-theme.mjs && node scripts/add-usage-guide.mjs && node scripts/add-guide-modal.mjs && node scripts/apply-interactive-gold-background.mjs && node scripts/fix-guide-theme-switch.mjs && node scripts/apply-interactive-blue-3d-theme.mjs && node scripts/fix-guide-assets-v5.mjs && node scripts/apply-black-gold-reference-layout-v2.mjs && node scripts/fix-final-layout.mjs"
   },
   "engines": {
     "node": "22.x"
