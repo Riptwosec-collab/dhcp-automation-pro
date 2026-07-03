@@ -174,7 +174,7 @@
         </aside>
         <main class="ref-main">
           <div class="hero-row">
-            <div class="hero-title"><div id="themeBadge" class="ok-pill"><i class="fas fa-circle-check"></i> All services operational</div><h2>iPDHCP AUTO</h2><p>Automate DHCP pools, MAC/IP assignments, and Cisco-ready configuration generation.</p><div id="themeDescription" class="credit-wrap" style="display:none"></div></div>
+            <div class="hero-title"><div data-ref-id="themeBadge" class="ok-pill"><i class="fas fa-circle-check"></i> All services operational</div><h2>iPDHCP AUTO</h2><p>Automate DHCP pools, MAC/IP assignments, and Cisco-ready configuration generation.</p><div data-ref-id="themeDescription" class="credit-wrap" style="display:none"></div></div>
             <div class="top-actions">
               <button class="cmd-btn" onclick="addPool()"><i class="fas fa-plus"></i> New Pool</button>
               <button class="cmd-btn violet" onclick="document.getElementById('bulkMac')?.focus()"><i class="fas fa-upload"></i> Import</button>
@@ -188,10 +188,10 @@
             <div class="step"><span class="step-num">4</span><span class="step-icon"><i class="fas fa-file-export"></i></span><div><b>Export Config</b><span>Export Cisco Config</span></div></div>
           </div>
           <div class="stat-grid">
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-server"></i></div><div><div class="stat-label">Total Pools</div><div id="statPools" class="stat-value">0</div><div class="stat-note">Pools configured</div></div></div>
-            <div class="stat-card teal"><div class="stat-icon">IP</div><div><div class="stat-label">IP Addresses</div><div id="statIps" class="stat-value">0</div><div class="stat-note">Assignable IPs</div></div></div>
-            <div class="stat-card violet"><div class="stat-icon"><i class="fas fa-chart-pie"></i></div><div><div class="stat-label">Utilization</div><div id="statUtil" class="stat-value">0%</div><div id="statUtilNote" class="stat-note">0 / 0 used</div></div></div>
-            <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><div class="stat-label">Last Sync</div><div class="stat-value" style="font-size:1.45rem">Just now</div><div id="lastSync" class="stat-note"></div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-server"></i></div><div><div class="stat-label">Total Pools</div><div data-ref-id="statPools" class="stat-value">0</div><div class="stat-note">Pools configured</div></div></div>
+            <div class="stat-card teal"><div class="stat-icon">IP</div><div><div class="stat-label">IP Addresses</div><div data-ref-id="statIps" class="stat-value">0</div><div class="stat-note">Assignable IPs</div></div></div>
+            <div class="stat-card violet"><div class="stat-icon"><i class="fas fa-chart-pie"></i></div><div><div class="stat-label">Utilization</div><div data-ref-id="statUtil" class="stat-value">0%</div><div data-ref-id="statUtilNote" class="stat-note">0 / 0 used</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><div class="stat-label">Last Sync</div><div class="stat-value" style="font-size:1.45rem">Just now</div><div data-ref-id="lastSync" class="stat-note"></div></div></div>
           </div>
           <section class="panel quick"><div class="panel-head"><div class="panel-title"><i class="fas fa-bolt"></i> Quick Actions</div></div><div class="panel-body">
             <div class="quick-line"></div>
@@ -204,38 +204,42 @@
             <section class="panel">
               <div class="panel-head"><div class="panel-title"><i class="fas fa-upload"></i> Mass Pool Import</div><button class="small-btn" type="button" onclick="fillDemoRows()"><i class="fas fa-download"></i> ดาวน์โหลดเทมเพลต</button></div>
               <div class="mass-grid">
-                <div class="field-col"><label>MAC Address</label><textarea id="bulkMac" oninput="validateBulkInputs()" placeholder="00:11:22:33:44:55"></textarea></div>
-                <div class="field-col"><label>IP Address</label><textarea id="bulkIp" oninput="validateBulkInputs()" placeholder="192.168.10.10"></textarea></div>
-                <div class="field-col"><label>Gateway</label><textarea id="bulkGateway" oninput="validateBulkInputs()" placeholder="192.168.10.1"></textarea></div>
-                <div class="field-col"><label>VLAN</label><textarea id="bulkVlan" oninput="validateBulkInputs()" placeholder="10"></textarea></div>
+                <div class="field-col"><label>MAC Address</label><textarea data-ref-id="bulkMac" oninput="validateBulkInputs()" placeholder="00:11:22:33:44:55"></textarea></div>
+                <div class="field-col"><label>IP Address</label><textarea data-ref-id="bulkIp" oninput="validateBulkInputs()" placeholder="192.168.10.10"></textarea></div>
+                <div class="field-col"><label>Gateway</label><textarea data-ref-id="bulkGateway" oninput="validateBulkInputs()" placeholder="192.168.10.1"></textarea></div>
+                <div class="field-col"><label>VLAN</label><textarea data-ref-id="bulkVlan" oninput="validateBulkInputs()" placeholder="10"></textarea></div>
               </div>
-              <div id="bulkValidationBox" class="hidden"></div>
-              <div class="mass-controls"><button class="ghost-btn" type="button" onclick="addPool()"><i class="fas fa-plus"></i> Add Row</button><div class="select-inline"><span>Device Name</span><select id="bulkDeviceName"><option value="CCTV">CCTV</option><option value="Computer" selected>Computer</option><option value="Inspector">Inspector</option><option value="Printer">Printer</option><option value="Telepresence">Telepresence</option><option value="Data_Lake">Data_Lake</option><option value="IP_Phone">IP_Phone</option></select></div><button id="bulkGenerateBtn" class="generate-btn" onclick="bulkImport()">Generate & Add Pools <i class="fas fa-paper-plane"></i></button></div>
+              <div data-ref-id="bulkValidationBox" class="hidden"></div>
+              <div class="mass-controls"><button class="ghost-btn" type="button" onclick="addPool()"><i class="fas fa-plus"></i> Add Row</button><div class="select-inline"><span>Device Name</span><select data-ref-id="bulkDeviceName"><option value="CCTV">CCTV</option><option value="Computer" selected>Computer</option><option value="Inspector">Inspector</option><option value="Printer">Printer</option><option value="Telepresence">Telepresence</option><option value="Data_Lake">Data_Lake</option><option value="IP_Phone">IP_Phone</option></select></div><button data-ref-id="bulkGenerateBtn" class="generate-btn" onclick="bulkImport()">Generate & Add Pools <i class="fas fa-paper-plane"></i></button></div>
             </section>
             <section class="panel validation-panel">
               <div class="panel-head"><div class="panel-title"><i class="fas fa-shield-halved"></i> Validation & Workspace</div><button class="small-btn" type="button" onclick="validateBulkInputs();refreshWorkspace()"><i class="fas fa-rotate"></i> รีเฟรช</button></div>
               <div class="validation-body">
-                <div id="validationList" class="check-list"></div>
-                <div class="workspace-card"><h4>Active Workspace</h4><div class="metric"><span>Pools in Workspace</span><strong id="wsPools">0</strong></div><div class="metric"><span>IP Addresses</span><strong id="wsIps">0</strong></div><div class="metric"><span>VLANs</span><strong id="wsVlans">0</strong></div><div class="metric"><span>Subnets</span><strong id="wsSubnets">0</strong></div><div class="metric"><span>Last Updated</span><strong>Just now</strong></div><div class="metric"><span>Created By</span><strong>NetEng Admin</strong></div></div>
+                <div data-ref-id="validationList" class="check-list"></div>
+                <div class="workspace-card"><h4>Active Workspace</h4><div class="metric"><span>Pools in Workspace</span><strong data-ref-id="wsPools">0</strong></div><div class="metric"><span>IP Addresses</span><strong data-ref-id="wsIps">0</strong></div><div class="metric"><span>VLANs</span><strong data-ref-id="wsVlans">0</strong></div><div class="metric"><span>Subnets</span><strong data-ref-id="wsSubnets">0</strong></div><div class="metric"><span>Last Updated</span><strong>Just now</strong></div><div class="metric"><span>Created By</span><strong>NetEng Admin</strong></div></div>
               </div>
               <div class="validate-note"><i class="fas fa-circle-info"></i> ทุกข้อมูลผ่านการ Validate แล้ว พร้อมสำหรับ Generate Cisco Config</div>
             </section>
           </div>
-          <div id="poolsContainer"></div>
-          <section id="configPanel" class="panel config-panel">
+          <div data-ref-id="poolsContainer"></div>
+          <section data-ref-id="configPanel" class="panel config-panel">
             <div class="panel-head"><div class="panel-title"><i class="fas fa-code"></i> Cisco Configuration Output</div><div class="config-actions"><button class="small-btn" onclick="copyAllConfig()"><i class="fas fa-copy"></i> Copy All</button><button class="small-btn" onclick="exportCfg()"><i class="fas fa-download"></i> Export CFG</button></div></div>
-            <input id="dnsInput" value="10.20.100.2 10.26.100.2" oninput="updateConfig()" style="position:absolute;left:-9999px;width:1px;height:1px">
-            <label style="position:absolute;left:-9999px"><input type="checkbox" id="includeUpdateArp" checked onchange="updateConfig()"></label>
-            <label style="position:absolute;left:-9999px"><input type="checkbox" id="includeSourceBinding" checked onchange="updateConfig()"></label>
-            <pre id="configOutput" class="terminal"></pre><div id="message"></div><div class="config-meta" id="configMeta">Lines: 0 | Pools: 0</div>
+            <input data-ref-id="dnsInput" value="10.20.100.2 10.26.100.2" oninput="updateConfig()" style="position:absolute;left:-9999px;width:1px;height:1px">
+            <label style="position:absolute;left:-9999px"><input type="checkbox" data-ref-id="includeUpdateArp" checked onchange="updateConfig()"></label>
+            <label style="position:absolute;left:-9999px"><input type="checkbox" data-ref-id="includeSourceBinding" checked onchange="updateConfig()"></label>
+            <pre data-ref-id="configOutput" class="terminal"></pre><div data-ref-id="message"></div><div class="config-meta" data-ref-id="configMeta">Lines: 0 | Pools: 0</div>
           </section>
-          <button id="themeSpaceBtn" style="display:none" onclick="setTheme('space')"></button><button id="themeNetworkBtn" style="display:none" onclick="setTheme('network')"></button>
+          <button data-ref-id="themeSpaceBtn" style="display:none" onclick="setTheme('space')"></button><button data-ref-id="themeNetworkBtn" style="display:none" onclick="setTheme('network')"></button>
         </main>
       </div>`;
   }
 
   const shell = document.querySelector(".app-shell");
   if (shell) shell.outerHTML = shellMarkup();
+  document.querySelectorAll("[data-ref-id]").forEach((element) => {
+    element.id = element.dataset.refId;
+    element.removeAttribute("data-ref-id");
+  });
   document.body.dataset.theme = "network";
 
   window.fillDemoRows = () => {

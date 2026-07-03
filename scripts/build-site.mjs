@@ -414,8 +414,8 @@ let html = source;
 
 if (!html.includes("@splinetool/viewer@1.12.98")) {
   html = html.replace(
-    '  <script src="https://cdn.tailwindcss.com"></script>\n',
-    `  <script src="https://cdn.tailwindcss.com"></script>\n${splineScript}`
+    /(\s*<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>\r?\n)/,
+    `$1${splineScript}`
   );
 }
 
@@ -423,8 +423,8 @@ html = html.replace("  </style>", `${splineStyles}${networkStyles}  </style>`);
 
 if (!html.includes('class="spline-page-bg"')) {
   html = html.replace(
-    '<body class="text-white min-h-screen p-6" data-theme="space">\n',
-    `<body class="text-white min-h-screen p-6" data-theme="space">\n${splineMarkup}`
+    /(<body class="text-white min-h-screen p-6" data-theme="space">\r?\n)/,
+    `$1${splineMarkup}`
   );
 }
 
