@@ -82,6 +82,30 @@ body[data-theme="network"].final-layout-v5 .credit-text{color:#53E7FF!important;
 .final-layout-v5 #configPanel>.p-4 label{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;font-size:.9rem!important}
 .final-layout-v5 #configOutput{width:100%!important;min-width:0!important;min-height:250px!important;max-height:520px!important;padding:19px 21px!important;overflow:auto!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font-size:.9rem!important;line-height:1.58!important}
 
+body[data-theme="space"].final-layout-v5 .final-v5-validate h3,
+body[data-theme="space"].final-layout-v5 .final-v5-dns>span,
+body[data-theme="space"].final-layout-v5 .final-v5-import h2,
+body[data-theme="space"].final-layout-v5 #networkDashboard .network-section-title{color:#FFD873!important;text-shadow:0 0 18px rgba(255,216,115,.32)!important}
+body[data-theme="space"].final-layout-v5 #configPanel>.flex:first-child h2{color:#FFF7E4!important;text-shadow:0 0 16px rgba(255,216,115,.16)!important}
+body[data-theme="space"].final-layout-v5 #configPanel>.flex:first-child h2 i,
+body[data-theme="space"].final-layout-v5 .final-v5-validate h3 i,
+body[data-theme="space"].final-layout-v5 .final-v5-dns>span i,
+body[data-theme="space"].final-layout-v5 .final-v5-import h2 i{color:#FFD873!important;text-shadow:0 0 16px rgba(255,216,115,.48)!important}
+body[data-theme="space"].final-layout-v5 #configPanel>.p-4 label{color:#FFF7E4!important;font-weight:700!important}
+body[data-theme="space"].final-layout-v5 #configPanel input[type="checkbox"]{accent-color:#F5BD32!important}
+body[data-theme="space"].final-layout-v5 #configPanel>.flex:first-child button{color:#160E02!important;border-color:rgba(255,216,115,.86)!important;background:linear-gradient(180deg,#FFE891,#D8A12F)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.46),0 0 22px rgba(239,185,67,.30)!important;font-weight:900!important}
+
+body[data-theme="network"].final-layout-v5 .final-v5-validate h3,
+body[data-theme="network"].final-layout-v5 .final-v5-dns>span,
+body[data-theme="network"].final-layout-v5 .final-v5-import h2,
+body[data-theme="network"].final-layout-v5 #networkDashboard .network-section-title{color:#53E7FF!important;text-shadow:0 0 18px rgba(83,231,255,.30)!important}
+body[data-theme="network"].final-layout-v5 #configPanel>.flex:first-child h2{color:#F0FBFF!important;text-shadow:0 0 16px rgba(83,231,255,.14)!important}
+body[data-theme="network"].final-layout-v5 #configPanel>.flex:first-child h2 i,
+body[data-theme="network"].final-layout-v5 .final-v5-validate h3 i,
+body[data-theme="network"].final-layout-v5 .final-v5-dns>span i,
+body[data-theme="network"].final-layout-v5 .final-v5-import h2 i{color:#53E7FF!important;text-shadow:0 0 16px rgba(83,231,255,.45)!important}
+body[data-theme="network"].final-layout-v5 #configPanel input[type="checkbox"]{accent-color:#15D5FF!important}
+
 body.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(230px,250px) minmax(0,760px)!important;width:min(1034px,calc(100vw - 18px))!important;max-width:1034px!important;gap:12px!important}
 body.final-layout-v5 .final-v5-side{width:100%!important;min-width:0!important;max-width:250px!important}
 body.final-layout-v5 .final-v5-main{display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;max-width:760px!important}
