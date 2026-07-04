@@ -17,7 +17,7 @@ const css = `
 #subnetPage{width:min(1880px,calc(100vw - 32px));max-width:1880px;margin:0 auto 40px}
 .subnet-wrap{display:grid;gap:22px;color:var(--theme-text,#fff)}
 .subnet-card,.subnet-hero{border:1px solid rgba(var(--theme-rgb),.42)!important;border-radius:18px!important;background:linear-gradient(145deg,rgba(9,12,18,.86),rgba(0,0,0,.80))!important;box-shadow:0 24px 70px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08),0 0 28px rgba(var(--theme-rgb),.11)!important;backdrop-filter:blur(18px)}
-.subnet-card,.subnet-hero,.subnet-tabs,.app-page-nav{transform:perspective(1200px) translateZ(0);transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease}
+.subnet-card,.subnet-hero,.subnet-tabs,.app-page-nav{transform:perspective(1200px) translateZ(0);transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease;animation:subnetPanelBreathe 10s ease-in-out infinite}
 .subnet-card:hover,.subnet-hero:hover,.subnet-tabs:hover{transform:perspective(1200px) translateY(-2px) rotateX(.45deg);box-shadow:0 28px 76px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.10),0 0 34px rgba(var(--theme-rgb),.16)!important}
 .subnet-hero{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:24px;align-items:center;padding:22px 28px!important;overflow:hidden;position:relative;min-height:166px}
 .subnet-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 20%,rgba(var(--theme-rgb),.22),transparent 28%),linear-gradient(90deg,rgba(var(--theme-rgb),.08),transparent 45%);pointer-events:none}
@@ -112,13 +112,13 @@ body[data-theme="network"] .subnet-guide-network,body[data-theme="space"] .subne
 .subnet-toast-error{border-color:#fb7185;color:#fecdd3}
 body[data-theme="space"] .app-page-nav-link.active,body[data-theme="space"] .subnet-actions button:first-child{color:#0b0802;background:linear-gradient(135deg,#c8953b,#f4d47a)}
 body[data-theme="network"] .app-page-nav-link.active,body[data-theme="network"] .subnet-actions button:first-child{color:white;background:linear-gradient(135deg,#0ea5e9,#22d3ee)}
-body[data-theme="network"] .app-page-nav{background:linear-gradient(145deg,rgba(0,24,52,.14),rgba(0,6,16,.05));border-color:rgba(83,231,255,.32);box-shadow:0 18px 42px rgba(0,0,0,.14),0 0 28px rgba(0,183,255,.08);backdrop-filter:blur(3px)!important}
-body[data-theme="network"] .subnet-tabs{background:linear-gradient(145deg,rgba(0,34,74,.12),rgba(0,8,22,.04));border-color:rgba(83,231,255,.28);box-shadow:0 16px 40px rgba(0,0,0,.12);backdrop-filter:blur(3px)!important}
-body[data-theme="network"] .subnet-card,body[data-theme="network"] .subnet-hero{background:linear-gradient(145deg,rgba(0,22,48,.13),rgba(0,5,14,.045))!important;border-color:rgba(83,231,255,.32)!important;box-shadow:0 22px 64px rgba(0,0,0,.18),inset 0 1px 0 rgba(210,247,255,.10),0 0 30px rgba(0,183,255,.09)!important;backdrop-filter:blur(2.5px) saturate(1.05)!important}
+body[data-theme="network"] .app-page-nav{background:linear-gradient(145deg,rgba(0,24,52,.105),rgba(0,6,16,.035));border-color:rgba(83,231,255,.30);box-shadow:0 18px 42px rgba(0,0,0,.12),0 0 28px rgba(0,183,255,.07);backdrop-filter:blur(2.2px)!important}
+body[data-theme="network"] .subnet-tabs{background:linear-gradient(145deg,rgba(0,34,74,.095),rgba(0,8,22,.032));border-color:rgba(83,231,255,.27);box-shadow:0 16px 40px rgba(0,0,0,.10);backdrop-filter:blur(2.2px)!important}
+body[data-theme="network"] .subnet-card,body[data-theme="network"] .subnet-hero{background:linear-gradient(145deg,rgba(0,22,48,.095),rgba(0,5,14,.034))!important;border-color:rgba(83,231,255,.30)!important;box-shadow:0 22px 64px rgba(0,0,0,.16),inset 0 1px 0 rgba(210,247,255,.10),0 0 30px rgba(0,183,255,.08)!important;backdrop-filter:blur(2px) saturate(1.04)!important}
 body[data-theme="network"] .subnet-hero:before{background:radial-gradient(circle at 84% 15%,rgba(34,211,238,.16),transparent 30%),linear-gradient(90deg,rgba(14,165,233,.07),transparent 48%)}
-body[data-theme="network"] .subnet-card input,body[data-theme="network"] .subnet-card select{background:rgba(0,10,24,.16);border-color:rgba(83,231,255,.32)}
-body[data-theme="network"] .subnet-result-item,body[data-theme="network"] .subnet-mini-result,body[data-theme="network"] .subnet-code-grid pre,body[data-theme="network"] .subnet-table-wrap,body[data-theme="network"] .subnet-cidr-launch-card{background:rgba(0,6,16,.13);border-color:rgba(83,231,255,.20)}
-body[data-theme="network"] .subnet-explain-grid article{background:rgba(0,6,16,.13);border-color:rgba(83,231,255,.20)}
+body[data-theme="network"] .subnet-card input,body[data-theme="network"] .subnet-card select{background:rgba(0,10,24,.13);border-color:rgba(83,231,255,.30)}
+body[data-theme="network"] .subnet-result-item,body[data-theme="network"] .subnet-mini-result,body[data-theme="network"] .subnet-code-grid pre,body[data-theme="network"] .subnet-table-wrap,body[data-theme="network"] .subnet-cidr-launch-card{background:rgba(0,6,16,.10);border-color:rgba(83,231,255,.19)}
+body[data-theme="network"] .subnet-explain-grid article{background:rgba(0,6,16,.10);border-color:rgba(83,231,255,.19)}
 body[data-theme="network"] .subnet-guide-dialog{background:linear-gradient(145deg,rgba(0,22,48,.92),rgba(0,5,14,.96));border-color:rgba(83,231,255,.50);box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 44px rgba(0,183,255,.22)}
 body[data-theme="network"] .subnet-viz div{background:linear-gradient(145deg,rgba(0,183,255,.10),rgba(0,8,20,.16));border-color:rgba(83,231,255,.30)}
 @keyframes subnetModalIn{from{opacity:0;transform:perspective(1200px) translateY(16px) rotateX(3deg) scale(.98)}to{opacity:1;transform:perspective(1200px) translateY(0) rotateX(0) scale(1)}}
