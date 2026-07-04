@@ -9,14 +9,16 @@ function validatePng(buffer, name) {
 }
 
 async function loadAssets() {
-  const [gold, network] = await Promise.all([
+  const [gold, network, networkBackground] = await Promise.all([
     readFile("assets/usage-guide-gold.png"),
-    readFile("assets/usage-guide-network.png")
+    readFile("assets/usage-guide-network.png"),
+    readFile("assets/network-command-bg.png")
   ]);
 
   validatePng(gold, "Gold guide");
   validatePng(network, "Network guide");
-  return { gold, network };
+  validatePng(networkBackground, "Network background");
+  return { gold, network, networkBackground };
 }
 
 const styles = `
@@ -32,12 +34,13 @@ body[data-theme="space"] .guide-space-image{display:block!important}
 
 const images = `<img class="guide-modal-image guide-theme-image guide-network-image" src="/assets/usage-guide-network.png?v=6" alt="Mass Pool Import guide for Network theme" loading="eager" decoding="async"><img class="guide-modal-image guide-theme-image guide-space-image" src="/assets/usage-guide-gold.png?v=6" alt="Mass Pool Import guide for Space theme" loading="eager" decoding="async">`;
 
-const { gold, network } = await loadAssets();
+const { gold, network, networkBackground } = await loadAssets();
 
 for (const directory of ["public", "dist"]) {
   await mkdir(`${directory}/assets`, { recursive: true });
   await writeFile(`${directory}/assets/usage-guide-gold.png`, gold);
   await writeFile(`${directory}/assets/usage-guide-network.png`, network);
+  await writeFile(`${directory}/assets/network-command-bg.png`, networkBackground);
 
   const file = `${directory}/index.html`;
   let html = await readFile(file, "utf8");
