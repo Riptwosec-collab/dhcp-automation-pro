@@ -326,6 +326,7 @@
           <button data-subnet-tab="host"><i class="fas fa-users"></i> Host Requirement</button>
           <button data-subnet-tab="split"><i class="fas fa-code-branch"></i> Split Network</button>
           <button data-subnet-tab="recent"><i class="fas fa-clock-rotate-left"></i> Recent</button>
+          <button data-action="open-cidr" class="subnet-cidr-tab"><i class="fas fa-book"></i> CIDR Quick Reference</button>
         </div>
 
         <div class="subnet-layout">
@@ -376,6 +377,11 @@
               <div id="subnetHistory"></div>
               <button data-action="clear-history"><i class="fas fa-trash"></i> Clear History</button>
             </div>
+            <div class="subnet-cidr-launch-card">
+              <h3><i class="fas fa-book"></i> CIDR Quick Reference</h3>
+              <p>Open the prefix table as a centered reference panel.</p>
+              <button data-action="open-cidr"><i class="fas fa-up-right-from-square"></i> Open Reference</button>
+            </div>
           </section>
 
           <section class="subnet-card glass-panel subnet-results">
@@ -386,12 +392,6 @@
         </div>
 
         <div class="subnet-lower">
-          <section class="subnet-card glass-panel subnet-cidr-card">
-            <h2><i class="fas fa-book"></i> CIDR Quick Reference</h2>
-            <input id="cidrSearch" class="subnet-search" placeholder="Search CIDR or Mask">
-            <div class="subnet-table-wrap"><table id="cidrRefTable"><thead><tr><th>CIDR</th><th>Subnet Mask</th><th>Total IPs</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
-          </section>
-
           <section class="subnet-card glass-panel">
             <h2><i class="fas fa-terminal"></i> Cisco Configuration Helper</h2>
             <div class="subnet-cisco-form">
@@ -414,6 +414,18 @@
               <button data-action="send-dhcp"><i class="fas fa-share"></i> Send to DHCP Generator</button>
             </div>
           </section>
+        </div>
+        <div id="subnetCidrModal" class="subnet-cidr-modal" aria-hidden="true">
+          <div class="subnet-cidr-dialog" role="dialog" aria-modal="true" aria-label="CIDR Quick Reference">
+            <div class="subnet-cidr-head">
+              <h2><i class="fas fa-book"></i> CIDR Quick Reference</h2>
+              <button data-action="close-cidr" aria-label="Close CIDR reference"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="subnet-cidr-body">
+              <input id="cidrSearch" class="subnet-search" placeholder="Search CIDR or Mask">
+              <div class="subnet-table-wrap"><table id="cidrRefTable"><thead><tr><th>CIDR</th><th>Subnet Mask</th><th>Total IPs</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
+            </div>
+          </div>
         </div>
         <section id="subnetExplainCard" class="subnet-card glass-panel subnet-explain-card">
           <div>
@@ -452,6 +464,23 @@
     if (state.prefix !== undefined) $("subnetPrefixInput").value = state.prefix;
     $("subnetMaskInput").value = prefixToMask($("subnetPrefixInput").value);
     $("subnetPrefixSlider").value = $("subnetPrefixInput").value;
+
+    const cidrModal = () => document.getElementById("subnetCidrModal") || page.querySelector("#subnetCidrModal");
+    function openCidrReference() {
+      const modal = cidrModal();
+      if (!modal) return;
+      if (modal.parentElement !== document.body) document.body.append(modal);
+      renderCidrReference(page, modal.querySelector("#cidrSearch")?.value || "");
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      modal.querySelector("#cidrSearch")?.focus();
+    }
+    function closeCidrReference() {
+      const modal = cidrModal();
+      if (!modal) return;
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+    }
 
     function setError(message) {
       const error = page.querySelector('[data-error="ip"]');
@@ -560,6 +589,12 @@
       }
       if (action === "copy-split") copyText(splitRows.map(splitRowText).join("\n"), "คัดลอกตาราง Split Network แล้ว");
       if (action === "export-csv") exportSplitCsv(splitRows);
+      if (action === "open-cidr") {
+        openCidrReference();
+      }
+      if (action === "close-cidr") {
+        closeCidrReference();
+      }
       if (action === "open-guide") {
         const modal = page.querySelector("#subnetGuideModal");
         modal.classList.add("is-open");
@@ -596,6 +631,40 @@
       if (event.target.id === "subnetGuideModal") {
         event.target.classList.remove("is-open");
         event.target.setAttribute("aria-hidden", "true");
+      }
+      if (event.target.id === "subnetCidrModal") {
+        closeCidrReference();
+      }
+    });
+
+    document.addEventListener("input", (event) => {
+      if (event.target.id === "cidrSearch") renderCidrReference(page, event.target.value);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && cidrModal()?.classList.contains("is-open")) closeCidrReference();
+    });
+
+    document.addEventListener("click", async (event) => {
+      const modal = cidrModal();
+      if (!modal?.classList.contains("is-open") || !modal.contains(event.target)) return;
+      if (event.target === modal) {
+        closeCidrReference();
+        return;
+      }
+      if (event.target.closest("[data-action]")?.dataset.action === "close-cidr") {
+        closeCidrReference();
+        return;
+      }
+      const copyValue = event.target.closest("[data-copy-value]");
+      if (copyValue) copyText(copyValue.dataset.copyValue, `คัดลอก ${copyValue.dataset.copyLabel || "ข้อมูล"} แล้ว`);
+      const cidrApply = event.target.closest("[data-apply-cidr]");
+      if (cidrApply) {
+        activateTab(page, "ip");
+        $("subnetPrefixInput").value = cidrApply.dataset.applyCidr;
+        $("subnetPrefixSlider").value = cidrApply.dataset.applyCidr;
+        $("subnetMaskInput").value = prefixToMask(cidrApply.dataset.applyCidr);
+        calculate(true);
       }
     });
 
@@ -666,7 +735,8 @@
   }
 
   function renderCidrReference(page, query = "") {
-    const table = page.querySelector("#cidrRefTable tbody");
+    const table = page.querySelector("#cidrRefTable tbody") || document.querySelector("#cidrRefTable tbody");
+    if (!table) return;
     const needle = query.trim().toLowerCase();
     table.innerHTML = Array.from({ length: 25 }, (_, index) => index + 8)
       .filter((prefix) => !needle || `/${prefix} ${prefixToMask(prefix)}`.toLowerCase().includes(needle))
