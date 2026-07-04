@@ -313,6 +313,10 @@
             <h1>IPv4 Subnet Calculator</h1>
             <p>คำนวณ Network Address, Broadcast Address, Host Range และ Subnet Mask ได้อย่างรวดเร็วในเครื่องของคุณ</p>
             <div class="subnet-badges"><span>IPv4</span><span>CIDR</span><span>Network Engineer Tool</span><span>Client-side Calculation</span></div>
+            <div class="subnet-guide-menu">
+              <button data-action="open-guide"><i class="fas fa-book-open"></i> Guide</button>
+              <button data-action="show-explain"><i class="fas fa-circle-info"></i> Explanation</button>
+            </div>
           </div>
           <div class="subnet-hero-icon"><i class="fas fa-diagram-project"></i></div>
         </header>
@@ -382,7 +386,7 @@
         </div>
 
         <div class="subnet-lower">
-          <section class="subnet-card glass-panel">
+          <section class="subnet-card glass-panel subnet-cidr-card">
             <h2><i class="fas fa-book"></i> CIDR Quick Reference</h2>
             <input id="cidrSearch" class="subnet-search" placeholder="Search CIDR or Mask">
             <div class="subnet-table-wrap"><table id="cidrRefTable"><thead><tr><th>CIDR</th><th>Subnet Mask</th><th>Total IPs</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
@@ -410,6 +414,30 @@
               <button data-action="send-dhcp"><i class="fas fa-share"></i> Send to DHCP Generator</button>
             </div>
           </section>
+        </div>
+        <section id="subnetExplainCard" class="subnet-card glass-panel subnet-explain-card">
+          <div>
+            <h2><i class="fas fa-lightbulb"></i> IPv4 Subnet Explanation</h2>
+            <p>Enter an IP/CIDR such as <b>192.168.10.25/24</b>. The calculator returns Network Address, Broadcast Address, usable Host Range, Wildcard Mask, and Cisco-ready snippets without sending data outside the browser.</p>
+          </div>
+          <div class="subnet-explain-grid">
+            <article><i class="fas fa-flag"></i><strong>Network Address</strong><span>First address of the subnet.</span></article>
+            <article><i class="fas fa-tower-broadcast"></i><strong>Broadcast Address</strong><span>Last address of the subnet.</span></article>
+            <article><i class="fas fa-users"></i><strong>Host Range</strong><span>Usable client IP range.</span></article>
+            <article><i class="fas fa-table-cells"></i><strong>CIDR Reference</strong><span>Click a prefix to apply it.</span></article>
+          </div>
+        </section>
+        <div id="subnetGuideModal" class="subnet-guide-modal" aria-hidden="true">
+          <div class="subnet-guide-dialog" role="dialog" aria-modal="true" aria-label="IPv4 Subnet Calculator Guide">
+            <div class="subnet-guide-head">
+              <h2><i class="fas fa-book-open"></i> IPv4 Subnet Calculator Guide</h2>
+              <button data-action="close-guide" aria-label="Close guide"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="subnet-guide-body">
+              <img class="subnet-guide-image subnet-guide-network" src="/assets/subnet-guide-network.png?v=1" alt="Network theme IPv4 Subnet Calculator guide">
+              <img class="subnet-guide-image subnet-guide-space" src="/assets/subnet-guide-space.png?v=1" alt="Space theme IPv4 Subnet Calculator guide">
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -532,6 +560,17 @@
       }
       if (action === "copy-split") copyText(splitRows.map(splitRowText).join("\n"), "คัดลอกตาราง Split Network แล้ว");
       if (action === "export-csv") exportSplitCsv(splitRows);
+      if (action === "open-guide") {
+        const modal = page.querySelector("#subnetGuideModal");
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+      if (action === "close-guide") {
+        const modal = page.querySelector("#subnetGuideModal");
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+      if (action === "show-explain") page.querySelector("#subnetExplainCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
       if (action === "clear-history") {
         localStorage.removeItem(HISTORY_KEY);
         renderHistory(page, calculate);
@@ -553,6 +592,10 @@
         $("subnetPrefixSlider").value = cidrApply.dataset.applyCidr;
         $("subnetMaskInput").value = prefixToMask(cidrApply.dataset.applyCidr);
         calculate(true);
+      }
+      if (event.target.id === "subnetGuideModal") {
+        event.target.classList.remove("is-open");
+        event.target.setAttribute("aria-hidden", "true");
       }
     });
 
