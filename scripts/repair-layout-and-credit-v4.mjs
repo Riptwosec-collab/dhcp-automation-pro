@@ -7,22 +7,28 @@ const css = `
 html,body{max-width:100%!important;overflow-x:hidden!important}
 body.final-layout-v5{padding:24px!important}
 body.final-layout-v5 *{box-sizing:border-box}
+body[data-theme="space"].final-layout-v5::before{background:radial-gradient(circle at 50% 0%,rgba(184,135,47,.16),transparent 32%),radial-gradient(circle at 18% 86%,rgba(198,146,48,.12),transparent 28%),linear-gradient(180deg,rgba(5,4,2,.72),rgba(0,0,0,.94))!important;opacity:1!important}
+body[data-theme="space"].final-layout-v5 .space-scene{opacity:.34!important;transform:perspective(1200px) translateZ(0)!important}
 body[data-theme="network"].final-layout-v5::before{background:linear-gradient(180deg,rgba(1,7,18,.24),rgba(1,7,18,.58)),url("/assets/network-command-bg.png?v=1") center/cover fixed no-repeat!important;opacity:1!important}
-body[data-theme="network"].final-layout-v5 .network-scene{opacity:.22!important}
+body[data-theme="network"].final-layout-v5 .network-scene{opacity:.18!important;transform:perspective(1200px) translateZ(0)!important}
 .final-layout-v5 #networkDashboard{display:block!important;min-height:0!important;padding:24px!important;border-radius:18px!important}
 .final-layout-v5 .final-v5-shell{display:grid!important;grid-template-columns:minmax(280px,320px) minmax(0,1320px)!important;gap:30px!important;align-items:start!important;width:min(1690px,calc(100vw - 48px))!important;max-width:1690px!important;margin:0 auto!important}
 .final-layout-v5 .final-v5-shell>*{min-width:0!important;max-width:100%!important}
-.final-layout-v5 .final-v5-side{grid-column:1!important;position:sticky!important;top:18px!important;align-self:start!important;width:100%!important;max-height:calc(100vh - 36px)!important;overflow:auto!important;padding:24px!important;border-radius:18px!important}
+.final-layout-v5 .final-v5-side{grid-column:1!important;position:sticky!important;top:18px!important;align-self:start!important;width:100%!important;height:auto!important;max-height:calc(100vh - 36px)!important;overflow:auto!important;padding:24px!important;border-radius:18px!important}
 .final-layout-v5 .final-v5-main{grid-column:2!important;display:grid!important;gap:24px!important;min-width:0!important;width:100%!important}
 .final-layout-v5 .final-v5-top{display:grid!important;grid-template-columns:minmax(0,.95fr) minmax(0,1.35fr)!important;gap:22px!important;align-items:stretch!important;width:100%!important}
 .final-layout-v5 .final-v5-top>*{min-width:0!important;height:100%!important}
+.final-layout-v5 .final-v5-top .final-v5-validate{grid-column:1!important;grid-row:1!important;width:100%!important}
+.final-layout-v5 .final-v5-top .final-v5-dns{grid-column:2!important;grid-row:1!important;width:100%!important}
 .final-layout-v5 .final-v5-results{display:grid!important;grid-template-columns:1fr!important;gap:22px!important;align-items:start!important;width:100%!important}
 .final-layout-v5 .final-v5-results.no-pools{grid-template-columns:minmax(0,1fr)!important}
 .final-layout-v5 .final-v5-results.no-pools #poolsContainer,.final-layout-v5 #poolsContainer:empty{display:none!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}
 .final-layout-v5 .final-v5-results.no-pools #configPanel{grid-column:1!important;width:100%!important}
 
-/* Developer credit rebuilt as a stable black/gold or blue command badge. */
-.final-layout-v5 .final-v5-side .credit-wrap{display:block!important;width:100%!important;max-width:none!important;margin:24px 0 0!important;overflow:visible!important}
+.final-layout-v5 .network-hero-copy,.final-layout-v5 .final-v5-side .credit-wrap,.final-layout-v5 .final-v5-side .credit-glass{display:none!important}
+
+/* Developer credit styles retained only for old cached markup; the badge is hidden in the final layout. */
+.final-layout-v5 .final-v5-side .credit-wrap{width:100%!important;max-width:none!important;margin:0!important;overflow:hidden!important}
 .final-layout-v5 .final-v5-side .credit-glass{position:relative!important;isolation:isolate!important;display:grid!important;grid-template-columns:52px 1px minmax(0,1fr)!important;align-items:center!important;gap:14px!important;width:100%!important;min-width:0!important;min-height:84px!important;padding:14px 18px!important;border:1px solid rgba(239,185,67,.64)!important;border-radius:20px!important;background:linear-gradient(120deg,rgba(239,185,67,.13),transparent 30%,rgba(255,255,255,.025) 52%,transparent 74%),linear-gradient(145deg,rgba(18,13,5,.98),rgba(3,3,3,.99))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 24px rgba(239,185,67,.08),0 0 0 4px rgba(239,185,67,.045),0 12px 30px rgba(0,0,0,.54),0 0 24px rgba(239,185,67,.22)!important;clip-path:polygon(0 17px,17px 0,calc(100% - 17px) 0,100% 17px,100% calc(100% - 17px),calc(100% - 17px) 100%,17px 100%,0 calc(100% - 17px))!important;overflow:hidden!important}
 .final-layout-v5 .final-v5-side .credit-glass::before{content:""!important;position:absolute!important;inset:6px!important;border:1px solid rgba(239,185,67,.17)!important;border-radius:15px!important;clip-path:inherit!important;pointer-events:none!important;z-index:1!important}
 .final-layout-v5 .final-v5-side .credit-glass::after{content:""!important;position:absolute!important;right:18px!important;top:10px!important;width:36px!important;height:5px!important;background:radial-gradient(circle,rgba(255,216,115,.96) 0 1.5px,transparent 2px) 0 0/9px 5px repeat-x!important;filter:drop-shadow(0 0 5px rgba(239,185,67,.72))!important;opacity:.88!important;z-index:2!important}
@@ -113,6 +119,9 @@ body[data-theme="network"].final-layout-v5 .final-v5-validate h3,
 body[data-theme="network"].final-layout-v5 .final-v5-dns>span,
 body[data-theme="network"].final-layout-v5 .final-v5-import h2,
 body[data-theme="network"].final-layout-v5 #networkDashboard .network-section-title{color:#53E7FF!important;text-shadow:0 0 18px rgba(83,231,255,.30)!important}
+body[data-theme="network"].final-layout-v5 #networkDashboard .network-action{color:#F5FCFF!important;border-color:rgba(83,231,255,.62)!important;background:linear-gradient(145deg,rgba(4,42,74,.94),rgba(1,15,34,.98))!important;box-shadow:inset 0 1px 0 rgba(210,247,255,.16),0 0 20px rgba(0,183,255,.18)!important}
+body[data-theme="network"].final-layout-v5 #networkDashboard .network-action strong{color:#FFFFFF!important;font-weight:900!important;text-shadow:0 0 10px rgba(83,231,255,.38)!important}
+body[data-theme="network"].final-layout-v5 #networkDashboard .network-action span{color:#BCEEFF!important;font-weight:700!important;text-shadow:0 0 8px rgba(0,183,255,.22)!important}
 body[data-theme="network"].final-layout-v5 #configPanel>.flex:first-child h2{color:#F0FBFF!important;text-shadow:0 0 16px rgba(83,231,255,.14)!important}
 body[data-theme="network"].final-layout-v5 #configPanel>.flex:first-child h2 i,
 body[data-theme="network"].final-layout-v5 .final-v5-validate h3 i,
@@ -133,8 +142,8 @@ body.final-layout-v5 #searchInput,body.final-layout-v5 .final-v5-import,body.fin
 .final-layout-v5 .guide-network-image,.final-layout-v5 .guide-space-image,.final-layout-v5 .guide-image-error{display:none!important}
 body[data-theme="network"].final-layout-v5 .guide-network-image,body[data-theme="space"].final-layout-v5 .guide-space-image,.final-layout-v5 .guide-fallback-visible{display:block!important}
 
-@media(max-width:1280px){body.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(250px,280px) minmax(0,1fr)!important;gap:20px!important;width:min(100%,calc(100vw - 36px))!important}body.final-layout-v5 .final-v5-main{max-width:none!important}.final-layout-v5 .final-v5-top{grid-template-columns:1fr!important}.final-layout-v5 #networkDashboard .network-stat-grid,.final-layout-v5 #networkDashboard .network-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:900px){body.final-layout-v5{padding:16px!important}body.final-layout-v5 .final-v5-shell{grid-template-columns:1fr!important;width:min(100%,calc(100vw - 32px))!important}body.final-layout-v5 .final-v5-side{grid-column:1!important;position:relative!important;top:auto!important;max-height:none!important;max-width:none!important}body.final-layout-v5 .final-v5-main{grid-column:1!important;max-width:none!important;width:100%!important}.final-layout-v5 .final-v5-top,.final-layout-v5 .final-v5-results{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.final-layout-v5 .final-v5-actions button:last-child:nth-child(odd){grid-column:auto!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:1280px){body.final-layout-v5 .final-v5-shell{grid-template-columns:minmax(250px,280px) minmax(0,1fr)!important;gap:20px!important;width:min(100%,calc(100vw - 36px))!important}body.final-layout-v5 .final-v5-main{max-width:none!important}.final-layout-v5 #networkDashboard .network-stat-grid,.final-layout-v5 #networkDashboard .network-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:900px){body.final-layout-v5{padding:16px!important}body.final-layout-v5 .final-v5-shell{grid-template-columns:1fr!important;width:min(100%,calc(100vw - 32px))!important}body.final-layout-v5 .final-v5-side{grid-column:1!important;position:relative!important;top:auto!important;max-height:none!important;max-width:none!important}body.final-layout-v5 .final-v5-main{grid-column:1!important;max-width:none!important;width:100%!important}.final-layout-v5 .final-v5-top,.final-layout-v5 .final-v5-results{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-top .final-v5-validate,.final-layout-v5 .final-v5-top .final-v5-dns{grid-column:1!important;grid-row:auto!important}.final-layout-v5 .final-v5-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.final-layout-v5 .final-v5-actions button:last-child:nth-child(odd){grid-column:auto!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:640px){body.final-layout-v5{padding:10px!important}body.final-layout-v5 .final-v5-shell,body.final-layout-v5 .final-v5-main{gap:16px!important;width:100%!important}.final-layout-v5 .final-v5-side{padding:18px!important}.final-layout-v5 .final-v5-side .credit-glass{grid-template-columns:46px 1px minmax(0,1fr)!important;gap:11px!important;min-height:74px!important;padding:11px 14px!important;border-radius:17px!important}.final-layout-v5 .credit-icon{width:46px!important;height:46px!important}.final-layout-v5 .credit-divider{height:42px!important}.final-layout-v5 .credit-text{font-size:.79rem!important}.final-layout-v5 #networkDashboard{padding:18px!important}.final-layout-v5 #networkDashboard .network-stat-grid,.final-layout-v5 #networkDashboard .network-action-grid{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-actions{grid-template-columns:1fr!important}.final-layout-v5 .final-v5-validate,.final-layout-v5 .final-v5-dns{min-height:0!important;padding:20px!important}.final-layout-v5 .final-v5-validate p{margin-left:0!important;max-width:none!important}.final-layout-v5 .final-v5-dns{grid-template-columns:1fr!important;gap:12px!important}.final-layout-v5 .final-v5-import{padding:18px!important}.final-layout-v5 .final-v5-import .grid:has(textarea){grid-template-columns:1fr!important}.final-layout-v5 .final-v5-import textarea{min-height:160px!important}.final-layout-v5 #configPanel>.flex:first-child{align-items:stretch!important;padding:17px!important}.final-layout-v5 #configPanel>.flex:first-child h2{flex-basis:100%!important;font-size:1.2rem!important}.final-layout-v5 #configPanel>.flex:first-child button{width:100%!important;min-width:0!important}.final-layout-v5 #configPanel>.p-4{padding:15px 17px!important}.final-layout-v5 #configPanel>.p-4 label{width:100%!important}.final-layout-v5 #configOutput{min-height:230px!important;padding:17px!important;font-size:.84rem!important}.final-layout-v5 .guide-modal{padding:6px!important}.final-layout-v5 .guide-modal-dialog{width:100%!important;max-height:97vh!important;padding:6px!important}}
 `;
 
@@ -143,18 +152,21 @@ const runtime = `<script data-final-layout-v5>
   const normalizedText = (node) => (node?.textContent || "").replace(/\\s+/g, " ").trim();
   const panelFor = (node) => node?.closest?.(".glass-panel") || null;
   const headingWith = (value) => [...document.querySelectorAll("h2,h3")].find((node) => normalizedText(node).includes(value));
-  const creditHtml = () => '<div class="credit-glass"><span class="credit-icon" aria-hidden="true">&lt;/&gt;</span><span class="credit-divider" aria-hidden="true"></span><span class="credit-text"><strong>Developed by Aidsares</strong><span>Veangin</span></span></div>';
-  let creditSyncing = false;
   let resultsObserver;
 
   function installCredit() {
-    window.creditMarkup = creditHtml;
     const host = document.getElementById("themeDescription");
-    if (!host || creditSyncing) return;
-    if (host.querySelector(".credit-icon") && normalizedText(host).includes("Developed by Aidsares") && normalizedText(host).includes("Veangin")) return;
-    creditSyncing = true;
-    host.innerHTML = creditHtml();
-    creditSyncing = false;
+    window.creditMarkup = () => "";
+    if (host) host.replaceChildren();
+  }
+
+  function installSidebarBrand(side) {
+    const title = side?.querySelector(".brand-title");
+    const heading = side?.querySelector("h1");
+    const copy = side?.querySelector(".network-hero-copy");
+    if (title) title.innerHTML = "DHCP Mission <em>Control</em>";
+    else if (heading) heading.innerHTML = '<span class="brand-title">DHCP Mission <em>Control</em></span>';
+    if (copy) copy.remove();
   }
 
   function installGuide(side) {
@@ -256,6 +268,11 @@ const runtime = `<script data-final-layout-v5>
     results.append(...(pools ? [pools] : []), config);
     main.append(...(dashboard ? [dashboard] : []), top, search, importer, results);
     shell.replaceChildren(side, main);
+    validate.style.gridColumn = "1";
+    validate.style.gridRow = "1";
+    dns.style.gridColumn = "2";
+    dns.style.gridRow = "1";
+    dns.style.width = "100%";
 
     main.style.display = "flex";
     main.style.flexDirection = "column";
@@ -264,14 +281,25 @@ const runtime = `<script data-final-layout-v5>
         shell.style.gridTemplateColumns = "1fr";
         shell.style.width = "min(100%, calc(100vw - 32px))";
         main.style.maxWidth = "none";
+        validate.style.gridColumn = "1";
+        dns.style.gridColumn = "1";
+        dns.style.gridRow = "auto";
       } else if (window.innerWidth <= 1280) {
         shell.style.gridTemplateColumns = "minmax(250px,280px) minmax(0,1fr)";
         shell.style.width = "min(100%, calc(100vw - 36px))";
         main.style.maxWidth = "none";
+        validate.style.gridColumn = "1";
+        validate.style.gridRow = "1";
+        dns.style.gridColumn = "2";
+        dns.style.gridRow = "1";
       } else {
         shell.style.gridTemplateColumns = "minmax(280px,320px) minmax(0,1320px)";
         shell.style.width = "min(1690px, calc(100vw - 48px))";
         main.style.maxWidth = "1320px";
+        validate.style.gridColumn = "1";
+        validate.style.gridRow = "1";
+        dns.style.gridColumn = "2";
+        dns.style.gridRow = "1";
       }
     };
     syncInlineSizing();
@@ -305,6 +333,7 @@ const runtime = `<script data-final-layout-v5>
     }
 
     installCredit();
+    installSidebarBrand(side);
     installGuide(side);
     shell.dataset.finalLayoutV5 = "1";
     return true;
@@ -324,13 +353,16 @@ const runtime = `<script data-final-layout-v5>
     new MutationObserver(() => {
       installCredit();
       const side = document.querySelector(".final-v5-side");
-      if (side) installGuide(side);
+      if (side) {
+        installSidebarBrand(side);
+        installGuide(side);
+      }
     }).observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
-  addEventListener("load", () => { applyLayout(); installCredit(); }, { once: true });
+  addEventListener("load", () => { applyLayout(); installCredit(); installSidebarBrand(document.querySelector(".final-v5-side")); }, { once: true });
 })();
 </script>`;
 
@@ -340,10 +372,14 @@ for (const directory of ["public", "dist"]) {
 
   html = html.replace(/<script data-layout-runtime-v4>[\s\S]*?<\/script>/g, "");
   html = html.replace(/<script data-final-layout-v5>[\s\S]*?<\/script>/g, "");
+  html = html.replace(/<p class="network-hero-copy">[\s\S]*?<\/p>/g, "");
+  html = html.replace(/function creditMarkup\(\)\{return `[\s\S]*?`\}/g, 'function creditMarkup(){return ""}');
+  html = html.replace(/desc\.innerHTML=creditMarkup\(\);/g, 'desc.innerHTML="";');
+  html = html.replace(/Effortlessly manage DHCP pools, automate MAC\/IP assignments, and export Cisco-ready configurations from one control center\./g, "");
   if (!html.includes(MARKER)) html = html.replace("</style>", `${css}\n</style>`);
   html = html.replace("</body>", `${runtime}\n</body>`);
 
-  for (const token of [MARKER, "data-final-layout-v5", "final-v5-shell", "Developed by Aidsares", "guide-space-image"]) {
+  for (const token of [MARKER, "data-final-layout-v5", "final-v5-shell", "guide-space-image"]) {
     if (!html.includes(token)) throw new Error(`Final layout injection failed for ${file}: ${token}`);
   }
 
