@@ -9,8 +9,8 @@ body.final-layout-v5{padding:24px!important}
 body.final-layout-v5 *{box-sizing:border-box}
 body[data-theme="space"].final-layout-v5::before{background:radial-gradient(circle at 50% 0%,rgba(184,135,47,.16),transparent 32%),radial-gradient(circle at 18% 86%,rgba(198,146,48,.12),transparent 28%),linear-gradient(180deg,rgba(5,4,2,.72),rgba(0,0,0,.94))!important;opacity:1!important}
 body[data-theme="space"].final-layout-v5 .space-scene{opacity:.34!important;transform:perspective(1200px) translateZ(0)!important}
-body[data-theme="network"].final-layout-v5::before{background:linear-gradient(180deg,rgba(1,7,18,.24),rgba(1,7,18,.58)),url("/assets/network-command-bg.png?v=1") center/cover fixed no-repeat!important;opacity:1!important}
-body[data-theme="network"].final-layout-v5 .network-scene{opacity:.18!important;transform:perspective(1200px) translateZ(0)!important}
+body[data-theme="network"].final-layout-v5::before{background:linear-gradient(180deg,rgba(1,7,18,.18),rgba(1,7,18,.48)),url("/assets/network-command-bg.png?v=1") center/cover fixed no-repeat!important;opacity:1!important}
+body[data-theme="network"].final-layout-v5 .network-scene,body[data-theme="network"].final-layout-v5 .network-scene *{display:none!important;opacity:0!important}
 .final-layout-v5 #networkDashboard{display:block!important;min-height:0!important;padding:24px!important;border-radius:18px!important}
 .final-layout-v5 .final-v5-shell{display:grid!important;grid-template-columns:minmax(280px,320px) minmax(0,1320px)!important;gap:30px!important;align-items:start!important;width:min(1690px,calc(100vw - 48px))!important;max-width:1690px!important;margin:0 auto!important}
 .final-layout-v5 .final-v5-shell>*{min-width:0!important;max-width:100%!important}
@@ -25,10 +25,9 @@ body[data-theme="network"].final-layout-v5 .network-scene{opacity:.18!important;
 .final-layout-v5 .final-v5-results.no-pools #poolsContainer,.final-layout-v5 #poolsContainer:empty{display:none!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}
 .final-layout-v5 .final-v5-results.no-pools #configPanel{grid-column:1!important;width:100%!important}
 
-.final-layout-v5 .network-hero-copy,.final-layout-v5 .final-v5-side .credit-wrap,.final-layout-v5 .final-v5-side .credit-glass{display:none!important}
+.final-layout-v5 .network-hero-copy{display:none!important}
 
-/* Developer credit styles retained only for old cached markup; the badge is hidden in the final layout. */
-.final-layout-v5 .final-v5-side .credit-wrap{width:100%!important;max-width:none!important;margin:0!important;overflow:hidden!important}
+.final-layout-v5 .final-v5-side .credit-wrap{display:block!important;width:100%!important;max-width:none!important;margin:22px 0 0!important;overflow:visible!important}
 .final-layout-v5 .final-v5-side .credit-glass{position:relative!important;isolation:isolate!important;display:grid!important;grid-template-columns:52px 1px minmax(0,1fr)!important;align-items:center!important;gap:14px!important;width:100%!important;min-width:0!important;min-height:84px!important;padding:14px 18px!important;border:1px solid rgba(239,185,67,.64)!important;border-radius:20px!important;background:linear-gradient(120deg,rgba(239,185,67,.13),transparent 30%,rgba(255,255,255,.025) 52%,transparent 74%),linear-gradient(145deg,rgba(18,13,5,.98),rgba(3,3,3,.99))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 24px rgba(239,185,67,.08),0 0 0 4px rgba(239,185,67,.045),0 12px 30px rgba(0,0,0,.54),0 0 24px rgba(239,185,67,.22)!important;clip-path:polygon(0 17px,17px 0,calc(100% - 17px) 0,100% 17px,100% calc(100% - 17px),calc(100% - 17px) 100%,17px 100%,0 calc(100% - 17px))!important;overflow:hidden!important}
 .final-layout-v5 .final-v5-side .credit-glass::before{content:""!important;position:absolute!important;inset:6px!important;border:1px solid rgba(239,185,67,.17)!important;border-radius:15px!important;clip-path:inherit!important;pointer-events:none!important;z-index:1!important}
 .final-layout-v5 .final-v5-side .credit-glass::after{content:""!important;position:absolute!important;right:18px!important;top:10px!important;width:36px!important;height:5px!important;background:radial-gradient(circle,rgba(255,216,115,.96) 0 1.5px,transparent 2px) 0 0/9px 5px repeat-x!important;filter:drop-shadow(0 0 5px rgba(239,185,67,.72))!important;opacity:.88!important;z-index:2!important}
@@ -152,12 +151,14 @@ const runtime = `<script data-final-layout-v5>
   const normalizedText = (node) => (node?.textContent || "").replace(/\\s+/g, " ").trim();
   const panelFor = (node) => node?.closest?.(".glass-panel") || null;
   const headingWith = (value) => [...document.querySelectorAll("h2,h3")].find((node) => normalizedText(node).includes(value));
+  const creditHtml = () => '<div class="credit-glass"><span class="credit-icon" aria-hidden="true">&lt;/&gt;</span><span class="credit-divider" aria-hidden="true"></span><span class="credit-text"><strong>Developed by Aidsares</strong><span>Veangin</span></span></div>';
   let resultsObserver;
 
   function installCredit() {
     const host = document.getElementById("themeDescription");
-    window.creditMarkup = () => "";
-    if (host) host.replaceChildren();
+    window.creditMarkup = creditHtml;
+    if (!host) return;
+    if (!host.querySelector(".credit-glass")) host.innerHTML = creditHtml();
   }
 
   function installSidebarBrand(side) {
