@@ -57,6 +57,8 @@ const css = `
 .subnet-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
 .subnet-actions button,.subnet-result-item button,#splitTable button,#cidrRefTable button,#subnetHistory button{border:1px solid rgba(var(--theme-rgb),.44);border-radius:12px;background:linear-gradient(145deg,rgba(var(--theme-rgb),.18),rgba(0,0,0,.35));color:var(--theme-text,#fff);font-weight:900;cursor:pointer}
 .subnet-actions button{min-height:44px;padding:0 15px}
+#cidrRefTable button[data-apply-cidr]{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:32px;padding:0 10px;border-radius:10px!important;background:linear-gradient(145deg,rgba(32,25,13,.94),rgba(6,6,7,.90))!important;color:#fff!important;font-size:.96rem;font-weight:950!important;line-height:1;letter-spacing:0;text-shadow:0 1px 2px rgba(0,0,0,.92);box-shadow:0 3px 8px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08)!important}
+#cidrRefTable button[data-apply-cidr]:hover{background:linear-gradient(145deg,rgba(54,39,15,.96),rgba(9,8,7,.92))!important;box-shadow:0 4px 10px rgba(0,0,0,.40),0 0 8px rgba(var(--theme-rgb),.10)!important}
 .subnet-error{min-height:22px;margin:12px 0 0;color:#fb7185;font-weight:800}
 .subnet-presets{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
 .subnet-presets button{min-height:38px;padding:0 12px}
@@ -131,7 +133,9 @@ body[data-theme="space"] .subnet-launch-card{background:linear-gradient(145deg,r
 body[data-theme="space"] .subnet-launch-card:hover{box-shadow:0 22px 54px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,235,179,.10),0 0 22px rgba(232,192,92,.10)!important}
 body[data-theme="space"] .subnet-launch-card i{background:rgba(8,7,5,.46)!important;border-color:rgba(232,192,92,.38);color:#f2cf6d!important}
 body[data-theme="space"] .subnet-launch-card small{color:#d9cfb6!important}
-body[data-theme="space"] #cidrRefTable button[data-apply-cidr],body[data-theme="space"] #cidrRefTable button[data-copy-value]{background:linear-gradient(145deg,rgba(116,78,20,.92),rgba(58,38,10,.86));color:#fff7df;border-color:rgba(244,212,122,.62);box-shadow:0 3px 8px rgba(0,0,0,.32),0 0 8px rgba(244,212,122,.12)}
+body[data-theme="space"] #cidrRefTable button[data-apply-cidr]{background:linear-gradient(145deg,rgba(82,55,15,.96),rgba(18,14,8,.94))!important;color:#fffdf2!important;border-color:rgba(244,212,122,.58);box-shadow:0 3px 8px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,236,173,.10)!important}
+body[data-theme="space"] #cidrRefTable button[data-apply-cidr]:hover{background:linear-gradient(145deg,rgba(104,69,18,.96),rgba(24,18,8,.94))!important;box-shadow:0 4px 10px rgba(0,0,0,.44),0 0 8px rgba(244,212,122,.12)!important}
+body[data-theme="space"] #cidrRefTable button[data-copy-value]{background:linear-gradient(145deg,rgba(82,55,15,.88),rgba(18,14,8,.88));color:#fff7df;border-color:rgba(244,212,122,.48);box-shadow:0 3px 8px rgba(0,0,0,.32)}
 body[data-theme="space"] .subnet-cidr-main{background:linear-gradient(145deg,rgba(17,15,12,.88),rgba(3,4,6,.80))!important}
 body[data-theme="space"] .subnet-table-wrap{background:rgba(0,0,0,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 body[data-theme="network"] .app-page-nav-link.active,body[data-theme="network"] .subnet-actions button:first-child{color:white;background:linear-gradient(135deg,#0ea5e9,#22d3ee)}
