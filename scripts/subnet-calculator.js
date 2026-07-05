@@ -9,6 +9,10 @@
   const STATE_KEY = "dhcpSubnetCalculatorState";
   const MAX_SPLIT_ROWS = 1024;
 
+  function scoped(page, selector) {
+    return page?.querySelector?.(selector) || (typeof document !== "undefined" ? document.querySelector(selector) : null);
+  }
+
   function fail(message) {
     throw new Error(message);
   }
@@ -321,109 +325,137 @@
           <div class="subnet-hero-icon"><i class="fas fa-diagram-project"></i></div>
         </header>
 
-        <div class="subnet-tabs" role="tablist">
-          <button class="active" data-subnet-tab="ip"><i class="fas fa-calculator"></i> IP Calculator</button>
-          <button data-subnet-tab="host"><i class="fas fa-users"></i> Host Requirement</button>
-          <button data-subnet-tab="split"><i class="fas fa-code-branch"></i> Split Network</button>
-          <button data-subnet-tab="recent"><i class="fas fa-clock-rotate-left"></i> Recent</button>
-          <button data-action="open-cidr" class="subnet-cidr-tab"><i class="fas fa-book"></i> CIDR Quick Reference</button>
+        <div class="subnet-launch-grid" aria-label="Subnet tools">
+          <button class="subnet-launch-card" data-action="open-tool" data-tool-modal="subnetIpModal">
+            <i class="fas fa-calculator"></i><span><b>IP Calculator</b><small>Input, host tools, split, recent</small></span>
+          </button>
+          <button class="subnet-launch-card" data-action="open-tool" data-tool-modal="subnetResultsModal">
+            <i class="fas fa-gauge-high"></i><span><b>Calculation Results</b><small>Calculated subnet details</small></span>
+          </button>
+          <button class="subnet-launch-card" data-action="open-tool" data-tool-modal="subnetCiscoModal">
+            <i class="fas fa-terminal"></i><span><b>Cisco Configuration Helper</b><small>Interface and DHCP snippets</small></span>
+          </button>
         </div>
 
-        <div class="subnet-layout">
-          <section class="subnet-card glass-panel subnet-inputs">
-            <div data-subnet-panel="ip">
-              <h2><i class="fas fa-circle-nodes"></i> IP Calculator</h2>
-              <label>IPv4 Address<input id="subnetIpInput" value="192.168.10.25" placeholder="192.168.10.25 หรือ 192.168.10.25/24"></label>
-              <div class="subnet-two">
-                <label>CIDR Prefix<input id="subnetPrefixInput" type="number" min="0" max="32" value="24"></label>
-                <label>Subnet Mask<input id="subnetMaskInput" value="255.255.255.0"></label>
-              </div>
-              <input id="subnetPrefixSlider" type="range" min="0" max="32" value="24" aria-label="CIDR Prefix Slider">
-              <div class="subnet-actions">
-                <button data-action="calculate"><i class="fas fa-bolt"></i> Calculate</button>
-                <button data-action="example"><i class="fas fa-wand-magic-sparkles"></i> Use Example</button>
-                <button data-action="reset"><i class="fas fa-rotate-left"></i> Reset</button>
-                <button data-action="copy-all"><i class="fas fa-copy"></i> Copy All Results</button>
-              </div>
-              <p class="subnet-error" data-error="ip"></p>
-            </div>
+        <section class="subnet-card glass-panel subnet-cidr-main">
+          <div class="subnet-results-head">
+            <h2><i class="fas fa-book"></i> CIDR Quick Reference</h2>
+            <span>Main Reference</span>
+          </div>
+          <input id="cidrSearch" class="subnet-search" placeholder="Search CIDR or Mask">
+          <div class="subnet-table-wrap"><table id="cidrRefTable"><thead><tr><th>CIDR</th><th>Subnet Mask</th><th>Total IPs</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
+        </section>
 
-            <div class="hidden" data-subnet-panel="host">
-              <h2><i class="fas fa-users"></i> Host Requirement</h2>
-              <label>จำนวน Host ที่ต้องการ<input id="hostRequirementInput" type="number" min="1" value="50"></label>
-              <div class="subnet-presets">${[10, 30, 50, 100, 250, 500, 1000].map((n) => `<button data-host-preset="${n}">${n} Hosts</button>`).join("")}</div>
-              <div id="hostRequirementResult" class="subnet-mini-result"></div>
+        <div id="subnetIpModal" class="subnet-tool-modal" aria-hidden="true">
+          <div class="subnet-tool-dialog subnet-tool-dialog-wide" role="dialog" aria-modal="true" aria-label="IP Calculator">
+            <div class="subnet-tool-head">
+              <h2><i class="fas fa-calculator"></i> IP Calculator</h2>
+              <button data-action="close-tool" aria-label="Close IP Calculator"><i class="fas fa-xmark"></i></button>
             </div>
-
-            <div class="hidden" data-subnet-panel="split">
-              <h2><i class="fas fa-code-branch"></i> Split Network</h2>
-              <div class="subnet-two">
-                <label>Parent Network<input id="splitParentInput" value="192.168.10.0/24"></label>
-                <label>New Prefix<input id="splitPrefixInput" type="number" min="0" max="32" value="26"></label>
+            <div class="subnet-tool-body">
+              <div class="subnet-tabs" role="tablist">
+                <button class="active" data-subnet-tab="ip"><i class="fas fa-calculator"></i> IP Calculator</button>
+                <button data-subnet-tab="host"><i class="fas fa-users"></i> Host Requirement</button>
+                <button data-subnet-tab="split"><i class="fas fa-code-branch"></i> Split Network</button>
+                <button data-subnet-tab="recent"><i class="fas fa-clock-rotate-left"></i> Recent</button>
               </div>
-              <label>หรือจำนวน Subnet<input id="splitCountInput" type="number" min="1" placeholder="เช่น 4"></label>
-              <div class="subnet-actions">
-                <button data-action="split"><i class="fas fa-table-cells"></i> Calculate Split</button>
-                <button data-action="copy-split"><i class="fas fa-copy"></i> Copy All</button>
-                <button data-action="export-csv"><i class="fas fa-file-csv"></i> Export CSV</button>
-              </div>
-              <input id="splitSearchInput" class="subnet-search" placeholder="Search table">
-              <div id="splitSummary" class="subnet-mini-result"></div>
-              <div class="subnet-table-wrap"><table id="splitTable"><thead><tr><th>#</th><th>Network/CIDR</th><th>First Host</th><th>Last Host</th><th>Broadcast</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
-            </div>
+              <section class="subnet-card glass-panel subnet-inputs">
+                <div data-subnet-panel="ip">
+                  <h2><i class="fas fa-circle-nodes"></i> IP Calculator</h2>
+                  <label>IPv4 Address<input id="subnetIpInput" value="192.168.10.25" placeholder="192.168.10.25 or 192.168.10.25/24"></label>
+                  <div class="subnet-two">
+                    <label>CIDR Prefix<input id="subnetPrefixInput" type="number" min="0" max="32" value="24"></label>
+                    <label>Subnet Mask<input id="subnetMaskInput" value="255.255.255.0"></label>
+                  </div>
+                  <input id="subnetPrefixSlider" type="range" min="0" max="32" value="24" aria-label="CIDR Prefix Slider">
+                  <div class="subnet-actions">
+                    <button data-action="calculate"><i class="fas fa-bolt"></i> Calculate</button>
+                    <button data-action="example"><i class="fas fa-wand-magic-sparkles"></i> Use Example</button>
+                    <button data-action="reset"><i class="fas fa-rotate-left"></i> Reset</button>
+                    <button data-action="copy-all"><i class="fas fa-copy"></i> Copy All Results</button>
+                  </div>
+                  <p class="subnet-error" data-error="ip"></p>
+                </div>
 
-            <div class="hidden" data-subnet-panel="recent">
-              <h2><i class="fas fa-clock-rotate-left"></i> Recent Calculations</h2>
-              <div id="subnetHistory"></div>
-              <button data-action="clear-history"><i class="fas fa-trash"></i> Clear History</button>
-            </div>
-            <div class="subnet-cidr-launch-card">
-              <h3><i class="fas fa-book"></i> CIDR Quick Reference</h3>
-              <p>Open the prefix table as a centered reference panel.</p>
-              <button data-action="open-cidr"><i class="fas fa-up-right-from-square"></i> Open Reference</button>
-            </div>
-          </section>
+                <div class="hidden" data-subnet-panel="host">
+                  <h2><i class="fas fa-users"></i> Host Requirement</h2>
+                  <label>Host Requirement<input id="hostRequirementInput" type="number" min="1" value="50"></label>
+                  <div class="subnet-presets"><button data-host-preset="10">10 Hosts</button><button data-host-preset="30">30 Hosts</button><button data-host-preset="50">50 Hosts</button><button data-host-preset="100">100 Hosts</button><button data-host-preset="250">250 Hosts</button><button data-host-preset="500">500 Hosts</button><button data-host-preset="1000">1000 Hosts</button></div>
+                  <div id="hostRequirementResult" class="subnet-mini-result"></div>
+                </div>
 
-          <section class="subnet-card glass-panel subnet-results">
-            <div class="subnet-results-head"><h2><i class="fas fa-gauge-high"></i> Calculation Results</h2><span id="subnetRouteType">Standard Network</span></div>
-            <div id="subnetResultGrid" class="subnet-result-grid"></div>
-            <div id="subnetViz" class="subnet-viz"></div>
-          </section>
+                <div class="hidden" data-subnet-panel="split">
+                  <h2><i class="fas fa-code-branch"></i> Split Network</h2>
+                  <div class="subnet-two">
+                    <label>Parent Network<input id="splitParentInput" value="192.168.10.0/24"></label>
+                    <label>New Prefix<input id="splitPrefixInput" type="number" min="0" max="32" value="26"></label>
+                  </div>
+                  <label>Subnet Count<input id="splitCountInput" type="number" min="1" placeholder="Example: 4"></label>
+                  <div class="subnet-actions">
+                    <button data-action="split"><i class="fas fa-table-cells"></i> Calculate Split</button>
+                    <button data-action="copy-split"><i class="fas fa-copy"></i> Copy All</button>
+                    <button data-action="export-csv"><i class="fas fa-file-csv"></i> Export CSV</button>
+                  </div>
+                  <input id="splitSearchInput" class="subnet-search" placeholder="Search table">
+                  <div id="splitSummary" class="subnet-mini-result"></div>
+                  <div class="subnet-table-wrap"><table id="splitTable"><thead><tr><th>#</th><th>Network/CIDR</th><th>First Host</th><th>Last Host</th><th>Broadcast</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
+                </div>
+
+                <div class="hidden" data-subnet-panel="recent">
+                  <h2><i class="fas fa-clock-rotate-left"></i> Recent Calculations</h2>
+                  <div id="subnetHistory"></div>
+                  <button data-action="clear-history"><i class="fas fa-trash"></i> Clear History</button>
+                </div>
+              </section>
+            </div>
+          </div>
         </div>
 
-        <div class="subnet-lower">
-          <section class="subnet-card glass-panel">
-            <h2><i class="fas fa-terminal"></i> Cisco Configuration Helper</h2>
-            <div class="subnet-cisco-form">
-              <label>VLAN ID<input id="ciscoVlan" value="10"></label>
-              <label>Interface Name<input id="ciscoInterface" value="Vlan10"></label>
-              <label>Pool Name<input id="ciscoPool" value="VLAN10_USERS"></label>
-              <label>Description<input id="ciscoDescription" value="USERS_NETWORK"></label>
-              <label>Gateway Strategy<select id="ciscoGatewayStrategy"><option value="first">First Usable IP</option><option value="last">Last Usable IP</option><option value="custom">Custom</option></select></label>
-              <label>Custom Gateway<input id="ciscoCustomGateway" placeholder="192.168.10.1"></label>
-              <label>Excluded Start<input id="ciscoExcludedStart" placeholder="192.168.10.1"></label>
-              <label>Excluded End<input id="ciscoExcludedEnd" placeholder="192.168.10.20"></label>
+        <div id="subnetResultsModal" class="subnet-tool-modal" aria-hidden="true">
+          <div class="subnet-tool-dialog subnet-tool-dialog-wide" role="dialog" aria-modal="true" aria-label="Calculation Results">
+            <div class="subnet-tool-head">
+              <h2><i class="fas fa-gauge-high"></i> Calculation Results</h2>
+              <button data-action="close-tool" aria-label="Close Calculation Results"><i class="fas fa-xmark"></i></button>
             </div>
-            <div class="subnet-code-grid">
-              <pre id="ciscoInterfaceConfig"></pre>
-              <pre id="ciscoDhcpConfig"></pre>
+            <div class="subnet-tool-body">
+              <section class="subnet-card glass-panel subnet-results">
+                <div class="subnet-results-head"><h2><i class="fas fa-gauge-high"></i> Calculation Results</h2><span id="subnetRouteType">Standard Network</span></div>
+                <div id="subnetResultGrid" class="subnet-result-grid"></div>
+                <div id="subnetViz" class="subnet-viz"></div>
+              </section>
             </div>
-            <div class="subnet-actions">
-              <button data-action="copy-interface"><i class="fas fa-copy"></i> Copy Interface Config</button>
-              <button data-action="copy-dhcp"><i class="fas fa-copy"></i> Copy DHCP Config</button>
-              <button data-action="send-dhcp"><i class="fas fa-share"></i> Send to DHCP Generator</button>
-            </div>
-          </section>
+          </div>
         </div>
-        <div id="subnetCidrModal" class="subnet-cidr-modal" aria-hidden="true">
-          <div class="subnet-cidr-dialog" role="dialog" aria-modal="true" aria-label="CIDR Quick Reference">
-            <div class="subnet-cidr-head">
-              <h2><i class="fas fa-book"></i> CIDR Quick Reference</h2>
-              <button data-action="close-cidr" aria-label="Close CIDR reference"><i class="fas fa-xmark"></i></button>
+
+        <div id="subnetCiscoModal" class="subnet-tool-modal" aria-hidden="true">
+          <div class="subnet-tool-dialog subnet-tool-dialog-wide" role="dialog" aria-modal="true" aria-label="Cisco Configuration Helper">
+            <div class="subnet-tool-head">
+              <h2><i class="fas fa-terminal"></i> Cisco Configuration Helper</h2>
+              <button data-action="close-tool" aria-label="Close Cisco Configuration Helper"><i class="fas fa-xmark"></i></button>
             </div>
-            <div class="subnet-cidr-body">
-              <input id="cidrSearch" class="subnet-search" placeholder="Search CIDR or Mask">
-              <div class="subnet-table-wrap"><table id="cidrRefTable"><thead><tr><th>CIDR</th><th>Subnet Mask</th><th>Total IPs</th><th>Usable Hosts</th><th></th></tr></thead><tbody></tbody></table></div>
+            <div class="subnet-tool-body">
+              <section class="subnet-card glass-panel subnet-cisco-card">
+                <h2><i class="fas fa-terminal"></i> Cisco Configuration Helper</h2>
+                <div class="subnet-cisco-form">
+                  <label>VLAN ID<input id="ciscoVlan" value="10"></label>
+                  <label>Interface Name<input id="ciscoInterface" value="Vlan10"></label>
+                  <label>Pool Name<input id="ciscoPool" value="VLAN10_USERS"></label>
+                  <label>Description<input id="ciscoDescription" value="USERS_NETWORK"></label>
+                  <label>Gateway Strategy<select id="ciscoGatewayStrategy"><option value="first">First Usable IP</option><option value="last">Last Usable IP</option><option value="custom">Custom</option></select></label>
+                  <label>Custom Gateway<input id="ciscoCustomGateway" placeholder="192.168.10.1"></label>
+                  <label>Excluded Start<input id="ciscoExcludedStart" placeholder="192.168.10.1"></label>
+                  <label>Excluded End<input id="ciscoExcludedEnd" placeholder="192.168.10.20"></label>
+                </div>
+                <div class="subnet-code-grid">
+                  <pre id="ciscoInterfaceConfig"></pre>
+                  <pre id="ciscoDhcpConfig"></pre>
+                </div>
+                <div class="subnet-actions">
+                  <button data-action="copy-interface"><i class="fas fa-copy"></i> Copy Interface Config</button>
+                  <button data-action="copy-dhcp"><i class="fas fa-copy"></i> Copy DHCP Config</button>
+                  <button data-action="send-dhcp"><i class="fas fa-share"></i> Send to DHCP Generator</button>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -458,34 +490,46 @@
   function wireSubnetUi(page) {
     let currentResult = null;
     let splitRows = [];
-    const $ = (id) => page.querySelector(`#${id}`);
+    const $ = (id) => scoped(page, `#${id}`);
     const state = loadJson(STATE_KEY, {});
-    if (state.ip) $("subnetIpInput").value = state.ip;
-    if (state.prefix !== undefined) $("subnetPrefixInput").value = state.prefix;
-    $("subnetMaskInput").value = prefixToMask($("subnetPrefixInput").value);
-    $("subnetPrefixSlider").value = $("subnetPrefixInput").value;
+    if (state.ip && $("subnetIpInput")) $("subnetIpInput").value = state.ip;
+    if (state.prefix !== undefined && $("subnetPrefixInput")) $("subnetPrefixInput").value = state.prefix;
+    if ($("subnetMaskInput") && $("subnetPrefixInput")) $("subnetMaskInput").value = prefixToMask($("subnetPrefixInput").value);
+    if ($("subnetPrefixSlider") && $("subnetPrefixInput")) $("subnetPrefixSlider").value = $("subnetPrefixInput").value;
 
-    const cidrModal = () => document.getElementById("subnetCidrModal") || page.querySelector("#subnetCidrModal");
-    function openCidrReference() {
-      const modal = cidrModal();
+    const toolModal = (id) => document.getElementById(id) || page.querySelector(`#${id}`);
+    const toolFocus = {
+      subnetIpModal: "#subnetIpInput",
+      subnetResultsModal: "[data-action='close-tool']",
+      subnetCiscoModal: "#ciscoVlan",
+    };
+
+    function openToolModal(id) {
+      const modal = toolModal(id);
       if (!modal) return;
+      if (id === "subnetResultsModal" && currentResult) renderResult(page, currentResult);
+      if (id === "subnetCiscoModal" && currentResult) renderCisco(page, currentResult);
       if (modal.parentElement !== document.body) document.body.append(modal);
-      renderCidrReference(page, modal.querySelector("#cidrSearch")?.value || "");
       modal.classList.add("is-open");
       modal.setAttribute("aria-hidden", "false");
-      modal.querySelector("#cidrSearch")?.focus();
+      modal.querySelector(toolFocus[id] || "button, input, select, textarea")?.focus();
     }
-    function closeCidrReference() {
-      const modal = cidrModal();
+
+    function closeToolModal(modalOrTarget) {
+      const modal = typeof modalOrTarget === "string" ? toolModal(modalOrTarget) : modalOrTarget?.closest?.(".subnet-tool-modal") || modalOrTarget;
       if (!modal) return;
       modal.classList.remove("is-open");
       modal.setAttribute("aria-hidden", "true");
     }
 
+    function closeOpenToolModals() {
+      document.querySelectorAll(".subnet-tool-modal.is-open").forEach(closeToolModal);
+    }
+
     function setError(message) {
-      const error = page.querySelector('[data-error="ip"]');
-      error.textContent = message || "";
-      page.querySelectorAll(".subnet-inputs input").forEach((input) => input.classList.toggle("is-invalid", Boolean(message) && document.activeElement === input));
+      const error = scoped(page, '[data-error="ip"]');
+      if (error) error.textContent = message || "";
+      document.querySelectorAll(".subnet-inputs input").forEach((input) => input.classList.toggle("is-invalid", Boolean(message) && document.activeElement === input));
     }
 
     function calculate(save = true) {
@@ -511,10 +555,21 @@
       }
     }
 
-    window.calculateFromSubnetInputs = () => calculate(false);
+    function applyCidr(prefix) {
+      activateTab(page, "ip");
+      $("subnetPrefixInput").value = prefix;
+      $("subnetPrefixSlider").value = prefix;
+      $("subnetMaskInput").value = prefixToMask(prefix);
+      calculate(true);
+      openToolModal("subnetIpModal");
+    }
+
+    window.calculateFromSubnetInputs = (save = false) => calculate(save);
     const debounced = debounce(() => calculate(false), 250);
-    page.addEventListener("input", (event) => {
+
+    function handleInput(event) {
       const target = event.target;
+      if (!target) return;
       if (target.id === "subnetPrefixSlider") {
         $("subnetPrefixInput").value = target.value;
         $("subnetMaskInput").value = prefixToMask(target.value);
@@ -538,25 +593,36 @@
         renderSplitTable(page, splitRows, target.value);
       } else if (target.id === "cidrSearch") {
         renderCidrReference(page, target.value);
-      } else if (["subnetIpInput"].includes(target.id)) {
+      } else if (target.id === "subnetIpInput") {
         debounced();
       }
-    });
+    }
 
-    page.addEventListener("keydown", (event) => {
+    function handleKeydown(event) {
+      if (event.key === "Escape") closeOpenToolModals();
       if (event.key === "Enter" && event.target.closest("[data-subnet-panel='ip']")) {
         event.preventDefault();
         calculate(true);
       }
-    });
+    }
 
-    page.addEventListener("click", async (event) => {
+    async function handleClick(event) {
+      const modalBackdrop = event.target.classList?.contains("subnet-tool-modal") ? event.target : null;
+      if (modalBackdrop) {
+        closeToolModal(modalBackdrop);
+        return;
+      }
+
       const tab = event.target.closest("[data-subnet-tab]");
       if (tab) {
         activateTab(page, tab.dataset.subnetTab);
         return;
       }
-      const action = event.target.closest("[data-action]")?.dataset.action;
+
+      const actionEl = event.target.closest("[data-action]");
+      const action = actionEl?.dataset.action;
+      if (action === "open-tool") openToolModal(actionEl.dataset.toolModal);
+      if (action === "close-tool") closeToolModal(event.target);
       if (action === "calculate") calculate(true);
       if (action === "example") {
         $("subnetIpInput").value = "10.10.10.130/26";
@@ -569,32 +635,26 @@
         $("subnetMaskInput").value = "255.255.255.0";
         calculate(true);
       }
-      if (action === "copy-all" && currentResult) copyText(resultPairs(currentResult).map(([k, v]) => `${k}: ${v}`).join("\n"), "คัดลอกผลลัพธ์ทั้งหมดแล้ว");
+      if (action === "copy-all" && currentResult) copyText(resultPairs(currentResult).map(([k, v]) => `${k}: ${v}`).join("\n"), "Copied all results");
       if (action === "split") {
         try {
           const parent = parseCidrInput($("splitParentInput").value, 24);
           let targetPrefix = $("splitPrefixInput").value;
           const countRaw = $("splitCountInput").value.trim();
           if (countRaw) {
-            const count = assertIntegerString(countRaw, "จำนวน Subnet");
+            const count = assertIntegerString(countRaw, "Subnet Count");
             const bits = Math.ceil(Math.log2(count));
             targetPrefix = parent.prefix + bits;
           }
           splitRows = splitNetwork(parent.ip, parent.prefix, targetPrefix);
-          $("splitSummary").textContent = `จะแสดง ${splitRows.length} Subnets จาก ${parent.ip}/${parent.prefix} เป็น /${targetPrefix}`;
+          $("splitSummary").textContent = `Showing ${splitRows.length} subnets from ${parent.ip}/${parent.prefix} as /${targetPrefix}`;
           renderSplitTable(page, splitRows, $("splitSearchInput").value);
         } catch (error) {
           $("splitSummary").textContent = error.message;
         }
       }
-      if (action === "copy-split") copyText(splitRows.map(splitRowText).join("\n"), "คัดลอกตาราง Split Network แล้ว");
+      if (action === "copy-split") copyText(splitRows.map(splitRowText).join("\n"), "Copied split network table");
       if (action === "export-csv") exportSplitCsv(splitRows);
-      if (action === "open-cidr") {
-        openCidrReference();
-      }
-      if (action === "close-cidr") {
-        closeCidrReference();
-      }
       if (action === "open-guide") {
         const modal = page.querySelector("#subnetGuideModal");
         modal.classList.add("is-open");
@@ -610,65 +670,38 @@
         localStorage.removeItem(HISTORY_KEY);
         renderHistory(page, calculate);
       }
-      if (action === "copy-interface") copyText($("ciscoInterfaceConfig").textContent, "คัดลอก Interface Config แล้ว");
-      if (action === "copy-dhcp") copyText($("ciscoDhcpConfig").textContent, "คัดลอก DHCP Config แล้ว");
+      if (action === "copy-interface") copyText($("ciscoInterfaceConfig").textContent, "Copied Interface Config");
+      if (action === "copy-dhcp") copyText($("ciscoDhcpConfig").textContent, "Copied DHCP Config");
       if (action === "send-dhcp" && currentResult) sendToDhcpGenerator(page, currentResult);
+
       const preset = event.target.closest("[data-host-preset]");
       if (preset) {
         $("hostRequirementInput").value = preset.dataset.hostPreset;
         renderHostRequirement(page);
       }
       const copyValue = event.target.closest("[data-copy-value]");
-      if (copyValue) copyText(copyValue.dataset.copyValue, `คัดลอก ${copyValue.dataset.copyLabel || "ข้อมูล"} แล้ว`);
+      if (copyValue) copyText(copyValue.dataset.copyValue, `Copied ${copyValue.dataset.copyLabel || "value"}`);
       const cidrApply = event.target.closest("[data-apply-cidr]");
-      if (cidrApply) {
-        activateTab(page, "ip");
-        $("subnetPrefixInput").value = cidrApply.dataset.applyCidr;
-        $("subnetPrefixSlider").value = cidrApply.dataset.applyCidr;
-        $("subnetMaskInput").value = prefixToMask(cidrApply.dataset.applyCidr);
-        calculate(true);
-      }
+      if (cidrApply) applyCidr(cidrApply.dataset.applyCidr);
       if (event.target.id === "subnetGuideModal") {
         event.target.classList.remove("is-open");
         event.target.setAttribute("aria-hidden", "true");
       }
-      if (event.target.id === "subnetCidrModal") {
-        closeCidrReference();
-      }
-    });
+    }
 
+    page.addEventListener("input", handleInput);
+    page.addEventListener("keydown", handleKeydown);
+    page.addEventListener("click", handleClick);
     document.addEventListener("input", (event) => {
-      if (event.target.id === "cidrSearch") renderCidrReference(page, event.target.value);
+      if (event.target.closest(".subnet-tool-modal")) handleInput(event);
     });
-
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && cidrModal()?.classList.contains("is-open")) closeCidrReference();
+      if (event.target.closest(".subnet-tool-modal") || event.key === "Escape") handleKeydown(event);
+    });
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".subnet-tool-modal")) handleClick(event);
     });
 
-    document.addEventListener("click", async (event) => {
-      const modal = cidrModal();
-      if (!modal?.classList.contains("is-open") || !modal.contains(event.target)) return;
-      if (event.target === modal) {
-        closeCidrReference();
-        return;
-      }
-      if (event.target.closest("[data-action]")?.dataset.action === "close-cidr") {
-        closeCidrReference();
-        return;
-      }
-      const copyValue = event.target.closest("[data-copy-value]");
-      if (copyValue) copyText(copyValue.dataset.copyValue, `คัดลอก ${copyValue.dataset.copyLabel || "ข้อมูล"} แล้ว`);
-      const cidrApply = event.target.closest("[data-apply-cidr]");
-      if (cidrApply) {
-        activateTab(page, "ip");
-        $("subnetPrefixInput").value = cidrApply.dataset.applyCidr;
-        $("subnetPrefixSlider").value = cidrApply.dataset.applyCidr;
-        $("subnetMaskInput").value = prefixToMask(cidrApply.dataset.applyCidr);
-        calculate(true);
-      }
-    });
-
-    page.querySelector("#hostRequirementInput").addEventListener("input", () => renderHostRequirement(page));
     renderHostRequirement(page);
     renderCidrReference(page);
     renderHistory(page, calculate);
@@ -680,21 +713,22 @@
   }
 
   function activateTab(page, name) {
-    page.querySelectorAll("[data-subnet-tab]").forEach((btn) => btn.classList.toggle("active", btn.dataset.subnetTab === name));
-    page.querySelectorAll("[data-subnet-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.subnetPanel !== name));
+    const host = document.getElementById("subnetIpModal") || page;
+    host.querySelectorAll("[data-subnet-tab]").forEach((btn) => btn.classList.toggle("active", btn.dataset.subnetTab === name));
+    host.querySelectorAll("[data-subnet-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.subnetPanel !== name));
     localStorage.setItem(STATE_KEY, JSON.stringify({ ...loadJson(STATE_KEY, {}), tab: name }));
   }
 
   function renderResult(page, result) {
-    page.querySelector("#subnetRouteType").textContent = result.routeType;
-    page.querySelector("#subnetResultGrid").innerHTML = resultPairs(result).map(([label, value]) => `
+    scoped(page, "#subnetRouteType").textContent = result.routeType;
+    scoped(page, "#subnetResultGrid").innerHTML = resultPairs(result).map(([label, value]) => `
       <article class="subnet-result-item">
         <span>${label}</span>
         <strong>${value}</strong>
         <button aria-label="Copy ${label}" data-copy-label="${label}" data-copy-value="${String(value).replace(/"/g, "&quot;")}"><i class="fas fa-copy"></i></button>
       </article>
     `).join("");
-    page.querySelector("#subnetViz").innerHTML = `
+    scoped(page, "#subnetViz").innerHTML = `
       <div title="Network Address"><span>Network</span><strong>${result.networkAddress}</strong></div>
       <div title="Usable Host Range"><span>Usable Host Range</span><strong>${result.firstUsableHost} - ${result.lastUsableHost}</strong></div>
       <div title="Broadcast Address"><span>Broadcast</span><strong>${result.broadcastAddress}</strong></div>
@@ -702,8 +736,9 @@
   }
 
   function renderHostRequirement(page) {
-    const input = page.querySelector("#hostRequirementInput");
-    const output = page.querySelector("#hostRequirementResult");
+    const input = scoped(page, "#hostRequirementInput");
+    const output = scoped(page, "#hostRequirementResult");
+    if (!input || !output) return;
     try {
       const result = calculateRequiredPrefix(input.value);
       output.innerHTML = `
@@ -722,7 +757,9 @@
   function renderSplitTable(page, rows, query = "") {
     const needle = query.trim().toLowerCase();
     const visible = rows.filter((row) => !needle || splitRowText(row).toLowerCase().includes(needle));
-    page.querySelector("#splitTable tbody").innerHTML = visible.map((row) => `
+    const table = scoped(page, "#splitTable tbody");
+    if (!table) return;
+    table.innerHTML = visible.map((row) => `
       <tr>
         <td>${row.index}</td><td>${row.cidrNotation}</td><td>${row.firstUsableHost}</td><td>${row.lastUsableHost}</td><td>${row.broadcastAddress}</td><td>${row.usableHostsText}</td>
         <td><button data-copy-value="${splitRowText(row)}" data-copy-label="Subnet Row"><i class="fas fa-copy"></i></button></td>
@@ -735,7 +772,7 @@
   }
 
   function renderCidrReference(page, query = "") {
-    const table = page.querySelector("#cidrRefTable tbody") || document.querySelector("#cidrRefTable tbody");
+    const table = scoped(page, "#cidrRefTable tbody");
     if (!table) return;
     const needle = query.trim().toLowerCase();
     table.innerHTML = Array.from({ length: 25 }, (_, index) => index + 8)
@@ -748,7 +785,7 @@
   }
 
   function renderCisco(page, result) {
-    const value = (id) => page.querySelector(`#${id}`).value.trim();
+    const value = (id) => scoped(page, `#${id}`).value.trim();
     const strategy = value("ciscoGatewayStrategy");
     const gateway = strategy === "last" ? result.lastUsableHost : strategy === "custom" && value("ciscoCustomGateway") ? value("ciscoCustomGateway") : result.firstUsableHost;
     const vlan = value("ciscoVlan") || "10";
@@ -757,8 +794,8 @@
     const description = value("ciscoDescription") || "DHCP_SUBNET";
     const excludedStart = value("ciscoExcludedStart") || gateway;
     const excludedEnd = value("ciscoExcludedEnd") || gateway;
-    page.querySelector("#ciscoInterfaceConfig").textContent = `interface ${iface}\n description ${description}\n ip address ${gateway} ${result.subnetMask}\n no shutdown`;
-    page.querySelector("#ciscoDhcpConfig").textContent = `ip dhcp excluded-address ${excludedStart} ${excludedEnd}\n\nip dhcp pool ${pool}\n network ${result.networkAddress} ${result.subnetMask}\n default-router ${gateway}\n dns-server 10.20.100.2 10.26.100.2`;
+    scoped(page, "#ciscoInterfaceConfig").textContent = `interface ${iface}\n description ${description}\n ip address ${gateway} ${result.subnetMask}\n no shutdown`;
+    scoped(page, "#ciscoDhcpConfig").textContent = `ip dhcp excluded-address ${excludedStart} ${excludedEnd}\n\nip dhcp pool ${pool}\n network ${result.networkAddress} ${result.subnetMask}\n default-router ${gateway}\n dns-server 10.20.100.2 10.26.100.2`;
   }
 
   function sendToDhcpGenerator(page, result) {
@@ -767,20 +804,21 @@
       if (typeof window.addPool === "function") window.addPool();
       const cards = Array.from(document.querySelectorAll(".pool-card"));
       const card = cards[cards.length - 1];
-      const vlan = page.querySelector("#ciscoVlan").value.trim() || "10";
-      const strategy = page.querySelector("#ciscoGatewayStrategy").value;
-      const gateway = strategy === "last" ? result.lastUsableHost : strategy === "custom" && page.querySelector("#ciscoCustomGateway").value.trim() ? page.querySelector("#ciscoCustomGateway").value.trim() : result.firstUsableHost;
+      const vlan = scoped(page, "#ciscoVlan").value.trim() || "10";
+      const strategy = scoped(page, "#ciscoGatewayStrategy").value;
+      const customGateway = scoped(page, "#ciscoCustomGateway").value.trim();
+      const gateway = strategy === "last" ? result.lastUsableHost : strategy === "custom" && customGateway ? customGateway : result.firstUsableHost;
       if (card) {
         const firstInput = card.querySelector("[oninput*='updateField']");
         const id = firstInput?.getAttribute("oninput")?.match(/updateField\((\d+),/)?.[1];
         const updates = {
-          name: page.querySelector("#ciscoPool").value.trim() || `Subnet_${vlan}`,
+          name: scoped(page, "#ciscoPool").value.trim() || `Subnet_${vlan}`,
           macRaw: "",
           ip: "",
           gateway,
           subnet: result.subnetMask,
           vlan,
-          interfaceName: page.querySelector("#ciscoInterface").value.trim() || `Vlan${vlan}`,
+          interfaceName: scoped(page, "#ciscoInterface").value.trim() || `Vlan${vlan}`,
         };
         if (id && typeof window.updateField === "function") {
           Object.entries(updates).forEach(([field, value]) => window.updateField(Number(id), field, value));
@@ -805,14 +843,15 @@
   }
 
   function renderHistory(page, recalc) {
-    const host = page.querySelector("#subnetHistory");
+    const host = scoped(page, "#subnetHistory");
+    if (!host) return;
     const history = loadJson(HISTORY_KEY, []);
     host.innerHTML = history.length ? history.map((item) => `<button data-history-ip="${item.ip}" data-history-prefix="${item.prefix}"><strong>${item.cidr}</strong><span>${item.time}</span></button>`).join("") : "<p>ยังไม่มีประวัติการคำนวณ</p>";
     host.querySelectorAll("[data-history-ip]").forEach((btn) => btn.addEventListener("click", () => {
-      page.querySelector("#subnetIpInput").value = btn.dataset.historyIp;
-      page.querySelector("#subnetPrefixInput").value = btn.dataset.historyPrefix;
-      page.querySelector("#subnetPrefixSlider").value = btn.dataset.historyPrefix;
-      page.querySelector("#subnetMaskInput").value = prefixToMask(btn.dataset.historyPrefix);
+      scoped(page, "#subnetIpInput").value = btn.dataset.historyIp;
+      scoped(page, "#subnetPrefixInput").value = btn.dataset.historyPrefix;
+      scoped(page, "#subnetPrefixSlider").value = btn.dataset.historyPrefix;
+      scoped(page, "#subnetMaskInput").value = prefixToMask(btn.dataset.historyPrefix);
       activateTab(page, "ip");
       recalc(true);
     }));
