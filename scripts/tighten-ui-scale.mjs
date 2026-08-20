@@ -1,3 +1,4 @@
+// Deployment retry for production refresh.
 import { readFile, writeFile } from "node:fs/promises";
 
 const targets = ["index.html", "public/index.html", "dist/index.html"];
