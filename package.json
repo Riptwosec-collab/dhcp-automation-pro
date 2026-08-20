@@ -3,7 +3,7 @@
   "version": "3.4.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs && node scripts/apply-space-dashboard.mjs && node scripts/apply-grand-dual-theme.mjs && node scripts/add-usage-guide.mjs && node scripts/add-guide-modal.mjs && node scripts/apply-interactive-gold-background.mjs && node scripts/fix-guide-theme-switch.mjs && node scripts/apply-interactive-blue-3d-theme.mjs && node scripts/fix-guide-assets-v5.mjs && node scripts/rebuild-dashboard-layout-v3.mjs && node scripts/repair-layout-and-credit-v4.mjs && node scripts/add-subnet-calculator.mjs && node scripts/fix-persistent-pool-editing.mjs && node scripts/constrain-dashboard-width.mjs && node scripts/add-smart-mass-import.mjs",
+    "build": "node scripts/build-site.mjs && node scripts/remove-network-background.mjs && node scripts/remove-configuration-summary.mjs && node scripts/apply-space-dashboard.mjs && node scripts/apply-grand-dual-theme.mjs && node scripts/add-usage-guide.mjs && node scripts/add-guide-modal.mjs && node scripts/apply-interactive-gold-background.mjs && node scripts/fix-guide-theme-switch.mjs && node scripts/apply-interactive-blue-3d-theme.mjs && node scripts/fix-guide-assets-v5.mjs && node scripts/rebuild-dashboard-layout-v3.mjs && node scripts/repair-layout-and-credit-v4.mjs && node scripts/add-subnet-calculator.mjs && node scripts/fix-persistent-pool-editing.mjs && node scripts/constrain-dashboard-width.mjs && node scripts/add-smart-mass-import.mjs && node scripts/tighten-ui-scale.mjs",
     "test": "node scripts/subnet-calculator.test.mjs"
   },
   "engines": {
