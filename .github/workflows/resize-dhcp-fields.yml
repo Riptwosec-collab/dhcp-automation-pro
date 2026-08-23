@@ -1,0 +1,38 @@
+name: Resize DHCP fields
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/resize-dhcp-fields.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Make Device Type narrower and DNS wider
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          old = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4'
+          new = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-[150px_minmax(320px,1.8fr)_minmax(155px,1fr)_minmax(155px,1fr)_80px_110px] gap-4'
+          if old not in text:
+              raise SystemExit('Target DHCP field grid was not found; refusing to modify unrelated markup.')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Commit layout adjustment
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'style: narrow device field and widen DNS field'
+          git push origin HEAD:main
