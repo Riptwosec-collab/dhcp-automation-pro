@@ -1,4 +1,4 @@
-name: Rename Log Generator Heading
+name: Rename Log Generator Tab
 
 on:
   push:
@@ -10,14 +10,14 @@ permissions:
   contents: write
 
 jobs:
-  rename-log-heading:
+  rename-log-tab:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Rename System Log Generator heading
+      - name: Rename System Log Generator navigation tab
         shell: bash
         run: |
           python - <<'PY'
@@ -25,25 +25,25 @@ jobs:
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
-          old = '<h1 class="text-2xl font-bold tracking-wide">SYSTEM LOG GENERATOR</h1>'
-          new = '<h1 class="text-2xl font-bold tracking-wide">Generate Log traffic</h1>'
+          old = 'System Log Generator</button>'
+          new = 'Generate Log traffic</button>'
 
           if new in text:
-              print('Heading already renamed')
+              print('Navigation tab already renamed')
           elif old in text:
               text = text.replace(old, new, 1)
               path.write_text(text, encoding='utf-8')
-              print('Renamed heading to Generate Log traffic')
+              print('Renamed navigation tab to Generate Log traffic')
           else:
-              raise SystemExit('Target heading not found; refusing unrelated edit.')
+              raise SystemExit('Target navigation label not found; refusing unrelated edit.')
           PY
 
-      - name: Commit heading rename
+      - name: Commit navigation rename
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'feat: rename log generator heading'
+          git commit -m 'feat: rename log generator navigation tab'
           git push origin HEAD:main
