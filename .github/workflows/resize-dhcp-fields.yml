@@ -1,4 +1,4 @@
-name: Link Scroll Fix
+name: Add Current Time to Log Generator
 
 on:
   push:
@@ -10,28 +10,51 @@ permissions:
   contents: write
 
 jobs:
-  patch-scroll:
+  patch-current-time:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Link scroll stylesheet
+      - name: Add live current time display
         shell: bash
         run: |
-          if grep -q 'scroll-fix.css' index.html; then
-            echo 'scroll-fix.css already linked'
-          else
-            sed -i 's#</head>#  <link rel="stylesheet" href="scroll-fix.css">\n</head>#' index.html
-          fi
+          python - <<'PY'
+          from pathlib import Path
 
-      - name: Commit scroll fix
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          marker = 'current-time-clock-v1'
+
+          if marker not in text:
+              old = '''<div class="md:col-span-2"><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>'''
+              new = '''<div class="md:col-span-2"><div class="flex flex-wrap items-center justify-between gap-3 mb-2"><label class="block text-[11px] font-bold accent-text uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="current-time-badge" title="เวลาปัจจุบันจากอุปกรณ์ของคุณ"><i data-lucide="clock-3" class="w-3.5 h-3.5"></i><span>CURRENT TIME</span><strong id="currentTimeDisplay">--:--:--</strong></div></div><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>'''
+              if old not in text:
+                  raise SystemExit('Time field markup not found; refusing unrelated edit.')
+              text = text.replace(old, new, 1)
+
+              css = '''\n    /* current-time-clock-v1 */\n    .current-time-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;border:1px solid rgba(var(--accentRgb),.34);background:linear-gradient(135deg,rgba(var(--accentRgb),.13),rgba(var(--accentRgb),.045));color:var(--accent);box-shadow:0 0 16px rgba(var(--accentRgb),.10),inset 0 1px 0 rgba(255,255,255,.04);font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.08em;white-space:nowrap}\n    .current-time-badge strong{font-size:12px;letter-spacing:.04em;color:var(--accent2);text-shadow:0 0 12px rgba(var(--accentRgb),.45);font-variant-numeric:tabular-nums}\n    .current-time-badge svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.45));animation:currentClockPulse 2s ease-in-out infinite}\n    @keyframes currentClockPulse{0%,100%{opacity:.7;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}\n'''
+              text = text.replace('  </style>', css + '  </style>', 1)
+
+              js = '''\n  function updateCurrentTimeDisplay(){\n    const el=document.getElementById('currentTimeDisplay');\n    if(!el)return;\n    const now=new Date();\n    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});\n  }\n  window.addEventListener('load',()=>{updateCurrentTimeDisplay();setInterval(updateCurrentTimeDisplay,1000)});\n'''
+              needle = "  function autoCalculateTime()"
+              if needle not in text:
+                  raise SystemExit('autoCalculateTime function not found; refusing unrelated edit.')
+              text = text.replace(needle, js + needle, 1)
+
+              path.write_text(text, encoding='utf-8')
+              print('Added live current time display to System Log Generator')
+          else:
+              print('Current time display already present')
+          PY
+
+      - name: Commit current time UI
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'fix: enable full vertical scrolling for log page'
+          git commit -m 'feat: show live current time in log generator'
           git push origin HEAD:main
