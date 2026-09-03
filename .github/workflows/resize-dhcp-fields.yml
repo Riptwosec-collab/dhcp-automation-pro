@@ -1,4 +1,4 @@
-name: Add Current Time to Log Generator
+name: Add Format 3 Masked Log
 
 on:
   push:
@@ -10,51 +10,58 @@ permissions:
   contents: write
 
 jobs:
-  patch-current-time:
+  patch-format-3:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Add live current time display
+      - name: Add Format 3 and reorder outputs
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
-          marker = 'current-time-clock-v1'
+          marker = 'format-3-wide-mask-v1'
 
-          if marker not in text:
-              old = '''<div class="md:col-span-2"><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>'''
-              new = '''<div class="md:col-span-2"><div class="flex flex-wrap items-center justify-between gap-3 mb-2"><label class="block text-[11px] font-bold accent-text uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="current-time-badge" title="เวลาปัจจุบันจากอุปกรณ์ของคุณ"><i data-lucide="clock-3" class="w-3.5 h-3.5"></i><span>CURRENT TIME</span><strong id="currentTimeDisplay">--:--:--</strong></div></div><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>'''
-              if old not in text:
-                  raise SystemExit('Time field markup not found; refusing unrelated edit.')
-              text = text.replace(old, new, 1)
+          if marker in text:
+              print('Format 3 already present')
+              raise SystemExit(0)
 
-              css = '''\n    /* current-time-clock-v1 */\n    .current-time-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;border:1px solid rgba(var(--accentRgb),.34);background:linear-gradient(135deg,rgba(var(--accentRgb),.13),rgba(var(--accentRgb),.045));color:var(--accent);box-shadow:0 0 16px rgba(var(--accentRgb),.10),inset 0 1px 0 rgba(255,255,255,.04);font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.08em;white-space:nowrap}\n    .current-time-badge strong{font-size:12px;letter-spacing:.04em;color:var(--accent2);text-shadow:0 0 12px rgba(var(--accentRgb),.45);font-variant-numeric:tabular-nums}\n    .current-time-badge svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.45));animation:currentClockPulse 2s ease-in-out infinite}\n    @keyframes currentClockPulse{0%,100%{opacity:.7;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}\n'''
-              text = text.replace('  </style>', css + '  </style>', 1)
+          old_results = '''<div class="space-y-6"><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div>'''
+          new_results = '''<div class="space-y-6"><div id="logRes3" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 3: Masked IP (10.x.x.x)</label><button onclick="copyLogText('result3',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result3" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div>'''
+          if old_results not in text:
+              raise SystemExit('Log result cards not found; refusing unrelated edit.')
+          text = text.replace(old_results, new_results, 1)
 
-              js = '''\n  function updateCurrentTimeDisplay(){\n    const el=document.getElementById('currentTimeDisplay');\n    if(!el)return;\n    const now=new Date();\n    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});\n  }\n  window.addEventListener('load',()=>{updateCurrentTimeDisplay();setInterval(updateCurrentTimeDisplay,1000)});\n'''
-              needle = "  function autoCalculateTime()"
-              if needle not in text:
-                  raise SystemExit('autoCalculateTime function not found; refusing unrelated edit.')
-              text = text.replace(needle, js + needle, 1)
+          mask_fn = "function maskIp(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');p[3]='xx';return p.join('.')}"
+          if mask_fn not in text:
+              raise SystemExit('maskIp function not found; refusing unrelated edit.')
+          text = text.replace(mask_fn, mask_fn + "\n  function maskIpWide(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');return `${p[0]}.x.x.x`}", 1)
 
-              path.write_text(text, encoding='utf-8')
-              print('Added live current time display to System Log Generator')
-          else:
-              print('Current time display already present')
+          pattern = re.compile(r"  function generateLogs\(\)\{.*?triggerFlash\('logRes2'\)\}")
+          match = pattern.search(text)
+          if not match:
+              raise SystemExit('generateLogs function not found; refusing unrelated edit.')
+          new_generate = """  function generateLogs(){const time=document.getElementById('timeInput').value.trim()||'00',src=document.getElementById('srcIp').value.trim()||'-',dst=document.getElementById('dstIp').value.trim()||'-',isp=document.getElementById('ispInput').value.trim()||'PRIVATE';document.getElementById('result3').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result2').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIp(src)} เรียกไปปลายทาง IP : ${maskIp(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result1').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${src} เรียกไปปลายทาง IP : ${dst} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;triggerFlash('logRes3');triggerFlash('logRes2');triggerFlash('logRes1')}"""
+          text = text[:match.start()] + new_generate + text[match.end():]
+
+          text = text.replace('  </style>', '''\n    /* format-3-wide-mask-v1 */\n    #logRes3{border-color:rgba(var(--accentRgb),.32)!important;box-shadow:0 0 24px rgba(var(--accentRgb),.07),0 16px 36px rgba(0,0,0,.30)}\n    #logRes3 .accent-text{text-shadow:0 0 12px rgba(var(--accentRgb),.30)}\n  </style>''', 1)
+
+          path.write_text(text, encoding='utf-8')
+          print('Added Format 3 (first octet only mask) and reordered cards 3 > 2 > 1')
           PY
 
-      - name: Commit current time UI
+      - name: Commit Format 3
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'feat: show live current time in log generator'
+          git commit -m 'feat: add format 3 wide masked log output'
           git push origin HEAD:main
