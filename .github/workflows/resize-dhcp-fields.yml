@@ -1,4 +1,4 @@
-name: Fix Log Page Scrolling
+name: Link Scroll Fix
 
 on:
   push:
@@ -16,60 +16,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Fix desktop vertical scrolling for System Log Generator
+
+      - name: Link scroll stylesheet
+        shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          if grep -q 'scroll-fix.css' index.html; then
+            echo 'scroll-fix.css already linked'
+          else
+            sed -i 's#</head>#  <link rel="stylesheet" href="scroll-fix.css">\n</head>#' index.html
+          fi
 
-          path = Path('index.html')
-          text = path.read_text(encoding='utf-8')
-          marker = '/* log-scroll-fix-v1 */'
-
-          css = r'''
-    /* log-scroll-fix-v1 */
-    .app-root{height:100dvh;min-height:0;overflow:hidden}
-    .main-workspace{min-height:0!important;height:100%;overflow:hidden}
-    .content-main{
-      min-height:0!important;
-      overflow-y:auto!important;
-      overflow-x:hidden;
-      overscroll-behavior:contain;
-      scrollbar-gutter:stable;
-      -webkit-overflow-scrolling:touch;
-    }
-    .workspace-shell{height:auto!important;min-height:100%;padding-bottom:28px}
-    #view-log{
-      height:auto!important;
-      min-height:100%;
-      overflow:visible!important;
-      padding-bottom:48px!important;
-    }
-    #view-log .log-card{flex:0 0 auto;margin-bottom:12px}
-    @media(max-width:767px){
-      .app-root{height:auto;min-height:100dvh;overflow:visible}
-      .main-workspace{height:auto;min-height:100dvh;overflow:visible}
-      .content-main{overflow:visible!important;min-height:auto!important}
-      .workspace-shell{min-height:auto;padding-bottom:24px}
-      #view-log{min-height:auto;padding-bottom:36px!important}
-    }
-'''
-
-          if marker in text:
-              start = text.index(marker)
-              # Refuse to duplicate. Existing fix is already present.
-              print('scroll fix already present')
-          else:
-              if '  </style>' not in text:
-                  raise SystemExit('Closing style tag not found; refusing unsafe edit.')
-              text = text.replace('  </style>', css + '  </style>', 1)
-              path.write_text(text, encoding='utf-8')
-              print('added scroll fix')
-          PY
       - name: Commit scroll fix
+        shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'fix: restore vertical scrolling in system log view'
+          git commit -m 'fix: enable full vertical scrolling for log page'
           git push origin HEAD:main
