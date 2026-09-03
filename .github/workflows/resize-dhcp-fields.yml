@@ -37,37 +37,13 @@ jobs:
               raise SystemExit('Time input row not found; refusing unrelated edit.')
           text = text.replace(old, new, 1)
 
-          old_fn = '''  function updateCurrentTimeDisplay(){
-    const el=document.getElementById('currentTimeDisplay');
-    if(!el)return;
-    const now=new Date();
-    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-  }'''
-          new_fn = '''  function updateCurrentTimeDisplay(){
-    const el=document.getElementById('currentTimeDisplay');
-    const btnLabel=document.getElementById('currentTimeButtonLabel');
-    const now=new Date();
-    const full=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-    const short=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    if(el)el.textContent=full;
-    if(btnLabel)btnLabel.textContent=short;
-  }
-  function useCurrentTime(){
-    const now=new Date();
-    const value=`${String(now.getHours()).padStart(2,'0')}.${String(now.getMinutes()).padStart(2,'0')}`;
-    const input=document.getElementById('timeInput');
-    if(!input)return;
-    input.value=value;
-    input.focus();
-    input.select();
-    const btn=document.getElementById('btnUseCurrentTime');
-    if(btn){btn.classList.remove('time-fill-flash');void btn.offsetWidth;btn.classList.add('time-fill-flash')}
-  }'''
+          old_fn = "  function updateCurrentTimeDisplay(){\n    const el=document.getElementById('currentTimeDisplay');\n    if(!el)return;\n    const now=new Date();\n    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});\n  }"
+          new_fn = "  function updateCurrentTimeDisplay(){\n    const el=document.getElementById('currentTimeDisplay');\n    const btnLabel=document.getElementById('currentTimeButtonLabel');\n    const now=new Date();\n    const full=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});\n    const short=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;\n    if(el)el.textContent=full;\n    if(btnLabel)btnLabel.textContent=short;\n  }\n  function useCurrentTime(){\n    const now=new Date();\n    const value=`${String(now.getHours()).padStart(2,'0')}.${String(now.getMinutes()).padStart(2,'0')}`;\n    const input=document.getElementById('timeInput');\n    if(!input)return;\n    input.value=value;\n    input.focus();\n    input.select();\n    const btn=document.getElementById('btnUseCurrentTime');\n    if(btn){btn.classList.remove('time-fill-flash');void btn.offsetWidth;btn.classList.add('time-fill-flash')}\n  }"
           if old_fn not in text:
               raise SystemExit('Current time display function not found; refusing unrelated edit.')
           text = text.replace(old_fn, new_fn, 1)
 
-          css = '''\n    /* current-time-quick-fill-v1 */\n    .current-time-fill-btn{min-width:104px;border-color:rgba(var(--accentRgb),.48);background:linear-gradient(135deg,rgba(var(--accentRgb),.17),rgba(var(--accentRgb),.07));box-shadow:0 0 18px rgba(var(--accentRgb),.12),inset 0 1px 0 rgba(255,255,255,.04)}\n    .current-time-fill-btn span{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:.03em}\n    .current-time-fill-btn svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.5))}\n    .current-time-fill-btn:hover{box-shadow:0 0 26px rgba(var(--accentRgb),.28),inset 0 0 14px rgba(var(--accentRgb),.08)}\n    .time-fill-flash{animation:timeFillFlash .55s ease-out}\n    @keyframes timeFillFlash{0%{transform:scale(.96);box-shadow:0 0 0 rgba(var(--accentRgb),0)}45%{transform:scale(1.04);box-shadow:0 0 32px rgba(var(--accentRgb),.48)}100%{transform:scale(1);box-shadow:0 0 18px rgba(var(--accentRgb),.12)}}\n    @media(max-width:520px){.current-time-fill-btn{min-width:88px;padding-left:12px!important;padding-right:12px!important}}\n'''
+          css = "\n    /* current-time-quick-fill-v1 */\n    .current-time-fill-btn{min-width:104px;border-color:rgba(var(--accentRgb),.48);background:linear-gradient(135deg,rgba(var(--accentRgb),.17),rgba(var(--accentRgb),.07));box-shadow:0 0 18px rgba(var(--accentRgb),.12),inset 0 1px 0 rgba(255,255,255,.04)}\n    .current-time-fill-btn span{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:.03em}\n    .current-time-fill-btn svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.5))}\n    .current-time-fill-btn:hover{box-shadow:0 0 26px rgba(var(--accentRgb),.28),inset 0 0 14px rgba(var(--accentRgb),.08)}\n    .time-fill-flash{animation:timeFillFlash .55s ease-out}\n    @keyframes timeFillFlash{0%{transform:scale(.96);box-shadow:0 0 0 rgba(var(--accentRgb),0)}45%{transform:scale(1.04);box-shadow:0 0 32px rgba(var(--accentRgb),.48)}100%{transform:scale(1);box-shadow:0 0 18px rgba(var(--accentRgb),.12)}}\n    @media(max-width:520px){.current-time-fill-btn{min-width:88px;padding-left:12px!important;padding-right:12px!important}}\n"
           text = text.replace('  </style>', css + '  </style>', 1)
 
           path.write_text(text, encoding='utf-8')
