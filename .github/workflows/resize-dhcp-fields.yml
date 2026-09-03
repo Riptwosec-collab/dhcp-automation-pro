@@ -1,4 +1,4 @@
-name: Add Format 3 Masked Log
+name: Add Current Time Quick Fill
 
 on:
   push:
@@ -10,58 +10,76 @@ permissions:
   contents: write
 
 jobs:
-  patch-format-3:
+  patch-current-time-button:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Add Format 3 and reorder outputs
+      - name: Add current time quick-fill button
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
-          marker = 'format-3-wide-mask-v1'
+          marker = 'current-time-quick-fill-v1'
 
           if marker in text:
-              print('Format 3 already present')
+              print('Current time quick-fill already present')
               raise SystemExit(0)
 
-          old_results = '''<div class="space-y-6"><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div>'''
-          new_results = '''<div class="space-y-6"><div id="logRes3" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 3: Masked IP (10.x.x.x)</label><button onclick="copyLogText('result3',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result3" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div>'''
-          if old_results not in text:
-              raise SystemExit('Log result cards not found; refusing unrelated edit.')
-          text = text.replace(old_results, new_results, 1)
+          old = '''<div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div>'''
+          new = '''<div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button id="btnUseCurrentTime" onclick="useCurrentTime()" class="btn-glow current-time-fill-btn px-4 md:px-5 rounded-xl font-bold flex items-center justify-center gap-2 whitespace-nowrap" title="ใส่เวลาปัจจุบันลงในช่อง"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="currentTimeButtonLabel">NOW</span></button><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div>'''
+          if old not in text:
+              raise SystemExit('Time input row not found; refusing unrelated edit.')
+          text = text.replace(old, new, 1)
 
-          mask_fn = "function maskIp(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');p[3]='xx';return p.join('.')}"
-          if mask_fn not in text:
-              raise SystemExit('maskIp function not found; refusing unrelated edit.')
-          text = text.replace(mask_fn, mask_fn + "\n  function maskIpWide(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');return `${p[0]}.x.x.x`}", 1)
+          old_fn = '''  function updateCurrentTimeDisplay(){
+    const el=document.getElementById('currentTimeDisplay');
+    if(!el)return;
+    const now=new Date();
+    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }'''
+          new_fn = '''  function updateCurrentTimeDisplay(){
+    const el=document.getElementById('currentTimeDisplay');
+    const btnLabel=document.getElementById('currentTimeButtonLabel');
+    const now=new Date();
+    const full=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const short=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if(el)el.textContent=full;
+    if(btnLabel)btnLabel.textContent=short;
+  }
+  function useCurrentTime(){
+    const now=new Date();
+    const value=`${String(now.getHours()).padStart(2,'0')}.${String(now.getMinutes()).padStart(2,'0')}`;
+    const input=document.getElementById('timeInput');
+    if(!input)return;
+    input.value=value;
+    input.focus();
+    input.select();
+    const btn=document.getElementById('btnUseCurrentTime');
+    if(btn){btn.classList.remove('time-fill-flash');void btn.offsetWidth;btn.classList.add('time-fill-flash')}
+  }'''
+          if old_fn not in text:
+              raise SystemExit('Current time display function not found; refusing unrelated edit.')
+          text = text.replace(old_fn, new_fn, 1)
 
-          pattern = re.compile(r"  function generateLogs\(\)\{.*?triggerFlash\('logRes2'\)\}")
-          match = pattern.search(text)
-          if not match:
-              raise SystemExit('generateLogs function not found; refusing unrelated edit.')
-          new_generate = """  function generateLogs(){const time=document.getElementById('timeInput').value.trim()||'00',src=document.getElementById('srcIp').value.trim()||'-',dst=document.getElementById('dstIp').value.trim()||'-',isp=document.getElementById('ispInput').value.trim()||'PRIVATE';document.getElementById('result3').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result2').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIp(src)} เรียกไปปลายทาง IP : ${maskIp(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result1').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${src} เรียกไปปลายทาง IP : ${dst} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;triggerFlash('logRes3');triggerFlash('logRes2');triggerFlash('logRes1')}"""
-          text = text[:match.start()] + new_generate + text[match.end():]
-
-          text = text.replace('  </style>', '''\n    /* format-3-wide-mask-v1 */\n    #logRes3{border-color:rgba(var(--accentRgb),.32)!important;box-shadow:0 0 24px rgba(var(--accentRgb),.07),0 16px 36px rgba(0,0,0,.30)}\n    #logRes3 .accent-text{text-shadow:0 0 12px rgba(var(--accentRgb),.30)}\n  </style>''', 1)
+          css = '''\n    /* current-time-quick-fill-v1 */\n    .current-time-fill-btn{min-width:104px;border-color:rgba(var(--accentRgb),.48);background:linear-gradient(135deg,rgba(var(--accentRgb),.17),rgba(var(--accentRgb),.07));box-shadow:0 0 18px rgba(var(--accentRgb),.12),inset 0 1px 0 rgba(255,255,255,.04)}\n    .current-time-fill-btn span{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:.03em}\n    .current-time-fill-btn svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.5))}\n    .current-time-fill-btn:hover{box-shadow:0 0 26px rgba(var(--accentRgb),.28),inset 0 0 14px rgba(var(--accentRgb),.08)}\n    .time-fill-flash{animation:timeFillFlash .55s ease-out}\n    @keyframes timeFillFlash{0%{transform:scale(.96);box-shadow:0 0 0 rgba(var(--accentRgb),0)}45%{transform:scale(1.04);box-shadow:0 0 32px rgba(var(--accentRgb),.48)}100%{transform:scale(1);box-shadow:0 0 18px rgba(var(--accentRgb),.12)}}\n    @media(max-width:520px){.current-time-fill-btn{min-width:88px;padding-left:12px!important;padding-right:12px!important}}\n'''
+          text = text.replace('  </style>', css + '  </style>', 1)
 
           path.write_text(text, encoding='utf-8')
-          print('Added Format 3 (first octet only mask) and reordered cards 3 > 2 > 1')
+          print('Added live current-time quick-fill button beside 00')
           PY
 
-      - name: Commit Format 3
+      - name: Commit current time quick-fill
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m 'feat: add format 3 wide masked log output'
+          git commit -m 'feat: add current time quick-fill button'
           git push origin HEAD:main
