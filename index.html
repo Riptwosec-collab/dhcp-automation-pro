@@ -83,6 +83,15 @@
     /* format-3-wide-mask-v1 */
     #logRes3{border-color:rgba(var(--accentRgb),.32)!important;box-shadow:0 0 24px rgba(var(--accentRgb),.07),0 16px 36px rgba(0,0,0,.30)}
     #logRes3 .accent-text{text-shadow:0 0 12px rgba(var(--accentRgb),.30)}
+
+    /* current-time-quick-fill-v1 */
+    .current-time-fill-btn{min-width:104px;border-color:rgba(var(--accentRgb),.48);background:linear-gradient(135deg,rgba(var(--accentRgb),.17),rgba(var(--accentRgb),.07));box-shadow:0 0 18px rgba(var(--accentRgb),.12),inset 0 1px 0 rgba(255,255,255,.04)}
+    .current-time-fill-btn span{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:.03em}
+    .current-time-fill-btn svg{filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.5))}
+    .current-time-fill-btn:hover{box-shadow:0 0 26px rgba(var(--accentRgb),.28),inset 0 0 14px rgba(var(--accentRgb),.08)}
+    .time-fill-flash{animation:timeFillFlash .55s ease-out}
+    @keyframes timeFillFlash{0%{transform:scale(.96);box-shadow:0 0 0 rgba(var(--accentRgb),0)}45%{transform:scale(1.04);box-shadow:0 0 32px rgba(var(--accentRgb),.48)}100%{transform:scale(1);box-shadow:0 0 18px rgba(var(--accentRgb),.12)}}
+    @media(max-width:520px){.current-time-fill-btn{min-width:88px;padding-left:12px!important;padding-right:12px!important}}
   </style>
   <link rel="stylesheet" href="scroll-fix.css">
 </head>
@@ -132,7 +141,7 @@
             <div class="log-card w-full max-w-4xl glass-panel p-8 rounded-2xl accent-border mt-2">
               <div class="flex items-center gap-4 mb-8 border-b pb-5" style="border-color:var(--border)"><div class="w-3 h-8 rounded-full" style="background:var(--accent);box-shadow:0 0 16px var(--accent)"></div><h1 class="text-2xl font-bold tracking-wide">SYSTEM LOG GENERATOR</h1></div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="md:col-span-2"><div class="flex flex-wrap items-center justify-between gap-3 mb-2"><label class="block text-[11px] font-bold accent-text uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="current-time-badge" title="เวลาปัจจุบันจากอุปกรณ์ของคุณ"><i data-lucide="clock-3" class="w-3.5 h-3.5"></i><span>CURRENT TIME</span><strong id="currentTimeDisplay">--:--:--</strong></div></div><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>
+                <div class="md:col-span-2"><div class="flex flex-wrap items-center justify-between gap-3 mb-2"><label class="block text-[11px] font-bold accent-text uppercase tracking-widest">Time (เวลา) - Auto (-15 Mins)</label><div class="current-time-badge" title="เวลาปัจจุบันจากอุปกรณ์ของคุณ"><i data-lucide="clock-3" class="w-3.5 h-3.5"></i><span>CURRENT TIME</span><strong id="currentTimeDisplay">--:--:--</strong></div></div><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()"><button id="btnUseCurrentTime" onclick="useCurrentTime()" class="btn-glow current-time-fill-btn px-4 md:px-5 rounded-xl font-bold flex items-center justify-center gap-2 whitespace-nowrap" title="ใส่เวลาปัจจุบันลงในช่อง"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="currentTimeButtonLabel">NOW</span></button><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>
                 <div><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Source IP (ต้นทาง)</label><input id="srcIp" placeholder="e.g. 10.20.2.16" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono"></div>
                 <div><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Destination IP (ปลายทาง)</label><input id="dstIp" placeholder="e.g. 10.109.1.16" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="fetchISPData()"></div>
                 <div class="md:col-span-2"><div class="flex flex-wrap justify-between items-center gap-2 mb-2"><label class="text-[11px] font-bold accent-text uppercase tracking-widest">Network / ISP (ผู้ให้บริการ)</label><label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="showCountryToggle" class="cyber-check" onchange="renderISP()" checked><span class="text-xs" style="color:var(--muted)">+ COUNTRY (FULL)</span></label></div><div class="flex gap-3"><input id="ispInput" list="isp-list" placeholder="Auto-fetch data..." class="cyber-input w-full rounded-xl px-5 py-3.5"><datalist id="isp-list"><option value="PRIVATE"></option><option value="TRUE, Thailand"></option><option value="AIS, Thailand"></option><option value="3BB, Thailand"></option><option value="NT, Thailand"></option></datalist><button id="btnScanIp" onclick="fetchISPData()" class="btn-glow px-5 rounded-xl font-bold min-w-[120px] flex items-center justify-center gap-2"><i data-lucide="scan" class="w-4 h-4"></i>SCAN IP</button></div></div>
@@ -178,9 +187,23 @@
 
   function updateCurrentTimeDisplay(){
     const el=document.getElementById('currentTimeDisplay');
-    if(!el)return;
+    const btnLabel=document.getElementById('currentTimeButtonLabel');
     const now=new Date();
-    el.textContent=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const full=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const short=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if(el)el.textContent=full;
+    if(btnLabel)btnLabel.textContent=short;
+  }
+  function useCurrentTime(){
+    const now=new Date();
+    const value=`${String(now.getHours()).padStart(2,'0')}.${String(now.getMinutes()).padStart(2,'0')}`;
+    const input=document.getElementById('timeInput');
+    if(!input)return;
+    input.value=value;
+    input.focus();
+    input.select();
+    const btn=document.getElementById('btnUseCurrentTime');
+    if(btn){btn.classList.remove('time-fill-flash');void btn.offsetWidth;btn.classList.add('time-fill-flash')}
   }
   window.addEventListener('load',()=>{updateCurrentTimeDisplay();setInterval(updateCurrentTimeDisplay,1000)});
   function autoCalculateTime(){const el=document.getElementById('timeInput'),m=el.value.trim().match(/^(\d{1,2})[:.](\d{2})$/);if(!m)return;let h=Number(m[1]),min=Number(m[2]);if(h>23||min>59)return;min-=15;if(min<0){min+=60;h--}if(h<0)h+=24;el.value=`${String(h).padStart(2,'0')}.${String(min).padStart(2,'0')}`}
