@@ -2,9 +2,11 @@ name: Upgrade Traffic Log Generator
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
+      - 'scripts/patch-traffic-log.py'
 
 permissions:
   contents: write
@@ -17,56 +19,10 @@ jobs:
         with:
           ref: main
 
-      - name: Remove minus-15 behavior, add notes, and upgrade format 3
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
+      - name: Patch Generate Log traffic page
+        run: python scripts/patch-traffic-log.py
 
-          path = Path('index.html')
-          text = path.read_text(encoding='utf-8')
-          marker = 'traffic-log-note-v1'
-
-          if marker in text:
-              print('Traffic log upgrade already present')
-              raise SystemExit(0)
-
-          text = text.replace('Time (เวลา) - Auto (-15 Mins)', 'Time (เวลา)', 1)
-          old_time = '<input id="timeInput" value="00" placeholder="เช่น 10:25" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="autoCalculateTime()">'
-          new_time = '<input id="timeInput" value="00" placeholder="เช่น 08.50" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono">'
-          if old_time not in text:
-              raise SystemExit('Time input target not found; refusing unrelated edit.')
-          text = text.replace(old_time, new_time, 1)
-
-          old_results = '''<div class="space-y-6"><div id="logRes3" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 3: Masked IP (10.x.x.x)</label><button onclick="copyLogText('result3',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result3" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div>'''
-          new_results = '''<div class="log-results-layout"><div class="space-y-6"><div id="logRes3" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 3: NetFlow Traffic &gt; 80%</label><button onclick="copyLogText('result3',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result3" rows="5" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes2" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 2: Masked IP (xx)</label><button onclick="copyLogText('result2',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result2" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div><div id="logRes1" class="glass-panel p-4 rounded-xl"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 1: Full IP</label><button onclick="copyLogText('result1',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="result1" rows="3" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea></div></div><div class="glass-panel p-4 rounded-xl log-note-panel"><div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">NOTE / ข้อมูลเพิ่มเติม</label><button onclick="copyLogText('trafficNote',this)" class="copy-mini text-xs font-bold">COPY</button></div><textarea id="trafficNote" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm" placeholder="วางข้อมูลเพิ่มเติมตรงนี้..."></textarea></div></div>'''
-          if old_results not in text:
-              raise SystemExit('Log results target not found; refusing unrelated edit.')
-          text = text.replace(old_results, new_results, 1)
-
-          old_generate = '''  function generateLogs(){const time=document.getElementById('timeInput').value.trim()||'00',src=document.getElementById('srcIp').value.trim()||'-',dst=document.getElementById('dstIp').value.trim()||'-',isp=document.getElementById('ispInput').value.trim()||'PRIVATE';document.getElementById('result3').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result2').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIp(src)} เรียกไปปลายทาง IP : ${maskIp(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result1').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${src} เรียกไปปลายทาง IP : ${dst} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;triggerFlash('logRes3');triggerFlash('logRes2');triggerFlash('logRes1')}'''
-          new_generate = '''  function generateLogs(){const time=document.getElementById('timeInput').value.trim()||'00',src=document.getElementById('srcIp').value.trim()||'-',dst=document.getElementById('dstIp').value.trim()||'-',isp=document.getElementById('ispInput').value.trim()||'PRIVATE';document.getElementById('result3').value=`มอนิเตอร์พบใช้ traffic เครือข่ายมากกว่า 80% เกิน 15 นาที\\nแก้ไขโดย : ตรวจสอบจาก Netflow พบการใช้งานสูงดังนี้  เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} ) \\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result2').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIp(src)} เรียกไปปลายทาง IP : ${maskIp(dst)} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;document.getElementById('result1').value=`เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${src} เรียกไปปลายทาง IP : ${dst} ( ${isp} )\\nไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ`;triggerFlash('logRes3');triggerFlash('logRes2');triggerFlash('logRes1')}'''
-          if old_generate not in text:
-              raise SystemExit('generateLogs target not found; refusing unrelated edit.')
-          text = text.replace(old_generate, new_generate, 1)
-
-          css = '''
-    /* traffic-log-note-v1 */
-    .log-results-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.75fr);gap:18px;align-items:start}
-    .log-note-panel{position:sticky;top:12px}
-    .log-note-panel textarea{min-height:390px;resize:vertical;line-height:1.65}
-    @media(max-width:900px){.log-results-layout{grid-template-columns:1fr}.log-note-panel{position:static}.log-note-panel textarea{min-height:180px}}
-'''
-          if '</style>' not in text:
-              raise SystemExit('Style closing tag not found.')
-          text = text.replace('</style>', css + '  </style>', 1)
-
-          path.write_text(text, encoding='utf-8')
-          print('Upgraded Generate Log traffic page')
-          PY
-
-      - name: Commit traffic log upgrade
-        shell: bash
+      - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -74,5 +30,3 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m 'feat: upgrade traffic log format and notes'
           git push origin HEAD:main
-
-# trigger-via-pr-merge
