@@ -1,0 +1,19 @@
+name: Test Traffic Log Layout
+
+on:
+  push:
+    branches:
+      - fix/widen-traffic-log-layout
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'scripts/patch-traffic-log.py'
+      - 'scripts/test-traffic-log-layout.py'
+
+jobs:
+  test-layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify widened log layout
+        run: python scripts/test-traffic-log-layout.py
