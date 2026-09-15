@@ -3,7 +3,7 @@ name: Test Traffic Log Layout
 on:
   push:
     branches:
-      - fix/widen-traffic-log-layout
+      - fix/format3-line-breaks
   pull_request:
     paths:
       - 'index.html'
@@ -17,5 +17,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply traffic log layout patch in test workspace
         run: python scripts/patch-traffic-log.py
-      - name: Verify widened log layout
+      - name: Verify traffic log layout and FORMAT 3 output
         run: python scripts/test-traffic-log-layout.py
