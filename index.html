@@ -93,12 +93,14 @@
     @keyframes timeFillFlash{0%{transform:scale(.96);box-shadow:0 0 0 rgba(var(--accentRgb),0)}45%{transform:scale(1.04);box-shadow:0 0 32px rgba(var(--accentRgb),.48)}100%{transform:scale(1);box-shadow:0 0 18px rgba(var(--accentRgb),.12)}}
     @media(max-width:520px){.current-time-fill-btn{min-width:88px;padding-left:12px!important;padding-right:12px!important}}
   
-    /* traffic-log-note-v2 */
-    .log-results-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.75fr);gap:18px;align-items:start}
-    .log-note-panel{position:sticky;top:12px}
-    .log-note-panel textarea{min-height:390px;resize:vertical;line-height:1.65}
+  
+    /* traffic-log-layout-v3 */
+    .log-results-layout{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(360px,1fr);gap:24px;align-items:stretch}
+    .log-result-stack{display:flex;flex-direction:column;gap:24px;min-width:0}
+    .log-note-panel{position:static;display:flex;flex-direction:column;height:100%;min-height:0}
+    .log-note-panel textarea{flex:1;min-height:0;height:auto;resize:none;line-height:1.65}
     #logRes3 textarea{min-height:132px;line-height:1.65}
-    @media(max-width:900px){.log-results-layout{grid-template-columns:1fr}.log-note-panel{position:static}.log-note-panel textarea{min-height:180px}}
+    @media(max-width:900px){.log-results-layout{grid-template-columns:1fr}.log-note-panel{height:auto}.log-note-panel textarea{min-height:220px;height:220px;resize:vertical}}
   </style>
   <link rel="stylesheet" href="scroll-fix.css">
 </head>
@@ -145,7 +147,7 @@
           </section>
 
           <section id="view-log" class="view-panel hidden h-full flex-col gap-6 animate-enter items-center overflow-y-auto pb-10">
-            <div class="log-card w-full max-w-4xl glass-panel p-8 rounded-2xl accent-border mt-2">
+            <div class="log-card w-full max-w-[1400px] glass-panel p-8 rounded-2xl accent-border mt-2">
               <div class="flex items-center gap-4 mb-8 border-b pb-5" style="border-color:var(--border)"><div class="w-3 h-8 rounded-full" style="background:var(--accent);box-shadow:0 0 16px var(--accent)"></div><h1 class="text-2xl font-bold tracking-wide">Generate Log traffic</h1></div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="md:col-span-2"><div class="flex flex-wrap items-center justify-between gap-3 mb-2"><label class="block text-[11px] font-bold accent-text uppercase tracking-widest">Time (เวลา)</label><div class="current-time-badge" title="เวลาปัจจุบันจากอุปกรณ์ของคุณ"><i data-lucide="clock-3" class="w-3.5 h-3.5"></i><span>CURRENT TIME</span><strong id="currentTimeDisplay">--:--:--</strong></div></div><div class="flex gap-3"><input id="timeInput" value="00" placeholder="เช่น 08.50" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono"><button id="btnUseCurrentTime" onclick="useCurrentTime()" class="btn-glow current-time-fill-btn px-4 md:px-5 rounded-xl font-bold flex items-center justify-center gap-2 whitespace-nowrap" title="ใส่เวลาปัจจุบันลงในช่อง"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="currentTimeButtonLabel">NOW</span></button><button onclick="document.getElementById('timeInput').value='00'" class="btn-glow px-7 rounded-xl font-bold">00</button></div></div>
@@ -155,7 +157,7 @@
               </div>
               <button onclick="generateLogs()" class="primary-action btn-glow w-full font-bold py-4 rounded-xl mb-8 flex justify-center items-center gap-3"><i data-lucide="zap" class="w-5 h-5"></i>GENERATE LOGS</button>
               <div class="log-results-layout">
-                <div class="space-y-6">
+                <div class="log-result-stack">
                   <div id="logRes3" class="glass-panel p-4 rounded-xl">
                     <div class="flex justify-between items-center mb-3"><label class="text-sm font-semibold accent-text">FORMAT 3: NetFlow Traffic &gt; 80%</label><button onclick="copyLogText('result3',this)" class="copy-mini text-xs font-bold">COPY</button></div>
                     <textarea id="result3" rows="5" class="cyber-input w-full rounded-lg px-4 py-3 font-mono text-sm resize-none" readonly></textarea>
