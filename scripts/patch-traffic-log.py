@@ -47,17 +47,18 @@ if layout_marker not in text:
 else:
     print("Traffic log layout v3 already applied")
 
-# FORMAT 3: keep each operational statement on its own line exactly as approved.
+# FORMAT 3: keep the ISP parentheses together on the next line with the no-block note.
 old_format3 = """มอนิเตอร์พบใช้ traffic เครือข่ายมากกว่า 80% เกิน 15 นาที
-แก้ไขโดย : ตรวจสอบจาก Netflow พบการใช้งานสูงดังนี้  เวลา ${time} น. ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} ) 
-ไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ"""
-new_format3 = """มอนิเตอร์พบใช้ traffic เครือข่ายมากกว่า 80% เกิน 15 นาที
 แก้ไขโดย : ตรวจสอบจาก Netflow พบการใช้งานสูงดังนี้ 
 เวลา ${time} น.  ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)} ( ${isp} )  
 ไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ"""
+new_format3 = """มอนิเตอร์พบใช้ traffic เครือข่ายมากกว่า 80% เกิน 15 นาที
+แก้ไขโดย : ตรวจสอบจาก Netflow พบการใช้งานสูงดังนี้ 
+เวลา ${time} น.  ตรวจสอบพบต้นทาง IP : ${maskIpWide(src)} เรียกไปปลายทาง IP : ${maskIpWide(dst)}
+( ${isp} )   ไม่ Block การใช้งานเนื่องจากตรวจสอบแล้วเป็นการใช้งานตามปกติ"""
 
 if new_format3 in text:
-    print("FORMAT 3 approved line breaks already applied")
+    print("FORMAT 3 ISP line break already applied")
 elif old_format3 in text:
     text = text.replace(old_format3, new_format3, 1)
 else:
