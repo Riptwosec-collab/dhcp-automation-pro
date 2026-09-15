@@ -15,5 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Apply traffic log layout patch in test workspace
+        run: python scripts/patch-traffic-log.py
       - name: Verify widened log layout
         run: python scripts/test-traffic-log-layout.py
