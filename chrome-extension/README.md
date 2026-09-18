@@ -1,45 +1,39 @@
 # DHCP Mission Control — Chrome Extension
 
-A local-first Manifest V3 companion for **DHCP Mission Control & Log Generator**. The extension provides quick access to a DHCP configuration generator, IPv4/CIDR subnet calculator, and NOC log formatter without requiring a network-device connection.
+Manifest V3 launcher for **DHCP Mission Control & Log Generator**.
+
+Version 1.0.1 changes the primary extension behavior so the toolbar icon and keyboard shortcut open the exact production Mission Control UI instead of a separately designed clone. The local extension app is still packaged as an offline fallback, but it is no longer the default surface.
 
 ## Install with Load unpacked
 
 1. Open `chrome://extensions` in Google Chrome.
-2. Enable **Developer mode** in the upper-right corner.
+2. Enable **Developer mode**.
 3. Choose **Load unpacked**.
-4. Select the `chrome-extension` folder from this repository.
-5. Pin **DHCP Mission Control** from Chrome's Extensions menu for quick access.
+4. Select the `chrome-extension` folder.
+5. Pin **DHCP Mission Control** from Chrome's Extensions menu.
 
-## Popup usage
+## Primary behavior
 
-Click the extension icon to open the compact Mission Control launcher. From the popup you can open **DHCP Generator**, **Subnet Calculator**, or **Log Generator**, switch between **Gold** and **Cyber** themes, open the full local application, or launch the production web app.
+Click the extension icon to open the production UI:
 
-## Full Mission Control
+`https://dhcp-automation-pro.vercel.app/#dhcp`
 
-The full extension app uses three local routes:
-
-- `app.html#dhcp` — Cisco IOS DHCP pool configuration
-- `app.html#subnet` — IPv4/CIDR calculation
-- `app.html#logs` — NOC operational log formatting
-
-Invalid routes automatically normalize to `#dhcp`.
+Because this is the same production page, the layout, fields, Gold/Cyber themes, DHCP Generator, Subnet Calculator, and Generate Log traffic screens are the same as the web version.
 
 ## Keyboard shortcut
 
 - Windows / Linux: `Ctrl+Shift+D`
 - macOS: `Command+Shift+D`
 
-Chrome may reserve or remap shortcuts. You can review extension shortcuts at `chrome://extensions/shortcuts`.
+The shortcut opens the same production Mission Control UI. Chrome may reserve or remap shortcuts; review them at `chrome://extensions/shortcuts`.
+
+## Offline fallback
+
+The package still includes the local extension files (`app.html`, local CSS/JS, DHCP/Subnet/Log modules) for offline/manual fallback use. They are intentionally not the default toolbar experience because the production page is the visual source of truth.
 
 ## Privacy
 
-Tool preferences and non-sensitive drafts remain in `chrome.storage.local`. The extension does **not** store credentials, passwords, authentication tokens, or private network authentication material. Core DHCP, subnet, and log generation runs locally inside the extension.
-
-## Production web app
-
-The existing hosted application remains available at:
-
-`https://dhcp-automation-pro.vercel.app/#dhcp`
+The launcher does not inject scripts into the production page and requests no broad host permission. The extension permission set remains limited to `storage`. Local fallback preferences remain in `chrome.storage.local`; credentials, passwords, and authentication tokens are not stored.
 
 ## Run tests
 
