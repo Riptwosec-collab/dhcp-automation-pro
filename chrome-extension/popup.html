@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>DHCP Mission Control</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body data-theme="gold">
+  <main class="popup-shell">
+    <div class="ambient" aria-hidden="true"></div>
+    <header class="brand-row">
+      <div class="brand-mark" aria-hidden="true"><span>D</span><i></i></div>
+      <div class="brand-copy">
+        <p class="eyebrow">NETWORK OPS TOOLKIT</p>
+        <h1>DHCP <em>Mission Control</em></h1>
+      </div>
+      <span class="status-pill" id="statusPill">LOCAL</span>
+    </header>
+
+    <section class="hero-strip" aria-label="Extension status">
+      <div><span class="hero-label">QUICK LAUNCH</span><strong>Network Toolkit</strong></div>
+      <span class="hero-code">MV3 / LOCAL</span>
+    </section>
+
+    <section class="module-grid" aria-label="Quick tools">
+      <button class="module-card" data-module="dhcp" type="button">
+        <span class="module-index">01</span><span class="module-icon" aria-hidden="true">DH</span>
+        <span class="module-copy"><strong>DHCP Generator</strong><small>Build Cisco IOS pool config</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+      <button class="module-card" data-module="subnet" type="button">
+        <span class="module-index">02</span><span class="module-icon" aria-hidden="true">/24</span>
+        <span class="module-copy"><strong>Subnet Calculator</strong><small>IPv4 / CIDR analysis</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+      <button class="module-card" data-module="logs" type="button">
+        <span class="module-index">03</span><span class="module-icon" aria-hidden="true">LOG</span>
+        <span class="module-copy"><strong>Log Generator</strong><small>Create clean NOC notes</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+    </section>
+
+    <section class="control-panel" aria-label="Appearance and actions">
+      <div class="theme-row" aria-label="Theme">
+        <span class="theme-title">THEME</span>
+        <button data-theme-choice="gold" class="theme-choice" type="button">Gold</button>
+        <button data-theme-choice="cyber" class="theme-choice" type="button">Cyber</button>
+      </div>
+      <button id="openFull" class="primary-action" type="button"><span>OPEN FULL MISSION CONTROL</span><b aria-hidden="true">↗</b></button>
+      <button id="openWeb" class="secondary-action" type="button">OPEN PRODUCTION WEB APP</button>
+    </section>
+
+    <footer class="popup-footer">
+      <span>Last module: <b id="lastModule">DHCP</b></span>
+      <span class="shortcut">Ctrl + Shift + D</span>
+    </footer>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
