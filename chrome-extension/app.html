@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>DHCP Mission Control</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body data-theme="gold">
+  <div class="ambient ambient-a" aria-hidden="true"></div>
+  <div class="ambient ambient-b" aria-hidden="true"></div>
+
+  <nav class="topbar" aria-label="Mission Control modules">
+    <a class="brand" href="#dhcp" aria-label="DHCP Mission Control home">
+      <span class="brand-mark">D<i></i></span>
+      <span class="brand-copy"><small>NETWORK OPERATIONS</small><strong>DHCP <em>MISSION CONTROL</em></strong></span>
+    </a>
+    <div class="nav-tabs">
+      <a href="#dhcp" data-route="dhcp">DHCP Generator</a>
+      <a href="#subnet" data-route="subnet">Subnet Calculator</a>
+      <a href="#logs" data-route="logs">Log Generator</a>
+    </div>
+    <button id="themeToggle" class="theme-toggle" type="button">Switch Theme</button>
+  </nav>
+
+  <main class="app-shell">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">LOCAL-FIRST NETWORK TOOLKIT</p>
+        <h1>Mission Control Console</h1>
+        <p class="lede">Generate network-ready DHCP configuration, inspect IPv4 CIDR ranges, and format clean NOC operation logs without sending tool data off-device.</p>
+      </div>
+      <div class="system-status" aria-label="Extension system status">
+        <span class="pulse"></span><div><small>SYSTEM</small><strong>LOCAL READY</strong></div>
+      </div>
+    </header>
+
+    <section class="module-panel" data-panel="dhcp">
+      <div class="panel-head">
+        <div><span class="panel-index">MODULE 01</span><h2>DHCP Generator</h2><p>Build deterministic Cisco IOS DHCP pool configuration.</p></div>
+        <span class="panel-badge">IOS CLI</span>
+      </div>
+      <div class="workspace-grid">
+        <form id="dhcpForm" class="tool-form" novalidate>
+          <div class="form-grid two">
+            <label>Pool name<input id="dhcpPoolName" name="poolName" autocomplete="off" placeholder="VLAN47-USERS" required></label>
+            <label>Network<input id="dhcpNetwork" name="network" inputmode="decimal" placeholder="10.20.47.0" required></label>
+            <label>Subnet mask<input id="dhcpMask" name="mask" inputmode="decimal" placeholder="255.255.255.0" required></label>
+            <label>Default router<input id="dhcpRouter" name="defaultRouter" inputmode="decimal" placeholder="10.20.47.1" required></label>
+            <label class="span-two">DNS servers <small>Comma or space separated</small><input id="dhcpDns" name="dnsServers" placeholder="10.20.1.10, 8.8.8.8"></label>
+            <label>Domain name<input id="dhcpDomain" name="domainName" placeholder="corp.local"></label>
+            <label>Lease days<input id="dhcpLease" name="leaseDays" type="number" min="1" step="1" placeholder="7"></label>
+            <label>Excluded start<input id="dhcpExcludeStart" name="excludeStart" inputmode="decimal" placeholder="10.20.47.1"></label>
+            <label>Excluded end<input id="dhcpExcludeEnd" name="excludeEnd" inputmode="decimal" placeholder="10.20.47.20"></label>
+          </div>
+          <div class="error-box" id="dhcpError" role="alert" hidden></div>
+          <div class="form-actions"><button class="primary" type="submit">GENERATE CONFIG</button><span class="hint">No device connection required</span></div>
+        </form>
+        <div class="output-card">
+          <div class="terminal-head"><span><i></i> IOS CONFIG OUTPUT</span><button type="button" data-copy-target="dhcpOutput" data-copy-status="dhcpCopyStatus">COPY</button></div>
+          <pre id="dhcpOutput" tabindex="0">! Ready to generate DHCP configuration</pre>
+          <div class="copy-status" id="dhcpCopyStatus" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-panel" data-panel="subnet" hidden>
+      <div class="panel-head">
+        <div><span class="panel-index">MODULE 02</span><h2>Subnet Calculator</h2><p>Analyze IPv4 network boundaries and usable host ranges.</p></div>
+        <span class="panel-badge">IPv4 / CIDR</span>
+      </div>
+      <div class="workspace-grid compact">
+        <form id="subnetForm" class="tool-form" novalidate>
+          <label>CIDR<input id="subnetCidr" name="cidr" inputmode="decimal" placeholder="10.20.47.130/24" required></label>
+          <div class="error-box" id="subnetError" role="alert" hidden></div>
+          <div class="form-actions"><button class="primary" type="submit">CALCULATE SUBNET</button><span class="hint">Supports /0 through /32</span></div>
+        </form>
+        <div class="output-card">
+          <div class="terminal-head"><span><i></i> SUBNET ANALYSIS</span><button type="button" data-copy-target="subnetOutput" data-copy-status="subnetCopyStatus">COPY</button></div>
+          <pre id="subnetOutput" tabindex="0">Enter an IPv4 CIDR block to calculate</pre>
+          <div class="copy-status" id="subnetCopyStatus" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-panel" data-panel="logs" hidden>
+      <div class="panel-head">
+        <div><span class="panel-index">MODULE 03</span><h2>Log Generator</h2><p>Format a compact operational note for NOC and helpdesk handover.</p></div>
+        <span class="panel-badge">OPS NOTE</span>
+      </div>
+      <div class="workspace-grid">
+        <form id="logForm" class="tool-form" novalidate>
+          <div class="form-grid two">
+            <label>Date<input id="logDate" name="date" type="date"></label>
+            <label>Time<input id="logTime" name="time" type="time"></label>
+            <label>Site<input id="logSite" name="site" placeholder="HQ"></label>
+            <label>Device<input id="logDevice" name="device" placeholder="SW-CORE-01"></label>
+            <label>Ticket<input id="logTicket" name="ticket" placeholder="INC-240918-01"></label>
+            <label>Status<input id="logStatus" name="status" placeholder="Monitoring"></label>
+            <label class="span-two">Summary<textarea id="logSummary" name="summary" rows="3" placeholder="DHCP pool utilization high" required></textarea></label>
+            <label class="span-two">Action<textarea id="logAction" name="action" rows="3" placeholder="Checked bindings and free addresses"></textarea></label>
+            <label class="span-two">Owner<input id="logOwner" name="owner" placeholder="NOC"></label>
+          </div>
+          <div class="error-box" id="logError" role="alert" hidden></div>
+          <div class="form-actions"><button class="primary" type="submit">GENERATE LOG</button><span class="hint">Designed for clean shift handover</span></div>
+        </form>
+        <div class="output-card">
+          <div class="terminal-head"><span><i></i> NOC LOG OUTPUT</span><button type="button" data-copy-target="logOutput" data-copy-status="logCopyStatus">COPY</button></div>
+          <pre id="logOutput" tabindex="0">Operational note output will appear here</pre>
+          <div class="copy-status" id="logCopyStatus" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
