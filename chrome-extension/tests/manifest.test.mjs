@@ -12,8 +12,9 @@ test('uses Manifest V3 and minimum permissions', () => {
   assert.ok(!JSON.stringify(manifest).includes('<all_urls>'));
 });
 
-test('declares popup, service worker, and keyboard command', () => {
-  assert.equal(manifest.action.default_popup, 'popup.html');
+test('declares toolbar action, service worker, and keyboard command without a clone popup', () => {
+  assert.equal(manifest.action.default_popup, undefined);
+  assert.equal(manifest.action.default_title, 'Open DHCP Mission Control');
   assert.equal(manifest.background.service_worker, 'background.js');
   assert.equal(manifest.commands['open-mission-control'].suggested_key.default, 'Ctrl+Shift+D');
   assert.equal(manifest.commands['open-mission-control'].suggested_key.mac, 'Command+Shift+D');
