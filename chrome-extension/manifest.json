@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
   "name": "DHCP Mission Control",
-  "version": "1.0.0",
-  "description": "Local-first DHCP, subnet, and operations log tools for network support workflows.",
+  "version": "1.0.1",
+  "description": "Open the exact DHCP Mission Control production UI from Chrome, with local offline tools kept in the extension package.",
   "permissions": ["storage"],
   "action": {
-    "default_title": "DHCP Mission Control",
-    "default_popup": "popup.html",
+    "default_title": "Open DHCP Mission Control",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -30,7 +29,7 @@
         "default": "Ctrl+Shift+D",
         "mac": "Command+Shift+D"
       },
-      "description": "Open DHCP Mission Control"
+      "description": "Open the production DHCP Mission Control UI"
     }
   }
 }
