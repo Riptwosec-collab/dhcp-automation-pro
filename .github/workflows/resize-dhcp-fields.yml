@@ -9,6 +9,7 @@ on:
       - 'scripts/patch-traffic-log.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
+      - 'scripts/fullscreen-bilingual-uih.py'
       - 'scripts/test-traffic-log-layout.py'
 
 permissions:
@@ -31,6 +32,9 @@ jobs:
       - name: Localize Generate Log UIh Down Since
         run: python scripts/add-thai-down-since.py
 
+      - name: Make Generate Log UIh fullscreen and bilingual
+        run: python scripts/fullscreen-bilingual-uih.py
+
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
@@ -40,5 +44,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: localize UIh Down Since in Thai'
+          git commit -m 'ui: make UIh fullscreen and bilingual'
           git push origin HEAD:main
