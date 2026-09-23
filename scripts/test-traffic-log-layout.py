@@ -29,6 +29,14 @@ checks = {
     "UIh keeps independent port controls": 'id="portFront"' in uih and 'id="portBack"' in uih,
     "UIh keeps power and reboot controls": 'id="includePower"' in uih and 'id="includeReboot"' in uih,
     "UIh keeps generated preview": 'id="rawInput"' in uih and 'id="preview"' in uih and 'id="copyBtn"' in uih,
+    "UIh fit-to-viewport styles exist": '/* uih-fit-viewport-v1 */' in uih,
+    "UIh document disables internal page scroll": 'html, body { width: 100%; height: 100%; min-height: 0; overflow: hidden; }' in uih,
+    "UIh shell is viewport-height flex layout": '.shell { height: 100vh; max-height: 100vh;' in uih and 'display: flex; flex-direction: column; overflow: hidden;' in uih,
+    "UIh grid consumes remaining height": '.grid { flex: 1; min-height: 0; height: auto;' in uih,
+    "UIh panels can shrink": '.panel { min-height: 0; display: flex; flex-direction: column; }' in uih,
+    "UIh raw input no longer forces tall page": '#rawInput { flex: 1; min-height: 0; height: auto; resize: none; }' in uih,
+    "UIh preview fills available height": '.preview { flex: 1; min-height: 0; height: auto;' in uih,
+    "UIh compacts on short desktop viewports": '@media (max-height: 820px) and (min-width: 1121px)' in uih,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
