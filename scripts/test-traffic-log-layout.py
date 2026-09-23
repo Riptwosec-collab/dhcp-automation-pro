@@ -46,6 +46,7 @@ checks = {
     "UIh fullscreen bilingual patch exists": '/* uih-fullscreen-bilingual-v1 */' in uih,
     "UIh fills dashboard width": '.shell { width: 100%; max-width: none;' in uih,
     "UIh desktop grid fills available width": 'grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);' in uih,
+    "UIh fullscreen three-column override is desktop-only": '@media (min-width: 1121px) {\n      .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }\n      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; }' in uih,
     "UIh parsed Down Since label is translatable": 'data-i18n="downSinceLabel"' in uih,
     "UIh Thai Down Since label is localized": "downSinceLabel: 'ล่มตั้งแต่'" in uih,
     "UIh English Down Since label is preserved": "downSinceLabel: 'Down Since'" in uih,
