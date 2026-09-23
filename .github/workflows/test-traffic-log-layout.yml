@@ -12,6 +12,7 @@ on:
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
+      - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/test-traffic-log-layout.py'
 
 jobs:
@@ -27,5 +28,7 @@ jobs:
         run: python scripts/add-thai-down-since.py
       - name: Make UIh fullscreen and bilingual
         run: python scripts/fullscreen-bilingual-uih.py
+      - name: Add independent Down Since language toggle
+        run: python scripts/add-downsince-language-toggle.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
