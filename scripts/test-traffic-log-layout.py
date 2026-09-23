@@ -46,13 +46,18 @@ checks = {
     "UIh fullscreen bilingual patch exists": '/* uih-fullscreen-bilingual-v1 */' in uih,
     "UIh fills dashboard width": '.shell { width: 100%; max-width: none;' in uih,
     "UIh desktop grid fills available width": 'grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);' in uih,
-    "UIh fullscreen three-column override is desktop-only": '@media (min-width: 1121px) {\n      .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }\n      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; }' in uih,
     "UIh parsed Down Since label is translatable": 'data-i18n="downSinceLabel"' in uih,
-    "UIh Thai Down Since label is localized": "downSinceLabel: 'ล่มตั้งแต่'" in uih,
+    "UIh Thai Down Since label says ดาวน์เมื่อ": "downSinceLabel: 'ดาวน์เมื่อ'" in uih,
     "UIh English Down Since label is preserved": "downSinceLabel: 'Down Since'" in uih,
-    "UIh preview localizes Down Since label": "language === 'en' ? 'Down Since' : 'ล่มตั้งแต่'" in uih,
+    "UIh preview localizes Down Since label to ดาวน์เมื่อ": "language === 'en' ? 'Down Since' : 'ดาวน์เมื่อ'" in uih,
     "UIh language switch rerenders parsed data and preview": 'renderParsed();\n      renderPreview();' in uih,
     "UIh raw source keeps original English Down Since": 'Down Since : Wednesday, September 23, 2026 10:22' in uih,
+    "UIh balanced layout patch exists": '/* uih-balanced-layout-v2 */' in uih,
+    "UIh left source input grows into available space": '#rawInput { flex: 1 1 auto; min-height: 240px; height: auto; }' in uih,
+    "UIh middle controls use structured rows": 'grid-template-rows: auto auto minmax(0,1fr);' in uih,
+    "UIh middle sections are grouped as cards": '.grid > .panel:nth-child(2) .section,' in uih and 'background: rgba(var(--accent-rgb),.025);' in uih,
+    "UIh preview panel stays flex-filled": '.grid > .panel:nth-child(3) .panel-body { display: flex; flex-direction: column; min-height: 0; }' in uih,
+    "UIh short desktop source input still grows": '.grid > .panel:first-child #rawInput { flex: 1 1 auto; min-height: 180px; height: auto; }' in uih,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
