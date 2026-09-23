@@ -24,7 +24,7 @@ css = r'''
     .panel-title { font-size: 14px; }
     .panel-desc { font-size: 10px; margin-top: 2px; }
     .panel-body { min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 14px; }
-    #rawInput { flex: 0 1 250px; min-height: 0; height: 250px; resize: none; }
+    #rawInput { flex: 1; min-height: 0; height: auto; resize: none; }
     .preview { flex: 1; min-height: 0; height: auto; overflow: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
     .btn-row { margin-top: 8px; gap: 7px; }
     .btn { padding: 8px 11px; font-size: 12px; }
