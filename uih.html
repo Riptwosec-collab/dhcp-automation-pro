@@ -301,9 +301,40 @@
     /* /uih-fit-viewport-v1 */
   /* uih-fullscreen-bilingual-v1 */
     .shell { width: 100%; max-width: none; }
+
+    /* uih-balanced-layout-v2 */
     @media (min-width: 1121px) {
-      .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }
-      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+      .shell { width: 100%; max-width: none; margin: 0; padding: 10px 14px; }
+      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 14px; align-items: stretch; }
+      .panel-head { padding: 11px 13px 9px; }
+      .panel-body { padding: 11px 13px; }
+
+      .grid > .panel:first-child .panel-body { display: flex; flex-direction: column; min-height: 0; }
+      #rawInput { flex: 1 1 auto; min-height: 240px; height: auto; }
+      .grid > .panel:first-child .parsed { flex: 0 0 auto; }
+
+      .grid > .panel:nth-child(2) .panel-body { display: grid; grid-template-rows: auto auto minmax(0,1fr); gap: 10px; align-content: stretch; overflow: hidden; }
+      .grid > .panel:nth-child(2) .section,
+      .grid > .panel:nth-child(2) .section + .section {
+        margin: 0;
+        padding: 10px 12px;
+        border: 1px solid rgba(var(--accent-rgb),.14);
+        border-radius: 12px;
+        background: rgba(var(--accent-rgb),.025);
+      }
+      .grid > .panel:nth-child(2) .section:last-child { min-height: 0; }
+
+      .grid > .panel:nth-child(3) .panel-body { display: flex; flex-direction: column; min-height: 0; }
+      .grid > .panel:nth-child(3) .preview { flex: 1 1 auto; min-height: 0; height: auto; }
+    }
+
+    @media (max-height: 820px) and (min-width: 1121px) {
+      .shell { padding: 7px 10px; }
+      .grid { gap: 10px; }
+      .grid > .panel:first-child #rawInput { flex: 1 1 auto; min-height: 180px; height: auto; }
+      .grid > .panel:nth-child(2) .panel-body { gap: 7px; }
+      .grid > .panel:nth-child(2) .section,
+      .grid > .panel:nth-child(2) .section + .section { padding: 7px 9px; }
     }
   </style>
 </head>
@@ -618,7 +649,7 @@
         lines.push(`${language === 'en' ? 'Province' : 'จังหวัด'} : ${province}`);
       }
       if (state.downSince) {
-        const downSinceLabel = language === 'en' ? 'Down Since' : 'ล่มตั้งแต่';
+        const downSinceLabel = language === 'en' ? 'Down Since' : 'ดาวน์เมื่อ';
         lines.push(`${downSinceLabel} : ${formatDownSince(state.downSince, language)}`);
       }
       if (state.includePort) {
@@ -652,7 +683,7 @@
         sourceTitle: '1. วางข้อมูลต้นทาง', sourceDesc: 'ระบบดึงเฉพาะข้อมูลที่จำเป็นอัตโนมัติ',
         rawPlaceholder: 'ตัวอย่าง\nหน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22',
         parseButton: 'ดึงข้อมูล', sampleButton: 'ใส่ข้อมูลตัวอย่าง', clearButton: 'ล้างทั้งหมด',
-        agencyLabel: 'หน่วยงาน', provinceLabel: 'จังหวัด', downSinceLabel: 'ล่มตั้งแต่',
+        agencyLabel: 'หน่วยงาน', provinceLabel: 'จังหวัด', downSinceLabel: 'ดาวน์เมื่อ',
         sourceHint: 'รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน',
         controlsTitle: '2. เลือกข้อความที่ต้องการ', controlsDesc: 'เปิด/ปิดแต่ละรายการได้อิสระ',
         mainCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L2', backupCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L3',
