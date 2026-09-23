@@ -299,6 +299,12 @@
       .hint { display: none; }
     }
     /* /uih-fit-viewport-v1 */
+  /* uih-fullscreen-bilingual-v1 */
+    .shell { width: 100%; max-width: none; }
+    @media (min-width: 1121px) {
+      .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }
+      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+    }
   </style>
 </head>
 <body data-theme="gold">
@@ -341,7 +347,7 @@
             <div class="info-card"><div class="label" data-i18n="provinceLabel">จังหวัด</div><div class="value" id="provinceValue">-</div></div>
             <div class="info-card"><div class="label">Main · L2 · MainMPLS</div><div class="value" id="mainValue">-</div></div>
             <div class="info-card"><div class="label">Backup · L3 · BackupMPLS</div><div class="value" id="backupValue">-</div></div>
-            <div class="info-card full"><div class="label">Down Since</div><div class="value" id="downValue">-</div></div>
+            <div class="info-card full"><div class="label" data-i18n="downSinceLabel">Down Since</div><div class="value" id="downValue">-</div></div>
           </div>
           <div class="hint" data-i18n-html="sourceHint">รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน</div>
         </div>
@@ -611,7 +617,10 @@
         const province = provinceForLanguage(state.province, language);
         lines.push(`${language === 'en' ? 'Province' : 'จังหวัด'} : ${province}`);
       }
-      if (state.downSince) lines.push(`Down Since : ${formatDownSince(state.downSince, language)}`);
+      if (state.downSince) {
+        const downSinceLabel = language === 'en' ? 'Down Since' : 'ล่มตั้งแต่';
+        lines.push(`${downSinceLabel} : ${formatDownSince(state.downSince, language)}`);
+      }
       if (state.includePort) {
         const portValue = state.portStatus || `${state.portFront || 'UP'}/${state.portBack || 'UP'}`;
         lines.push(`- Port : ${portValue}`);
@@ -643,7 +652,7 @@
         sourceTitle: '1. วางข้อมูลต้นทาง', sourceDesc: 'ระบบดึงเฉพาะข้อมูลที่จำเป็นอัตโนมัติ',
         rawPlaceholder: 'ตัวอย่าง\nหน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22',
         parseButton: 'ดึงข้อมูล', sampleButton: 'ใส่ข้อมูลตัวอย่าง', clearButton: 'ล้างทั้งหมด',
-        agencyLabel: 'หน่วยงาน', provinceLabel: 'จังหวัด',
+        agencyLabel: 'หน่วยงาน', provinceLabel: 'จังหวัด', downSinceLabel: 'ล่มตั้งแต่',
         sourceHint: 'รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน',
         controlsTitle: '2. เลือกข้อความที่ต้องการ', controlsDesc: 'เปิด/ปิดแต่ละรายการได้อิสระ',
         mainCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L2', backupCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L3',
@@ -662,7 +671,7 @@
         sourceTitle: '1. Source Data', sourceDesc: 'Required fields are extracted automatically',
         rawPlaceholder: 'Example\nAgency : Test Office\nProvince : Tak\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22',
         parseButton: 'Parse Data', sampleButton: 'Load Sample', clearButton: 'Clear All',
-        agencyLabel: 'Agency', provinceLabel: 'Province',
+        agencyLabel: 'Agency', provinceLabel: 'Province', downSinceLabel: 'Down Since',
         sourceHint: 'Supports <b>:</b> with or without spaces · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · one Add/Remove button controls each Circuit and its Link',
         controlsTitle: '2. Message Options', controlsDesc: 'Toggle each item independently',
         mainCircuitNote: 'One button controls both the Circuit ID and L2 Link', backupCircuitNote: 'One button controls both the Circuit ID and L3 Link',
