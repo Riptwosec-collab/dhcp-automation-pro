@@ -43,6 +43,15 @@ checks = {
     "UIh Thai preview formats Down Since": 'formatDownSince(state.downSince, language)' in uih,
     "UIh parsed Down Since follows selected language": "setText('downValue', formatDownSince(data.downSince, currentLang));" in uih,
     "UIh keeps original Down Since when date is not parseable": 'if (!match) return source;' in uih,
+    "UIh fullscreen bilingual patch exists": '/* uih-fullscreen-bilingual-v1 */' in uih,
+    "UIh fills dashboard width": '.shell { width: 100%; max-width: none;' in uih,
+    "UIh desktop grid fills available width": 'grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);' in uih,
+    "UIh parsed Down Since label is translatable": 'data-i18n="downSinceLabel"' in uih,
+    "UIh Thai Down Since label is localized": "downSinceLabel: 'ล่มตั้งแต่'" in uih,
+    "UIh English Down Since label is preserved": "downSinceLabel: 'Down Since'" in uih,
+    "UIh preview localizes Down Since label": "language === 'en' ? 'Down Since' : 'ล่มตั้งแต่'" in uih,
+    "UIh language switch rerenders parsed data and preview": 'renderParsed();\n      renderPreview();' in uih,
+    "UIh raw source keeps original English Down Since": 'Down Since : Wednesday, September 23, 2026 10:22' in uih,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
