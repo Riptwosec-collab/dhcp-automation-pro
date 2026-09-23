@@ -10,6 +10,7 @@ on:
       - 'uih.html'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/fit-uih-viewport.py'
+      - 'scripts/add-thai-down-since.py'
       - 'scripts/test-traffic-log-layout.py'
 
 jobs:
@@ -21,5 +22,7 @@ jobs:
         run: python scripts/patch-traffic-log.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
+      - name: Localize UIh Down Since in Thai
+        run: python scripts/add-thai-down-since.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
