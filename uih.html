@@ -336,6 +336,26 @@
       .grid > .panel:nth-child(2) .section,
       .grid > .panel:nth-child(2) .section + .section { padding: 7px 9px; }
     }
+  /* uih-down-since-language-v1 */
+    .down-since-card { display: flex; flex-direction: column; gap: 6px; }
+    .down-since-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .down-since-lang-switch {
+      display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px;
+      border: 1px solid rgba(var(--accent-rgb),.16); background: var(--input); flex: 0 0 auto;
+    }
+    .down-lang-btn {
+      border: 0; border-radius: 6px; padding: 3px 7px; cursor: pointer;
+      background: transparent; color: var(--muted); font-size: 9px; font-weight: 850; line-height: 1.25;
+    }
+    .down-lang-btn.active {
+      color: var(--text); background: rgba(var(--accent-rgb),.18);
+      box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),.24), 0 0 10px rgba(var(--accent-rgb),.08);
+    }
+    @media (max-height: 820px) and (min-width: 1121px) {
+      .down-since-card { gap: 3px; }
+      .down-since-head { gap: 6px; }
+      .down-lang-btn { padding: 2px 5px; font-size: 8px; }
+    }
   </style>
 </head>
 <body data-theme="gold">
@@ -378,7 +398,16 @@
             <div class="info-card"><div class="label" data-i18n="provinceLabel">จังหวัด</div><div class="value" id="provinceValue">-</div></div>
             <div class="info-card"><div class="label">Main · L2 · MainMPLS</div><div class="value" id="mainValue">-</div></div>
             <div class="info-card"><div class="label">Backup · L3 · BackupMPLS</div><div class="value" id="backupValue">-</div></div>
-            <div class="info-card full"><div class="label" data-i18n="downSinceLabel">Down Since</div><div class="value" id="downValue">-</div></div>
+            <div class="info-card full down-since-card">
+              <div class="down-since-head">
+                <div class="label" id="downSinceLabelText">ดาวน์เมื่อ</div>
+                <div class="down-since-lang-switch" role="group" aria-label="Down Since language">
+                  <button type="button" class="down-lang-btn active" id="downSinceThBtn" aria-pressed="true">ไทย</button>
+                  <button type="button" class="down-lang-btn" id="downSinceEnBtn" aria-pressed="false">ENG</button>
+                </div>
+              </div>
+              <div class="value" id="downValue">-</div>
+            </div>
           </div>
           <div class="hint" data-i18n-html="sourceHint">รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน</div>
         </div>
@@ -649,8 +678,9 @@
         lines.push(`${language === 'en' ? 'Province' : 'จังหวัด'} : ${province}`);
       }
       if (state.downSince) {
-        const downSinceLabel = language === 'en' ? 'Down Since' : 'ดาวน์เมื่อ';
-        lines.push(`${downSinceLabel} : ${formatDownSince(state.downSince, language)}`);
+        const downSinceLanguage = state.downSinceLanguage === 'en' ? 'en' : 'th';
+        const downSinceLabel = downSinceLanguage === 'en' ? 'Down Since' : 'ดาวน์เมื่อ';
+        lines.push(`${downSinceLabel} : ${formatDownSince(state.downSince, downSinceLanguage)}`);
       }
       if (state.includePort) {
         const portValue = state.portStatus || `${state.portFront || 'UP'}/${state.portBack || 'UP'}`;
@@ -718,6 +748,7 @@
     };
 
     let currentLang = 'th';
+    let downSinceLanguage = 'th';
     const sampleTexts = {
       th: `หน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nภาค : PAK7\nIP Address : 10.244.7.42\nCircuit ID Main : 507676\nLink Type : MainMPLS\nCircuit ID Backup : 554672\nLink Type : BackupMPLS\nDown Since : Wednesday, September 23, 2026 10:22\nNumber : 0-5580-0761`,
       en: `Agency : Test Office\nProvince : Tak\nRegion : PAK7\nIP Address : 10.244.7.42\nCircuit ID Main : 507676\nLink Type : MainMPLS\nCircuit ID Backup : 554672\nLink Type : BackupMPLS\nDown Since : Wednesday, September 23, 2026 10:22\nNumber : 0-5580-0761`
@@ -767,6 +798,7 @@
         includeReboot: $('includeReboot').checked,
         showRebootCount: $('showRebootCount').checked,
         rebootCount: $('rebootCount').value,
+        downSinceLanguage: downSinceLanguage,
         language: currentLang
       };
     }
@@ -777,12 +809,29 @@
       el.classList.toggle('missing', !value);
     }
 
+    function renderDownSinceLanguageButtons() {
+      const isThai = downSinceLanguage !== 'en';
+      $('downSinceThBtn').classList.toggle('active', isThai);
+      $('downSinceEnBtn').classList.toggle('active', !isThai);
+      $('downSinceThBtn').setAttribute('aria-pressed', String(isThai));
+      $('downSinceEnBtn').setAttribute('aria-pressed', String(!isThai));
+    }
+
+    function setDownSinceLanguage(language) {
+      downSinceLanguage = language === 'en' ? 'en' : 'th';
+      renderDownSinceLanguageButtons();
+      renderParsed();
+      renderPreview();
+    }
+
     function renderParsed() {
       setText('agencyValue', data.agency);
       setText('provinceValue', data.province);
       setText('mainValue', data.circuitMain);
       setText('backupValue', data.circuitBackup);
-      setText('downValue', formatDownSince(data.downSince, currentLang));
+      $('downSinceLabelText').textContent = downSinceLanguage === 'en' ? 'Down Since' : 'ดาวน์เมื่อ';
+      setText('downValue', formatDownSince(data.downSince, downSinceLanguage));
+      renderDownSinceLanguageButtons();
       $('mainTag').textContent = data.circuitMain || t('noData');
       $('backupTag').textContent = data.circuitBackup || t('noData');
 
@@ -898,7 +947,10 @@
 
     $('langThBtn').addEventListener('click', () => setLanguage('th'));
     $('langEnBtn').addEventListener('click', () => setLanguage('en'));
+    $('downSinceThBtn').addEventListener('click', () => setDownSinceLanguage('th'));
+    $('downSinceEnBtn').addEventListener('click', () => setDownSinceLanguage('en'));
 
+    setDownSinceLanguage('th');
     setLanguage('th');
   </script>
 
