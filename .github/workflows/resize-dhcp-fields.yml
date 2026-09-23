@@ -8,6 +8,7 @@ on:
       - '.github/workflows/resize-dhcp-fields.yml'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/fit-uih-viewport.py'
+      - 'scripts/add-thai-down-since.py'
       - 'scripts/test-traffic-log-layout.py'
 
 permissions:
@@ -27,6 +28,9 @@ jobs:
       - name: Fit Generate Log UIh to viewport
         run: python scripts/fit-uih-viewport.py
 
+      - name: Localize Generate Log UIh Down Since
+        run: python scripts/add-thai-down-since.py
+
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
@@ -36,5 +40,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: fit Generate Log UIh to viewport'
+          git commit -m 'ui: localize UIh Down Since in Thai'
           git push origin HEAD:main
