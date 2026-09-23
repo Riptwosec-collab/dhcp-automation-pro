@@ -9,11 +9,10 @@ marker = "/* uih-fullscreen-bilingual-v1 */"
 
 style = r'''
     /* uih-fullscreen-bilingual-v1 */
-    .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }
-    .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); }
+    .shell { width: 100%; max-width: none; }
     @media (min-width: 1121px) {
-      .shell { width: 100%; max-width: none; padding: 8px 10px; }
-      .grid { gap: 10px; }
+      .shell { width: 100%; max-width: none; margin: 0; padding: 8px 10px; }
+      .grid { width: 100%; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; }
     }
 '''.strip()
 
