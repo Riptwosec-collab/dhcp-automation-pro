@@ -37,6 +37,12 @@ checks = {
     "UIh raw input no longer forces tall page": '#rawInput { flex: 1; min-height: 0; height: auto; resize: none; }' in uih,
     "UIh preview fills available height": '.preview { flex: 1; min-height: 0; height: auto;' in uih,
     "UIh compacts on short desktop viewports": '@media (max-height: 820px) and (min-width: 1121px)' in uih,
+    "UIh has Thai Down Since formatter": 'function formatDownSince(value, language = \'th\')' in uih,
+    "UIh formatter uses Buddhist Era": 'date.getFullYear() + 543' in uih,
+    "UIh formatter includes Thai weekday and month names": "'วันพุธ'" in uih and "'กันยายน'" in uih,
+    "UIh Thai preview formats Down Since": 'formatDownSince(state.downSince, language)' in uih,
+    "UIh parsed Down Since follows selected language": "setText('downValue', formatDownSince(data.downSince, currentLang));" in uih,
+    "UIh keeps original Down Since when date is not parseable": 'if (!match) return source;' in uih,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
