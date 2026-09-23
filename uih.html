@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generate Log UIh</title>
+  <style>
+    :root, body[data-theme="gold"] {
+      --bg: #030406;
+      --bg2: #080a0d;
+      --panel: rgba(10, 12, 16, 0.90);
+      --panel-2: rgba(16, 18, 22, 0.95);
+      --input: rgba(2, 4, 8, 0.76);
+      --preview-1: rgba(4, 6, 10, 0.88);
+      --preview-2: rgba(8, 9, 11, 0.96);
+      --line: rgba(245, 197, 66, 0.18);
+      --text: #ffffff;
+      --muted: #9a9588;
+      --accent: #f5c542;
+      --accent-2: #ffd666;
+      --accent-dark: #b97800;
+      --accent-soft: #ffe9a3;
+      --accent-rgb: 245, 197, 66;
+      --good: #39d98a;
+      --warn: #fbbf24;
+      --danger: #ff6874;
+      --shadow: 0 24px 70px rgba(0,0,0,.46);
+      --radius: 20px;
+    }
+    body[data-theme="cyber"] {
+      --bg: #07101d;
+      --bg2: #0a1422;
+      --panel: rgba(14, 27, 47, 0.88);
+      --panel-2: rgba(18, 35, 58, 0.94);
+      --input: rgba(3, 10, 20, 0.72);
+      --preview-1: rgba(4, 11, 20, 0.88);
+      --preview-2: rgba(7, 15, 27, 0.96);
+      --line: rgba(34, 211, 238, 0.20);
+      --text: #eefbff;
+      --muted: #8ea4bf;
+      --accent: #22d3ee;
+      --accent-2: #8cecff;
+      --accent-dark: #087dc1;
+      --accent-soft: #bdefff;
+      --accent-rgb: 34, 211, 238;
+      --shadow: 0 24px 70px rgba(0,0,0,.38);
+    }
+    @keyframes themeGlow { 0%,100% { filter: saturate(1); } 50% { filter: saturate(1.12); } }
+    body { transition: background .32s ease, color .32s ease; animation: themeGlow 8s ease-in-out infinite; }
+    .panel, .btn, textarea, select, input, .logo, .id-tag, .hint { transition: background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .18s ease; }
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Noto Sans Thai", "Segoe UI", Tahoma, sans-serif;
+      background:
+        radial-gradient(circle at 10% -10%, rgba(var(--accent-rgb),.16), transparent 32%),
+        radial-gradient(circle at 95% 10%, rgba(var(--accent-rgb),.10), transparent 26%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      color: var(--text);
+    }
+    button, textarea, select, input { font: inherit; }
+    .shell { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
+    .topbar {
+      display: flex; justify-content: space-between; gap: 18px; align-items: center;
+      margin-bottom: 22px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 46px; height: 46px; border-radius: 14px;
+      display: grid; place-items: center; font-weight: 900; letter-spacing: .5px;
+      background: linear-gradient(145deg, rgba(var(--accent-rgb),.24), rgba(var(--accent-rgb),.08));
+      border: 1px solid rgba(var(--accent-rgb),.26);
+      box-shadow: inset 0 0 24px rgba(var(--accent-rgb),.08);
+    }
+    h1 { font-size: clamp(22px, 2vw, 30px); margin: 0; letter-spacing: -.5px; }
+    .subtitle { color: var(--muted); margin-top: 4px; font-size: 13px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(57,217,138,.25);
+      color: #a9f3cc; background: rgba(57,217,138,.08); font-size: 12px; white-space: nowrap;
+    }
+    .lang-switch {
+      display: inline-flex; gap: 3px; padding: 4px; border-radius: 11px;
+      border: 1px solid var(--line); background: var(--input);
+    }
+    .lang-btn {
+      border: 0; border-radius: 8px; padding: 7px 11px; cursor: pointer;
+      background: transparent; color: var(--muted); font-weight: 850; font-size: 12px;
+      transition: .18s background, .18s color, .18s box-shadow;
+    }
+    .lang-btn.active {
+      color: #f4fbff; background: rgba(var(--accent-rgb),.18);
+      box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),.25);
+    }
+    .grid { display: grid; grid-template-columns: 1.05fr 1fr 1.05fr; gap: 18px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 18px 18px 14px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-title { font-weight: 800; font-size: 15px; }
+    .panel-desc { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .panel-body { padding: 18px; }
+    textarea {
+      width: 100%; min-height: 410px; resize: vertical; border-radius: 14px;
+      border: 1px solid var(--line); background: var(--input); color: #dceafe;
+      padding: 16px; line-height: 1.65; outline: none;
+      transition: .2s border, .2s box-shadow;
+    }
+    textarea:focus, select:focus, input:focus {
+      border-color: rgba(var(--accent-rgb),.72);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.09);
+    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+    .btn {
+      border: 1px solid var(--line); background: rgba(255,255,255,.045); color: var(--text);
+      border-radius: 11px; padding: 10px 13px; cursor: pointer; font-weight: 700; font-size: 13px;
+      transition: .18s transform, .18s background, .18s border;
+    }
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.075); }
+    .btn.primary {
+      border-color: rgba(var(--accent-rgb),.34); background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+      color: white;
+    }
+    .btn.good { border-color: rgba(57,217,138,.28); background: rgba(57,217,138,.10); color: #b9f6d6; }
+    .btn.danger { color: #ffbdc3; }
+    .parsed {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+    }
+    .info-card {
+      background: rgba(255,255,255,.028); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px;
+      min-width: 0;
+    }
+    .info-card.full { grid-column: 1 / -1; }
+    .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .65px; }
+    .value { margin-top: 5px; font-weight: 750; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .section + .section { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .section-title { font-size: 12px; color: #b8c9dc; font-weight: 800; text-transform: uppercase; letter-spacing: .7px; margin-bottom: 10px; }
+    .control {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+      padding: 11px 0;
+    }
+    .control + .control { border-top: 1px dashed rgba(148,163,184,.12); }
+    .control.circuit-control { grid-template-columns: 1fr auto; }
+    .control-main { min-width: 0; }
+    .control-name { font-weight: 760; font-size: 14px; }
+    .control-note { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .switch { position: relative; width: 42px; height: 24px; display: inline-block; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; background: #26364a; border-radius: 999px; cursor: pointer; transition: .2s;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .slider::before {
+      content: ""; position: absolute; width: 17px; height: 17px; left: 3px; top: 2.5px;
+      background: #a7b8cb; border-radius: 50%; transition: .2s;
+    }
+    .switch input:checked + .slider { background: rgba(var(--accent-rgb),.42); border-color: rgba(var(--accent-rgb),.55); }
+    .switch input:checked + .slider::before { transform: translateX(18px); background: var(--text); }
+    select, input[type="number"] {
+      border: 1px solid var(--line); background: var(--input); color: var(--text);
+      border-radius: 10px; padding: 8px 10px; outline: none;
+    }
+    select { min-width: 128px; }
+    .id-tag {
+      display: inline-flex; align-items: center; gap: 7px; padding: 5px 8px; border-radius: 8px;
+      border: 1px solid rgba(var(--accent-rgb),.18); background: rgba(var(--accent-rgb),.055); color: var(--accent-soft);
+      font-size: 12px; margin-top: 5px;
+    }
+    .counter { display: flex; align-items: center; gap: 6px; }
+    .circuit-toggle {
+      min-width: 78px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+      background: rgba(255,255,255,.045); color: var(--text); cursor: pointer; font-weight: 800;
+    }
+    .circuit-toggle.is-on { border-color: rgba(255,104,116,.24); color: #ffc1c6; background: rgba(255,104,116,.07); }
+    .circuit-toggle.is-off { border-color: rgba(57,217,138,.28); color: #b9f6d6; background: rgba(57,217,138,.08); }
+    .circuit-toggle:disabled { opacity: .38; cursor: not-allowed; }
+    .port-pair { display: flex; align-items: center; gap: 8px; }
+    .port-pair select { min-width: 92px; }
+    .port-slash { color: var(--muted); font-weight: 900; }
+    .counter button {
+      width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: white; cursor: pointer;
+    }
+    .counter input { width: 58px; text-align: center; padding: 6px; }
+    .subcontrol {
+      margin: 8px 0 0 52px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.025);
+      border: 1px solid rgba(148,163,184,.12); display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .preview {
+      position: relative; min-height: 410px; white-space: pre-wrap; word-break: break-word;
+      background: linear-gradient(180deg, var(--preview-1), var(--preview-2));
+      border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+      line-height: 1.75; font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; font-size: 14px;
+    }
+    .preview:empty::before { content: attr(data-empty-text); color: #61758b; font-family: inherit; }
+    .copy-toast {
+      opacity: 0; transform: translateY(4px); transition: .2s; color: #a9f3cc; font-size: 12px; margin-left: auto;
+    }
+    .copy-toast.show { opacity: 1; transform: translateY(0); }
+    .hint {
+      margin-top: 12px; padding: 11px 12px; border-radius: 11px; font-size: 12px; color: #9db3ca;
+      background: rgba(var(--accent-rgb),.045); border: 1px solid rgba(var(--accent-rgb),.12); line-height: 1.5;
+    }
+    .missing { color: #ff9fa8; }
+    .footer-note { text-align: center; color: #5f738a; font-size: 11px; margin-top: 18px; }
+    @media (max-width: 1120px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .grid .panel:last-child { grid-column: 1 / -1; }
+      textarea, .preview { min-height: 330px; }
+    }
+    @media (max-width: 760px) {
+      .shell { padding: 16px; }
+      .topbar { align-items: flex-start; }
+      .status-pill { display: none; }
+      .top-actions { margin-left: auto; }
+      .grid { grid-template-columns: 1fr; }
+      .grid .panel:last-child { grid-column: auto; }
+      .parsed { grid-template-columns: 1fr; }
+      .info-card.full { grid-column: auto; }
+      .control { grid-template-columns: auto 1fr; }
+      .control > select, .control > .counter, .control > .port-pair { grid-column: 2; justify-self: start; }
+      .control.circuit-control { grid-template-columns: 1fr auto; }
+      .subcontrol { margin-left: 0; }
+    }
+  </style>
+</head>
+<body data-theme="gold">
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">NOC</div>
+        <div>
+          <h1>Generate Log UIh</h1>
+          <div class="subtitle" data-i18n="subtitle">วางข้อมูลต้นทาง → เลือกสถานะ → คัดลอกข้อความแจ้งตรวจสอบ</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" class="lang-btn active" id="langThBtn" aria-pressed="true">ไทย</button>
+          <button type="button" class="lang-btn" id="langEnBtn" aria-pressed="false">ENG</button>
+        </div>
+        <div class="status-pill" data-i18n="statusLocal">Local HTML · ไม่ส่งข้อมูลออกภายนอก</div>
+      </div>
+    </div>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" data-i18n="sourceTitle">1. วางข้อมูลต้นทาง</div>
+            <div class="panel-desc" data-i18n="sourceDesc">ระบบดึงเฉพาะข้อมูลที่จำเป็นอัตโนมัติ</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="rawInput" spellcheck="false" data-i18n-placeholder="rawPlaceholder" placeholder="ตัวอย่าง\nหน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22"></textarea>
+          <div class="btn-row">
+            <button class="btn primary" id="parseBtn" data-i18n="parseButton">ดึงข้อมูล</button>
+            <button class="btn" id="sampleBtn" data-i18n="sampleButton">ใส่ข้อมูลตัวอย่าง</button>
+            <button class="btn danger" id="clearBtn" data-i18n="clearButton">ล้างทั้งหมด</button>
+          </div>
+
+          <div class="parsed" id="parsedGrid">
+            <div class="info-card"><div class="label" data-i18n="agencyLabel">หน่วยงาน</div><div class="value" id="agencyValue">-</div></div>
+            <div class="info-card"><div class="label" data-i18n="provinceLabel">จังหวัด</div><div class="value" id="provinceValue">-</div></div>
+            <div class="info-card"><div class="label">Main · L2 · MainMPLS</div><div class="value" id="mainValue">-</div></div>
+            <div class="info-card"><div class="label">Backup · L3 · BackupMPLS</div><div class="value" id="backupValue">-</div></div>
+            <div class="info-card full"><div class="label">Down Since</div><div class="value" id="downValue">-</div></div>
+          </div>
+          <div class="hint" data-i18n-html="sourceHint">รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" data-i18n="controlsTitle">2. เลือกข้อความที่ต้องการ</div>
+            <div class="panel-desc" data-i18n="controlsDesc">เปิด/ปิดแต่ละรายการได้อิสระ</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="section">
+            <div class="section-title">Circuit ID</div>
+            <div class="control circuit-control">
+              <input id="includeMain" type="checkbox" checked hidden>
+              <div class="control-main"><div class="control-name">Main</div><div class="id-tag">L2 · MainMPLS · <span id="mainTag">ยังไม่มีข้อมูล</span></div><div class="control-note" data-i18n="mainCircuitNote">ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L2</div></div>
+              <button type="button" class="circuit-toggle is-on" id="toggleMainBtn">− ลบ</button>
+            </div>
+            <div class="control circuit-control">
+              <input id="includeBackup" type="checkbox" checked hidden>
+              <div class="control-main"><div class="control-name">Backup</div><div class="id-tag">L3 · BackupMPLS · <span id="backupTag">ยังไม่มีข้อมูล</span></div><div class="control-note" data-i18n="backupCircuitNote">ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L3</div></div>
+              <button type="button" class="circuit-toggle is-on" id="toggleBackupBtn">− ลบ</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title" data-i18n="statusSection">สถานะ</div>
+            <div class="control">
+              <label class="switch"><input id="includePort" type="checkbox" checked><span class="slider"></span></label>
+              <div class="control-main"><div class="control-name">Port</div><div class="control-note" data-i18n="portNote">เลือกสถานะของ Interface</div></div>
+              <div class="port-pair">
+                <select id="portFront" aria-label="Port status ด้านหน้า">
+                  <option>UP</option>
+                  <option>DOWN</option>
+                </select>
+                <span class="port-slash">/</span>
+                <select id="portBack" aria-label="Port status ด้านหลัง">
+                  <option>UP</option>
+                  <option>DOWN</option>
+                </select>
+              </div>
+            </div>
+            <div class="control">
+              <label class="switch"><input id="includePower" type="checkbox" checked><span class="slider"></span></label>
+              <div class="control-main"><div class="control-name" data-i18n="powerName">ไฟฟ้าเข้าอุปกรณ์ปกติ</div><div class="control-note" data-i18n="toggleLineNote">เปิด/ปิดบรรทัดนี้ได้</div></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Reboot</div>
+            <div class="control">
+              <label class="switch"><input id="includeReboot" type="checkbox" checked><span class="slider"></span></label>
+              <div class="control-main"><div class="control-name" data-i18n="rebootName">Reboot อุปกรณ์แล้ว Link ยังไม่ Up</div><div class="control-note" data-i18n="rebootNote">ข้อความมาตรฐานสำหรับแจ้งผลดำเนินการ</div></div>
+            </div>
+            <div class="subcontrol" id="rebootOptions">
+              <div>
+                <div class="control-name" data-i18n="showCountName">แสดงจำนวนครั้ง</div>
+                <div class="control-note" data-i18n="showCountNote">เช่น “จำนวน 2 ครั้ง”</div>
+              </div>
+              <label class="switch"><input id="showRebootCount" type="checkbox"><span class="slider"></span></label>
+            </div>
+            <div class="subcontrol" id="countRow">
+              <div>
+                <div class="control-name" data-i18n="countName">จำนวนครั้ง</div>
+                <div class="control-note" data-i18n="countNote">เพิ่ม/ลดได้เอง</div>
+              </div>
+              <div class="counter">
+                <button type="button" id="minusCount">−</button>
+                <input id="rebootCount" type="number" min="1" max="99" value="1" />
+                <button type="button" id="plusCount">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" data-i18n="previewTitle">3. ข้อความพร้อมส่ง</div>
+            <div class="panel-desc" data-i18n="previewDesc">อัปเดตอัตโนมัติทุกครั้งที่แก้ข้อมูล</div>
+          </div>
+          <span id="copyToast" class="copy-toast" data-i18n="copyToast">คัดลอกแล้ว</span>
+        </div>
+        <div class="panel-body">
+          <div class="preview" id="preview" data-empty-text="วางข้อมูลด้านซ้ายเพื่อสร้างข้อความ"></div>
+          <div class="btn-row">
+            <button class="btn primary" id="copyBtn" data-i18n="copyButton">คัดลอกข้อความ</button>
+            <button class="btn good" id="selectAllBtn" data-i18n="selectAllButton">เลือกข้อความทั้งหมด</button>
+          </div>
+          <div class="hint" data-i18n-html="previewHint">กด <b>+ เพิ่ม</b> หรือ <b>− ลบ</b> ที่ Main/Backup เพื่อใส่/เอา Circuit ID และ Link ที่คู่กันออกพร้อมกัน โดยไม่ลบข้อมูลต้นทาง</div>
+        </div>
+      </article>
+    </section>
+    <div class="footer-note">Generate Log UIh · Integrated NOC Message Builder</div>
+  </main>
+
+  <script>
+    /* CORE_START */
+    function extractValue(raw, labels) {
+      const lines = String(raw || '').split(/\r?\n/);
+      for (const line of lines) {
+        const trimmed = line.trim();
+        for (const label of labels) {
+          const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const re = new RegExp('^' + escaped + '\\s*[:：]\\s*(.+?)\\s*$', 'i');
+          const m = trimmed.match(re);
+          if (m) return m[1].trim();
+        }
+      }
+      return '';
+    }
+
+    function extractValues(raw, labels) {
+      const lines = String(raw || '').split(/\r?\n/);
+      const values = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        for (const label of labels) {
+          const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const re = new RegExp('^' + escaped + '\\s*[:：]\\s*(.+?)\\s*$', 'i');
+          const m = trimmed.match(re);
+          if (m) { values.push(m[1].trim()); break; }
+        }
+      }
+      return values;
+    }
+
+    function extractCircuitLinkPairs(raw) {
+      const lines = String(raw || '').split(/\r?\n/);
+      const pairs = [];
+      let pendingCircuit = '';
+      let pendingLinkType = '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const circuitMatch = trimmed.match(/^Circuit\s*ID\s*[:：]\s*(.+?)\s*$/i);
+        const linkMatch = trimmed.match(/^Link\s*Type\s*[:：]\s*(.+?)\s*$/i);
+
+        if (circuitMatch) pendingCircuit = circuitMatch[1].trim();
+        if (linkMatch) pendingLinkType = linkMatch[1].trim();
+
+        if (pendingCircuit && pendingLinkType) {
+          pairs.push({ circuitId: pendingCircuit, linkType: pendingLinkType });
+          pendingCircuit = '';
+          pendingLinkType = '';
+        }
+      }
+
+      return pairs;
+    }
+
+    const THAI_PROVINCE_TO_EN = {
+      'กรุงเทพมหานคร':'Bangkok','กระบี่':'Krabi','กาญจนบุรี':'Kanchanaburi','กาฬสินธุ์':'Kalasin','กำแพงเพชร':'Kamphaeng Phet',
+      'ขอนแก่น':'Khon Kaen','จันทบุรี':'Chanthaburi','ฉะเชิงเทรา':'Chachoengsao','ชลบุรี':'Chonburi','ชัยนาท':'Chai Nat',
+      'ชัยภูมิ':'Chaiyaphum','ชุมพร':'Chumphon','เชียงราย':'Chiang Rai','เชียงใหม่':'Chiang Mai','ตรัง':'Trang','ตราด':'Trat',
+      'ตาก':'Tak','นครนายก':'Nakhon Nayok','นครปฐม':'Nakhon Pathom','นครพนม':'Nakhon Phanom','นครราชสีมา':'Nakhon Ratchasima',
+      'นครศรีธรรมราช':'Nakhon Si Thammarat','นครสวรรค์':'Nakhon Sawan','นนทบุรี':'Nonthaburi','นราธิวาส':'Narathiwat','น่าน':'Nan',
+      'บึงกาฬ':'Bueng Kan','บุรีรัมย์':'Buriram','ปทุมธานี':'Pathum Thani','ประจวบคีรีขันธ์':'Prachuap Khiri Khan','ปราจีนบุรี':'Prachinburi',
+      'ปัตตานี':'Pattani','พระนครศรีอยุธยา':'Phra Nakhon Si Ayutthaya','พังงา':'Phang Nga','พัทลุง':'Phatthalung','พิจิตร':'Phichit',
+      'พิษณุโลก':'Phitsanulok','เพชรบุรี':'Phetchaburi','เพชรบูรณ์':'Phetchabun','แพร่':'Phrae','พะเยา':'Phayao','ภูเก็ต':'Phuket',
+      'มหาสารคาม':'Maha Sarakham','มุกดาหาร':'Mukdahan','แม่ฮ่องสอน':'Mae Hong Son','ยโสธร':'Yasothon','ยะลา':'Yala','ร้อยเอ็ด':'Roi Et',
+      'ระนอง':'Ranong','ระยอง':'Rayong','ราชบุรี':'Ratchaburi','ลพบุรี':'Lopburi','ลำปาง':'Lampang','ลำพูน':'Lamphun','เลย':'Loei',
+      'ศรีสะเกษ':'Sisaket','สกลนคร':'Sakon Nakhon','สงขลา':'Songkhla','สตูล':'Satun','สมุทรปราการ':'Samut Prakan','สมุทรสงคราม':'Samut Songkhram',
+      'สมุทรสาคร':'Samut Sakhon','สระแก้ว':'Sa Kaeo','สระบุรี':'Saraburi','สิงห์บุรี':'Sing Buri','สุโขทัย':'Sukhothai','สุพรรณบุรี':'Suphan Buri',
+      'สุราษฎร์ธานี':'Surat Thani','สุรินทร์':'Surin','หนองคาย':'Nong Khai','หนองบัวลำภู':'Nong Bua Lamphu','อ่างทอง':'Ang Thong',
+      'อำนาจเจริญ':'Amnat Charoen','อุดรธานี':'Udon Thani','อุตรดิตถ์':'Uttaradit','อุทัยธานี':'Uthai Thani','อุบลราชธานี':'Ubon Ratchathani'
+    };
+
+    function provinceForLanguage(province, language) {
+      const value = String(province || '').trim();
+      if (!value) return '';
+      const lang = language === 'en' ? 'en' : 'th';
+      if (lang === 'en') return THAI_PROVINCE_TO_EN[value] || value;
+      const entry = Object.entries(THAI_PROVINCE_TO_EN).find(([, en]) => en.toLowerCase() === value.toLowerCase());
+      return entry ? entry[0] : value;
+    }
+
+    function parseRawData(raw) {
+      const linkTypes = extractValues(raw, ['Link Type', 'LinkType']);
+      const pairs = extractCircuitLinkPairs(raw);
+      const mainPair = pairs.find(pair => linkLayerFromType(pair.linkType) === 'L2');
+      const backupPair = pairs.find(pair => linkLayerFromType(pair.linkType) === 'L3');
+      const explicitMain = extractValue(raw, ['Circuit ID Main', 'Circuit Main', 'Circuit ID MAIN']);
+      const explicitBackup = extractValue(raw, ['Circuit ID Backup', 'Circuit Backup', 'Circuit ID BACKUP']);
+
+      return {
+        agency: extractValue(raw, ['หน่วยงาน', 'Agency', 'Organization']),
+        province: extractValue(raw, ['จังหวัด', 'Province']),
+        circuitMain: explicitMain || (mainPair ? mainPair.circuitId : ''),
+        circuitBackup: explicitBackup || (backupPair ? backupPair.circuitId : ''),
+        linkType: linkTypes[0] || '',
+        linkTypeMain: linkTypes.find(v => linkLayerFromType(v) === 'L2') || '',
+        linkTypeBackup: linkTypes.find(v => linkLayerFromType(v) === 'L3') || '',
+        downSince: extractValue(raw, ['Down Since'])
+      };
+    }
+
+    function layerForCircuit(which) {
+      return String(which || '').toLowerCase() === 'backup' ? 'L3' : 'L2';
+    }
+
+    function linkLayerFromType(linkType) {
+      const normalized = String(linkType || '').replace(/[\s_-]+/g, '').toLowerCase();
+      if (normalized === 'mainmpls') return 'L2';
+      if (normalized === 'backupmpls') return 'L3';
+      return '';
+    }
+
+    function composeMessage(state) {
+      const language = state.language === 'en' ? 'en' : 'th';
+      const ids = [];
+      if (state.includeMain && state.circuitMain) ids.push(state.circuitMain);
+      if (state.includeBackup && state.circuitBackup) ids.push(state.circuitBackup);
+
+      const headParts = [language === 'en' ? 'Check' : 'แจ้งตรวจสอบ'];
+      if (ids.length) headParts.push(ids.join(' '));
+      if (state.agency) headParts.push(state.agency);
+
+      const lines = [headParts.join(' ').replace(/\s+/g, ' ').trim()];
+      if (state.province) {
+        const province = provinceForLanguage(state.province, language);
+        lines.push(`${language === 'en' ? 'Province' : 'จังหวัด'} : ${province}`);
+      }
+      if (state.downSince) lines.push(`Down Since : ${state.downSince}`);
+      if (state.includePort) {
+        const portValue = state.portStatus || `${state.portFront || 'UP'}/${state.portBack || 'UP'}`;
+        lines.push(`- Port : ${portValue}`);
+      }
+      if (state.includeMain && state.circuitMain) lines.push('- Link : L2 down');
+      if (state.includeBackup && state.circuitBackup) lines.push('- Link : L3 down');
+      if (state.includePower) {
+        lines.push(language === 'en' ? '- Power supply to the device is normal' : '- ไฟฟ้าเข้าอุปกรณ์ปกติ');
+      }
+      if (state.includeReboot) {
+        const count = Math.max(1, parseInt(state.rebootCount, 10) || 1);
+        if (language === 'en') {
+          const countText = state.showRebootCount ? ` ${count} ${count === 1 ? 'time' : 'times'}` : '';
+          lines.push(`- Device reboot completed${countText}, but the link is still down`);
+        } else {
+          const countText = state.showRebootCount ? ` จำนวน ${count} ครั้ง` : '';
+          lines.push(`- ดำเนินการ Reboot อุปกรณ์เรียบร้อยแล้ว${countText} Link ยังไม่ Up กลับมา`);
+        }
+      }
+      return lines.filter(Boolean).join('\n');
+    }
+    /* CORE_END */
+
+    const $ = (id) => document.getElementById(id);
+    const translations = {
+      th: {
+        subtitle: 'วางข้อมูลต้นทาง → เลือกสถานะ → คัดลอกข้อความแจ้งตรวจสอบ',
+        statusLocal: 'Local HTML · ไม่ส่งข้อมูลออกภายนอก',
+        sourceTitle: '1. วางข้อมูลต้นทาง', sourceDesc: 'ระบบดึงเฉพาะข้อมูลที่จำเป็นอัตโนมัติ',
+        rawPlaceholder: 'ตัวอย่าง\nหน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22',
+        parseButton: 'ดึงข้อมูล', sampleButton: 'ใส่ข้อมูลตัวอย่าง', clearButton: 'ล้างทั้งหมด',
+        agencyLabel: 'หน่วยงาน', provinceLabel: 'จังหวัด',
+        sourceHint: 'รองรับเครื่องหมาย <b>:</b> ทั้งแบบมี/ไม่มีช่องว่าง · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · Circuit และ Link ใช้ปุ่มเพิ่ม/ลบชุดเดียวกัน',
+        controlsTitle: '2. เลือกข้อความที่ต้องการ', controlsDesc: 'เปิด/ปิดแต่ละรายการได้อิสระ',
+        mainCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L2', backupCircuitNote: 'ปุ่มเดียวควบคุมทั้ง Circuit ID และ Link L3',
+        statusSection: 'สถานะ', portNote: 'เลือกสถานะของ Interface', powerName: 'ไฟฟ้าเข้าอุปกรณ์ปกติ', toggleLineNote: 'เปิด/ปิดบรรทัดนี้ได้',
+        rebootName: 'Reboot อุปกรณ์แล้ว Link ยังไม่ Up', rebootNote: 'ข้อความมาตรฐานสำหรับแจ้งผลดำเนินการ',
+        showCountName: 'แสดงจำนวนครั้ง', showCountNote: 'เช่น “จำนวน 2 ครั้ง”', countName: 'จำนวนครั้ง', countNote: 'เพิ่ม/ลดได้เอง',
+        previewTitle: '3. ข้อความพร้อมส่ง', previewDesc: 'อัปเดตอัตโนมัติทุกครั้งที่แก้ข้อมูล', copyToast: 'คัดลอกแล้ว',
+        copyButton: 'คัดลอกข้อความ', selectAllButton: 'เลือกข้อความทั้งหมด',
+        previewHint: 'กด <b>+ เพิ่ม</b> หรือ <b>− ลบ</b> ที่ Main/Backup เพื่อใส่/เอา Circuit ID และ Link ที่คู่กันออกพร้อมกัน โดยไม่ลบข้อมูลต้นทาง',
+        previewEmpty: 'วางข้อมูลด้านซ้ายเพื่อสร้างข้อความ', noData: 'ยังไม่มีข้อมูล', add: '+ เพิ่ม', remove: '− ลบ',
+        portFrontAria: 'สถานะ Port ด้านหน้า', portBackAria: 'สถานะ Port ด้านหลัง'
+      },
+      en: {
+        subtitle: 'Paste source data → choose statuses → copy the incident message',
+        statusLocal: 'Local HTML · no data is sent externally',
+        sourceTitle: '1. Source Data', sourceDesc: 'Required fields are extracted automatically',
+        rawPlaceholder: 'Example\nAgency : Test Office\nProvince : Tak\nCircuit ID Main : 507482\nCircuit ID Backup : 558470\nDown Since : Wednesday, September 23, 2026 10:22',
+        parseButton: 'Parse Data', sampleButton: 'Load Sample', clearButton: 'Clear All',
+        agencyLabel: 'Agency', provinceLabel: 'Province',
+        sourceHint: 'Supports <b>:</b> with or without spaces · Main = L2 / MainMPLS · Backup = L3 / BackupMPLS · one Add/Remove button controls each Circuit and its Link',
+        controlsTitle: '2. Message Options', controlsDesc: 'Toggle each item independently',
+        mainCircuitNote: 'One button controls both the Circuit ID and L2 Link', backupCircuitNote: 'One button controls both the Circuit ID and L3 Link',
+        statusSection: 'Status', portNote: 'Select each interface status', powerName: 'Power supply to the device is normal', toggleLineNote: 'Show or hide this line',
+        rebootName: 'Device rebooted, but Link is still down', rebootNote: 'Standard action result message',
+        showCountName: 'Show reboot count', showCountNote: 'Example: “2 times”', countName: 'Reboot Count', countNote: 'Increase or decrease as needed',
+        previewTitle: '3. Ready-to-Send Message', previewDesc: 'Updates automatically whenever data changes', copyToast: 'Copied',
+        copyButton: 'Copy Message', selectAllButton: 'Select All',
+        previewHint: 'Use <b>+ Add</b> or <b>− Remove</b> on Main/Backup to add or remove the paired Circuit ID and Link without deleting source data.',
+        previewEmpty: 'Paste source data on the left to generate a message', noData: 'No data', add: '+ Add', remove: '− Remove',
+        portFrontAria: 'Front Port status', portBackAria: 'Back Port status'
+      }
+    };
+
+    let currentLang = 'th';
+    const sampleTexts = {
+      th: `หน่วยงาน : สส.สามเงา\nจังหวัด : ตาก\nภาค : PAK7\nIP Address : 10.244.7.42\nCircuit ID Main : 507676\nLink Type : MainMPLS\nCircuit ID Backup : 554672\nLink Type : BackupMPLS\nDown Since : Wednesday, September 23, 2026 10:22\nNumber : 0-5580-0761`,
+      en: `Agency : Test Office\nProvince : Tak\nRegion : PAK7\nIP Address : 10.244.7.42\nCircuit ID Main : 507676\nLink Type : MainMPLS\nCircuit ID Backup : 554672\nLink Type : BackupMPLS\nDown Since : Wednesday, September 23, 2026 10:22\nNumber : 0-5580-0761`
+    };
+
+    function t(key) {
+      return (translations[currentLang] && translations[currentLang][key]) || translations.th[key] || key;
+    }
+
+    function setLanguage(language) {
+      currentLang = language === 'en' ? 'en' : 'th';
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key] !== undefined) el.textContent = translations[currentLang][key];
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (translations[currentLang][key] !== undefined) el.innerHTML = translations[currentLang][key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[currentLang][key] !== undefined) el.placeholder = translations[currentLang][key];
+      });
+      $('preview').setAttribute('data-empty-text', t('previewEmpty'));
+      $('portFront').setAttribute('aria-label', t('portFrontAria'));
+      $('portBack').setAttribute('aria-label', t('portBackAria'));
+      $('langThBtn').classList.toggle('active', currentLang === 'th');
+      $('langEnBtn').classList.toggle('active', currentLang === 'en');
+      $('langThBtn').setAttribute('aria-pressed', String(currentLang === 'th'));
+      $('langEnBtn').setAttribute('aria-pressed', String(currentLang === 'en'));
+      renderParsed();
+      renderPreview();
+    }
+
+    let data = { agency: '', province: '', circuitMain: '', circuitBackup: '', linkType: '', linkTypeMain: '', linkTypeBackup: '', downSince: '' };
+
+    function readState() {
+      return {
+        ...data,
+        includeMain: $('includeMain').checked,
+        includeBackup: $('includeBackup').checked,
+        includePort: $('includePort').checked,
+        portFront: $('portFront').value,
+        portBack: $('portBack').value,
+        includePower: $('includePower').checked,
+        includeReboot: $('includeReboot').checked,
+        showRebootCount: $('showRebootCount').checked,
+        rebootCount: $('rebootCount').value,
+        language: currentLang
+      };
+    }
+
+    function setText(id, value) {
+      const el = $(id);
+      el.textContent = value || '-';
+      el.classList.toggle('missing', !value);
+    }
+
+    function renderParsed() {
+      setText('agencyValue', data.agency);
+      setText('provinceValue', data.province);
+      setText('mainValue', data.circuitMain);
+      setText('backupValue', data.circuitBackup);
+      setText('downValue', data.downSince);
+      $('mainTag').textContent = data.circuitMain || t('noData');
+      $('backupTag').textContent = data.circuitBackup || t('noData');
+
+      // ค่าเริ่มต้น: Circuit ที่ไม่มีข้อมูลจะถูกปิดเพื่อไม่สร้างเลขว่าง
+      $('includeMain').disabled = !data.circuitMain;
+      $('includeBackup').disabled = !data.circuitBackup;
+      if (!data.circuitMain) $('includeMain').checked = false;
+      if (!data.circuitBackup) $('includeBackup').checked = false;
+      renderCircuitButtons();
+    }
+
+    function renderCircuitButtons() {
+      [['Main', 'includeMain', 'toggleMainBtn', data.circuitMain], ['Backup', 'includeBackup', 'toggleBackupBtn', data.circuitBackup]].forEach(([, checkboxId, buttonId, value]) => {
+        const checkbox = $(checkboxId);
+        const button = $(buttonId);
+        const isOn = Boolean(value) && checkbox.checked;
+        button.disabled = !value;
+        button.textContent = isOn ? t('remove') : t('add');
+        button.classList.toggle('is-on', isOn);
+        button.classList.toggle('is-off', !isOn);
+        button.setAttribute('aria-pressed', String(isOn));
+      });
+    }
+
+    function renderPreview() {
+      $('preview').textContent = composeMessage(readState());
+      renderCircuitButtons();
+      const rebootOn = $('includeReboot').checked;
+      $('rebootOptions').style.opacity = rebootOn ? '1' : '.42';
+      $('showRebootCount').disabled = !rebootOn;
+      const countEnabled = rebootOn && $('showRebootCount').checked;
+      $('countRow').style.opacity = countEnabled ? '1' : '.42';
+      $('rebootCount').disabled = !countEnabled;
+      $('minusCount').disabled = !countEnabled;
+      $('plusCount').disabled = !countEnabled;
+    }
+
+    function parseAndRender() {
+      data = parseRawData($('rawInput').value);
+      renderParsed();
+
+      // Main = L2/MainMPLS และ Backup = L3/BackupMPLS ใช้ปุ่มเพิ่ม/ลบชุดเดียวกับ Circuit ID
+      if (data.circuitMain) $('includeMain').checked = true;
+      if (data.circuitBackup) $('includeBackup').checked = true;
+      renderPreview();
+    }
+
+    $('parseBtn').addEventListener('click', parseAndRender);
+    $('sampleBtn').addEventListener('click', () => { $('rawInput').value = sampleTexts[currentLang]; parseAndRender(); });
+    $('clearBtn').addEventListener('click', () => {
+      $('rawInput').value = '';
+      data = { agency: '', province: '', circuitMain: '', circuitBackup: '', linkType: '', linkTypeMain: '', linkTypeBackup: '', downSince: '' };
+      $('includeMain').checked = true;
+      $('includeBackup').checked = true;
+      $('includeMain').disabled = false;
+      $('includeBackup').disabled = false;
+      renderParsed();
+      renderPreview();
+    });
+
+    let debounce;
+    $('rawInput').addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(parseAndRender, 220);
+    });
+
+    const reactiveIds = ['includeMain','includeBackup','includePort','portFront','portBack','includePower','includeReboot','showRebootCount','rebootCount'];
+    reactiveIds.forEach(id => {
+      $(id).addEventListener('change', renderPreview);
+      $(id).addEventListener('input', renderPreview);
+    });
+
+
+    $('toggleMainBtn').addEventListener('click', () => {
+      if (!data.circuitMain) return;
+      $('includeMain').checked = !$('includeMain').checked;
+      renderPreview();
+    });
+    $('toggleBackupBtn').addEventListener('click', () => {
+      if (!data.circuitBackup) return;
+      $('includeBackup').checked = !$('includeBackup').checked;
+      renderPreview();
+    });
+
+    $('minusCount').addEventListener('click', () => {
+      $('rebootCount').value = Math.max(1, (parseInt($('rebootCount').value, 10) || 1) - 1);
+      renderPreview();
+    });
+    $('plusCount').addEventListener('click', () => {
+      $('rebootCount').value = Math.min(99, (parseInt($('rebootCount').value, 10) || 1) + 1);
+      renderPreview();
+    });
+
+    $('copyBtn').addEventListener('click', async () => {
+      const text = $('preview').textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (_) {
+        const temp = document.createElement('textarea');
+        temp.value = text; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); temp.remove();
+      }
+      $('copyToast').classList.add('show');
+      setTimeout(() => $('copyToast').classList.remove('show'), 1300);
+    });
+
+    $('selectAllBtn').addEventListener('click', () => {
+      const range = document.createRange();
+      range.selectNodeContents($('preview'));
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+    });
+
+    $('langThBtn').addEventListener('click', () => setLanguage('th'));
+    $('langEnBtn').addEventListener('click', () => setLanguage('en'));
+
+    setLanguage('th');
+  </script>
+
+  <script>
+    function applyMissionTheme(theme) {
+      document.body.dataset.theme = theme === 'cyber' ? 'cyber' : 'gold';
+    }
+    window.addEventListener('message', (event) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+      if (data.type === 'mission-theme') applyMissionTheme(data.theme);
+    });
+    window.addEventListener('load', () => {
+      try { parent.postMessage({ type: 'uih-ready' }, window.location.origin); } catch (_) {}
+    });
+  </script>
+</body>
+</html>

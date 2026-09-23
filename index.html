@@ -101,6 +101,12 @@
     .log-note-panel textarea{flex:1;min-height:0;height:auto;resize:none;line-height:1.65}
     #logRes3 textarea{min-height:132px;line-height:1.65}
     @media(max-width:900px){.log-results-layout{grid-template-columns:1fr}.log-note-panel{height:auto}.log-note-panel textarea{min-height:220px;height:220px;resize:vertical}}
+  
+    /* generate-log-uih-v1 */
+    #view-uih{min-height:0;overflow:hidden}
+    .uih-frame-shell{width:100%;height:100%;min-height:0;overflow:hidden;padding:0;background:rgba(0,0,0,.08)}
+    #uihFrame{display:block;width:100%;height:100%;min-height:720px;border:0;background:transparent}
+    @media(max-width:900px){#view-uih{overflow:visible}.uih-frame-shell{height:auto;min-height:820px}.uih-frame-shell #uihFrame{min-height:820px}}
   </style>
   <link rel="stylesheet" href="scroll-fix.css">
 </head>
@@ -112,7 +118,7 @@
         <nav class="flex gap-1 text-sm font-medium h-full overflow-x-auto items-center flex-1 min-w-0">
           <button onclick="switchTab('dhcp')" id="tab-dhcp" class="tab-btn active h-full px-4 border-b-2 whitespace-nowrap accent-text" style="border-color:var(--accent)"><i data-lucide="layers" class="w-4 h-4 inline-block mr-2"></i>DHCP Generator</button>
           <button onclick="switchTab('subnet')" id="tab-subnet" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="calculator" class="w-4 h-4 inline-block mr-2"></i>Subnet Calculator</button>
-          <button onclick="switchTab('log')" id="tab-log" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="file-terminal" class="w-4 h-4 inline-block mr-2"></i>Generate Log traffic</button>
+          <button onclick="switchTab('log')" id="tab-log" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="file-terminal" class="w-4 h-4 inline-block mr-2"></i>Generate Log traffic</button><button onclick="switchTab('uih')" id="tab-uih" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="panel-top-open" class="w-4 h-4 inline-block mr-2"></i>Generate Log UIh</button>
         </nav>
         <div class="brand-block" aria-label="DHCP Mission Control">
           <div class="brand-mark"><i data-lucide="orbit" class="w-5 h-5"></i><span class="brand-dot"></span></div>
@@ -178,6 +184,12 @@
               </div>
             </div>
           </section>
+
+          <section id="view-uih" class="view-panel hidden h-full min-h-0 flex-col animate-enter">
+            <div class="uih-frame-shell glass-panel rounded-2xl accent-border">
+              <iframe id="uihFrame" src="uih.html" title="Generate Log UIh" loading="eager" onload="syncUIhTheme(document.body.dataset.theme || 'gold')"></iframe>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -195,8 +207,10 @@
   const cidrData=[['/8','255.0.0.0','16,777,216','16,777,214'],['/9','255.128.0.0','8,388,608','8,388,606'],['/10','255.192.0.0','4,194,304','4,194,302'],['/11','255.224.0.0','2,097,152','2,097,150'],['/12','255.240.0.0','1,048,576','1,048,574'],['/13','255.248.0.0','524,288','524,286'],['/14','255.252.0.0','262,144','262,142'],['/15','255.254.0.0','131,072','131,070'],['/16','255.255.0.0','65,536','65,534'],['/17','255.255.128.0','32,768','32,766'],['/18','255.255.192.0','16,384','16,382'],['/19','255.255.224.0','8,192','8,190'],['/20','255.255.240.0','4,096','4,094'],['/21','255.255.248.0','2,048','2,046'],['/22','255.255.252.0','1,024','1,022'],['/23','255.255.254.0','512','510'],['/24','255.255.255.0','256','254'],['/25','255.255.255.128','128','126'],['/26','255.255.255.192','64','62'],['/27','255.255.255.224','32','30'],['/28','255.255.255.240','16','14'],['/29','255.255.255.248','8','6'],['/30','255.255.255.252','4','2'],['/31','255.255.255.254','2','2'],['/32','255.255.255.255','1','1']];
   function renderCidrTable(){const tbody=document.getElementById('cidrTableBody');tbody.innerHTML='';cidrData.forEach(row=>{const tr=document.createElement('tr');tr.className='cidr-row';tr.innerHTML=`<td class="p-4 md:p-5 pl-5 md:pl-7 font-bold accent-text">${row[0]}</td><td class="p-4 md:p-5 text-white">${row[1]}</td><td class="p-4 md:p-5" style="color:var(--muted)">${row[2]}</td><td class="p-4 md:p-5 font-semibold" style="color:var(--success)">${row[3]}</td><td class="p-4 md:p-5 text-right"><button class="copy-mini" title="Copy row" onclick='copyCidr(${JSON.stringify(row)})'><i data-lucide="copy" class="w-4 h-4"></i></button></td>`;tbody.appendChild(tr)});lucide.createIcons()}
   function copyCidr(row){copyString(`${row[0]} | ${row[1]} | Total IPs: ${row[2]} | Usable Hosts: ${row[3]}`)}
-  function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem('missionTheme',theme);document.getElementById('themeGold').classList.toggle('active',theme==='gold');document.getElementById('themeCyber').classList.toggle('active',theme==='cyber');lucide.createIcons()}
-  function switchTab(tab){['dhcp','subnet','log'].forEach(t=>{const view=document.getElementById(`view-${t}`),btn=document.getElementById(`tab-${t}`);view.classList.add('hidden');view.classList.remove('flex','animate-enter');btn.classList.remove('active','accent-text');btn.style.borderColor='transparent';btn.style.color='var(--muted)'});const v=document.getElementById(`view-${tab}`),b=document.getElementById(`tab-${tab}`);v.classList.remove('hidden');v.classList.add('flex','animate-enter');b.classList.add('active','accent-text');b.style.borderColor='var(--accent)';b.style.color='var(--accent)'}
+  function syncUIhTheme(theme){const frame=document.getElementById('uihFrame');if(frame&&frame.contentWindow)frame.contentWindow.postMessage({type:'mission-theme',theme},window.location.origin)}
+  window.addEventListener('message',event=>{if(event.origin!==window.location.origin)return;const data=event.data||{};if(data.type==='uih-ready')syncUIhTheme(document.body.dataset.theme||'gold')});
+  function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem('missionTheme',theme);document.getElementById('themeGold').classList.toggle('active',theme==='gold');document.getElementById('themeCyber').classList.toggle('active',theme==='cyber');syncUIhTheme(theme);lucide.createIcons()}
+  function switchTab(tab){['dhcp','subnet','log','uih'].forEach(t=>{const view=document.getElementById(`view-${t}`),btn=document.getElementById(`tab-${t}`);view.classList.add('hidden');view.classList.remove('flex','animate-enter');btn.classList.remove('active','accent-text');btn.style.borderColor='transparent';btn.style.color='var(--muted)'});const v=document.getElementById(`view-${tab}`),b=document.getElementById(`tab-${tab}`);v.classList.remove('hidden');v.classList.add('flex','animate-enter');b.classList.add('active','accent-text');b.style.borderColor='var(--accent)';b.style.color='var(--accent)'}
   function openModal(){document.getElementById('calcModal').classList.add('active');handleCalculation()}function closeModal(){document.getElementById('calcModal').classList.remove('active')}
   function triggerFlash(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('flash-update');void el.offsetWidth;el.classList.add('flash-update')}
   function getClientIdentifier(mac){const clean=mac.replace(/[^a-fA-F0-9]/g,'').toLowerCase();if(clean.length!==12)return mac;const cid='01'+clean;return `${cid.slice(0,4)}.${cid.slice(4,8)}.${cid.slice(8,12)}.${cid.slice(12,14)}`}
