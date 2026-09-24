@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
+      - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/add-traffic-ip-reputation.py'
@@ -16,6 +17,7 @@ on:
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
+      - 'scripts/test-local-ip-reputation.js'
 
 permissions:
   contents: write
@@ -31,7 +33,7 @@ jobs:
       - name: Patch Generate Log traffic and UIh pages
         run: python scripts/patch-traffic-log.py
 
-      - name: Add traffic IP reputation panel
+      - name: Add local traffic IP reputation analysis
         run: python scripts/add-traffic-ip-reputation.py
 
       - name: Fit Generate Log UIh to viewport
@@ -49,10 +51,13 @@ jobs:
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
-      - name: Verify traffic IP reputation panel
+      - name: Verify local traffic IP reputation panel
         run: python scripts/test-ip-reputation.py
 
-      - name: Verify IP reputation API behavior
+      - name: Verify local IP reputation behavior
+        run: node scripts/test-local-ip-reputation.js
+
+      - name: Verify optional legacy IP reputation API behavior
         run: node scripts/test-ip-reputation-api.js
 
       - name: Commit generated page changes
@@ -61,5 +66,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: add traffic IP reputation panel'
+          git commit -m 'ui: analyze traffic IP reputation locally'
           git push origin HEAD:main
