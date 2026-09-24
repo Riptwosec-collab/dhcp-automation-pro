@@ -120,8 +120,8 @@
       reasons.push('เป็น Public network แต่ไม่พบ keyword ของ Hosting/VPN/Proxy');
     } else {
       networkType = 'UNKNOWN PUBLIC';
-      score += 10;
-      reasons.push('ข้อมูล Provider/ASN ไม่เพียงพอสำหรับจำแนกประเภทเครือข่าย');
+      score += 30;
+      reasons.push('ข้อมูล Provider/ASN ไม่เพียงพอ จึงไม่จัดเป็น Low Risk');
     }
 
     let directSignals = 0;
