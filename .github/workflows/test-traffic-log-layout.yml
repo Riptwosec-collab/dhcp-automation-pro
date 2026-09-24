@@ -17,6 +17,7 @@ on:
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-ip-reputation.py'
+      - 'scripts/test-ip-reputation-api.js'
 
 jobs:
   test-layout:
@@ -37,3 +38,5 @@ jobs:
         run: python scripts/test-traffic-log-layout.py
       - name: Verify traffic IP reputation panel
         run: python scripts/test-ip-reputation.py
+      - name: Verify IP reputation API behavior
+        run: node scripts/test-ip-reputation-api.js
