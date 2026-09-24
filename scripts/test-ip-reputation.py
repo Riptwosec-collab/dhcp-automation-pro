@@ -2,25 +2,32 @@ from pathlib import Path
 import re
 
 html = Path("index.html").read_text(encoding="utf-8")
-api_path = Path("api/ip-reputation.js")
-api = api_path.read_text(encoding="utf-8") if api_path.exists() else ""
+module_path = Path("local-ip-reputation.js")
+module = module_path.read_text(encoding="utf-8") if module_path.exists() else ""
 
 checks = {
     "traffic reputation panel exists": 'id="ipReputationPanel"' in html,
+    "local analysis badge exists": 'LOCAL ANALYSIS' in html,
     "risk badge exists": 'id="ipRiskBadge"' in html,
+    "IP type field exists": 'id="ipRepIpType"' in html,
     "provider and ASN fields exist": 'id="ipRepProvider"' in html and 'id="ipRepAsn"' in html,
-    "company and ASN abuse scores exist": 'id="ipRepCompanyScore"' in html and 'id="ipRepAsnScore"' in html,
-    "threat flags exist": all(token in html for token in ['id="ipFlagAbuser"', 'id="ipFlagTor"', 'id="ipFlagProxy"', 'id="ipFlagVpn"', 'id="ipFlagDatacenter"']),
+    "network type field exists": 'id="ipRepNetworkType"' in html,
+    "local score field exists": 'id="ipRepLocalScore"' in html,
+    "analysis reasons exist": 'id="ipRepReasons"' in html,
+    "external threat limitations exist": all(token in html for token in [
+        'id="ipFlagAbuser"', 'id="ipFlagTor"', 'id="ipFlagProxy"',
+        'id="ipFlagVpn"', 'id="ipFlagSpamAttack"', 'id="ipFlagThreatFeed"'
+    ]),
+    "external threat fields are explicitly unverified": 'NOT VERIFIED' in html and 'UNKNOWN' in html,
     "reputation is explicitly view only": 'VIEW ONLY · ไม่รวมใน COPY' in html,
-    "frontend has reputation lookup": 'async function fetchIPReputation(ip)' in html and "fetch(`/api/ip-reputation?ip=${encodeURIComponent(ip)}`" in html,
-    "private IPs are not sent to threat API": "setIPReputationPrivate(ip)" in html,
-    "API endpoint exists": bool(api),
-    "API key stays server side": "process.env.IPAPI_IS_KEY" in api and "api.ipapi.is" in api,
-    "API validates IPv4": "isValidIPv4" in api,
-    "API blocks private IPv4 lookups": "isPrivateIPv4" in api,
-    "API returns normalized threat fields": all(token in api for token in ["is_abuser", "is_tor", "is_proxy", "is_vpn", "is_datacenter"]),
-    "API exposes abuse scores": "companyAbuserScore" in api and "asnAbuserScore" in api,
-    "risk classification exists": "HIGH RISK" in api and "CAUTION" in api and "LOW RISK" in api,
+    "local analyzer module is loaded": '<script src="local-ip-reputation.js"></script>' in html,
+    "frontend uses local analyzer": 'LocalIPReputation.analyzeNetwork' in html,
+    "frontend does not call threat API": '/api/ip-reputation' not in html,
+    "local analyzer module exists": bool(module),
+    "local analyzer exposes network analysis": 'analyzeNetwork' in module,
+    "local analyzer exposes IP classification": 'classifyIpType' in module,
+    "local analyzer distinguishes LOW CAUTION HIGH": all(token in module for token in ['LOW RISK', 'CAUTION', 'HIGH RISK']),
+    "local analyzer marks external threat data unknown": 'NOT VERIFIED' in module and 'UNKNOWN' in module,
 }
 
 match = re.search(r"function generateLogs\(\)\{(?P<body>.*?)(?=\n  function |\n  async function |\n  const |\n  let |\n  window\.|\n</script>)", html, re.S)
@@ -32,6 +39,6 @@ else:
 
 failed = [name for name, ok in checks.items() if not ok]
 if failed:
-    raise SystemExit("Missing expected IP reputation behavior: " + ", ".join(failed))
+    raise SystemExit("Missing expected local IP reputation behavior: " + ", ".join(failed))
 
-print("Traffic IP reputation regression checks passed")
+print("Local traffic IP reputation regression checks passed")
