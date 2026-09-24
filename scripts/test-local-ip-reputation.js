@@ -29,6 +29,11 @@ assert.equal(hosting.risk.level, 'CAUTION');
 assert.equal(hosting.networkType, 'CLOUD / DATACENTER');
 assert.ok(hosting.score >= 35 && hosting.score < 70);
 
+const unknownProvider = rep.analyzeNetwork({ ip: '9.9.9.9' });
+assert.equal(unknownProvider.risk.level, 'CAUTION');
+assert.equal(unknownProvider.networkType, 'UNKNOWN PUBLIC');
+assert.ok(unknownProvider.score >= 35);
+
 const suspicious = rep.analyzeNetwork({
   ip: '1.1.1.1',
   provider: 'Anonymous VPN Proxy Hosting',
