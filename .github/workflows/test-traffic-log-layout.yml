@@ -8,6 +8,7 @@ on:
     paths:
       - 'index.html'
       - 'uih.html'
+      - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/fit-uih-viewport.py'
@@ -18,6 +19,7 @@ on:
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
+      - 'scripts/test-local-ip-reputation.js'
 
 jobs:
   test-layout:
@@ -38,7 +40,9 @@ jobs:
         run: python scripts/add-downsince-language-toggle.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
-      - name: Verify traffic IP reputation panel
+      - name: Verify local traffic IP reputation panel
         run: python scripts/test-ip-reputation.py
-      - name: Verify IP reputation API behavior
+      - name: Verify local IP reputation behavior
+        run: node scripts/test-local-ip-reputation.js
+      - name: Verify optional legacy IP reputation API behavior
         run: node scripts/test-ip-reputation-api.js
