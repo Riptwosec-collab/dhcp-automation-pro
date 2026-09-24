@@ -26,6 +26,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply traffic log layout patch in test workspace
         run: python scripts/patch-traffic-log.py
+      - name: Add traffic IP reputation panel
+        run: python scripts/add-traffic-ip-reputation.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
       - name: Localize UIh Down Since in Thai
