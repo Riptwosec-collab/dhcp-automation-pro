@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
+      - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
+      - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/test-traffic-log-layout.py'
+      - 'scripts/test-ip-reputation.py'
+      - 'scripts/test-ip-reputation-api.js'
 
 permissions:
   contents: write
@@ -26,6 +30,9 @@ jobs:
 
       - name: Patch Generate Log traffic and UIh pages
         run: python scripts/patch-traffic-log.py
+
+      - name: Add traffic IP reputation panel
+        run: python scripts/add-traffic-ip-reputation.py
 
       - name: Fit Generate Log UIh to viewport
         run: python scripts/fit-uih-viewport.py
@@ -42,11 +49,17 @@ jobs:
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
+      - name: Verify traffic IP reputation panel
+        run: python scripts/test-ip-reputation.py
+
+      - name: Verify IP reputation API behavior
+        run: node scripts/test-ip-reputation-api.js
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: add independent Down Since language toggle'
+          git commit -m 'ui: add traffic IP reputation panel'
           git push origin HEAD:main
