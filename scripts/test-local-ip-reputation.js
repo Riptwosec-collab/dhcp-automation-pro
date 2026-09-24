@@ -19,7 +19,7 @@ assert.equal(residential.networkType, 'ISP / ENTERPRISE');
 assert.ok(residential.score < 35);
 
 const hosting = rep.analyzeNetwork({
-  ip: '203.0.113.10',
+  ip: '8.8.4.4',
   provider: 'Example Cloud Hosting',
   org: 'Example Datacenter VPS',
   asn: 'AS64500',
@@ -30,7 +30,7 @@ assert.equal(hosting.networkType, 'CLOUD / DATACENTER');
 assert.ok(hosting.score >= 35 && hosting.score < 70);
 
 const suspicious = rep.analyzeNetwork({
-  ip: '198.51.100.20',
+  ip: '1.1.1.1',
   provider: 'Anonymous VPN Proxy Hosting',
   org: 'Tor VPN Proxy Datacenter',
   asn: 'AS64501',
