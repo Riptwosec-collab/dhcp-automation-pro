@@ -9,6 +9,14 @@ checks = {
     "traffic reputation panel exists": 'id="ipReputationPanel"' in html,
     "local analysis badge exists": 'LOCAL ANALYSIS' in html,
     "risk badge exists": 'id="ipRiskBadge"' in html,
+    "reputation starts collapsed": 'id="ipReputationPanel"' in html and 'is-collapsed' in html,
+    "reputation toggle control exists": all(token in html for token in [
+        'id="ipRepToggle"', 'aria-controls="ipReputationContent"', 'aria-expanded="false"'
+    ]),
+    "reputation collapsible content exists": 'id="ipReputationContent"' in html and 'class="ip-rep-content"' in html,
+    "reputation toggle behavior exists": 'function setIPReputationExpanded(expanded)' in html and 'function toggleIPReputation()' in html,
+    "collapsed panel CSS exists": '.ip-rep-panel.is-collapsed .ip-rep-content' in html,
+    "scan automatically expands reputation": bool(re.search(r"async function fetchISPData\(\)\{[^\n]*setIPReputationExpanded\(true\)", html)),
     "IP type field exists": 'id="ipRepIpType"' in html,
     "provider and ASN fields exist": 'id="ipRepProvider"' in html and 'id="ipRepAsn"' in html,
     "network type field exists": 'id="ipRepNetworkType"' in html,
