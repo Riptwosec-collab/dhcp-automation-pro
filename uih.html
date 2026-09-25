@@ -604,7 +604,7 @@
         linkType: linkTypes[0] || '',
         linkTypeMain: linkTypes.find(v => linkLayerFromType(v) === 'L2') || '',
         linkTypeBackup: linkTypes.find(v => linkLayerFromType(v) === 'L3') || '',
-        downSince: extractValue(raw, ['Down Since'])
+        downSince: extractValue(raw, ['Down Since', 'ดาวน์เมื่อ', 'ล่มตั้งแต่'])
       };
     }
 
@@ -619,33 +619,61 @@
       return '';
     }
 
-/* thai-down-since-v1 */
+/* thai-down-since-v2 */
     function formatDownSince(value, language = 'th') {
       const source = String(value || '').trim();
-      if (!source || language === 'en') return source;
+      if (!source) return source;
 
-      const match = source.match(/^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday),\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})$/i);
-      if (!match) return source;
-
+      const englishDays = {
+        sunday: 'Sunday', monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
+        thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday'
+      };
       const thaiDays = {
         sunday: 'วันอาทิตย์', monday: 'วันจันทร์', tuesday: 'วันอังคาร',
         wednesday: 'วันพุธ', thursday: 'วันพฤหัสบดี', friday: 'วันศุกร์', saturday: 'วันเสาร์'
       };
-      const monthIndex = {
-        january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
-        july: 6, august: 7, september: 8, october: 9, november: 10, december: 11
-      };
+      const thaiDayToEnglish = Object.fromEntries(
+        Object.entries(thaiDays).map(([key, thai]) => [thai, englishDays[key]])
+      );
+      const englishMonths = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const monthIndex = Object.fromEntries(englishMonths.map((month, index) => [month.toLowerCase(), index]));
       const thaiMonths = [
         'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
       ];
+      const thaiMonthIndex = Object.fromEntries(thaiMonths.map((month, index) => [month, index]));
 
-      const day = parseInt(match[3], 10);
-      const year = parseInt(match[4], 10);
-      const hour = parseInt(match[5], 10);
-      const minute = parseInt(match[6], 10);
-      const month = monthIndex[match[2].toLowerCase()];
-      if (month === undefined || hour > 23 || minute > 59) return source;
+      const match = source.match(/^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday),\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})$/i);
+      const thaiMatch = source.match(/^(วันอาทิตย์|วันจันทร์|วันอังคาร|วันพุธ|วันพฤหัสบดี|วันศุกร์|วันเสาร์)\s+ที่\s+(\d{1,2})\s+(มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)\s+พ\.ศ\.\s+(\d{4})\s+เวลา\s+(\d{1,2}):(\d{2})\s+น\.$/);
+      if (!match && !thaiMatch) return source;
+
+      let weekdayEnglish;
+      let month;
+      let day;
+      let year;
+      let hour;
+      let minute;
+
+      if (match) {
+        weekdayEnglish = englishDays[match[1].toLowerCase()] || match[1];
+        month = monthIndex[match[2].toLowerCase()];
+        day = parseInt(match[3], 10);
+        year = parseInt(match[4], 10);
+        hour = parseInt(match[5], 10);
+        minute = parseInt(match[6], 10);
+      } else {
+        weekdayEnglish = thaiDayToEnglish[thaiMatch[1]] || '';
+        day = parseInt(thaiMatch[2], 10);
+        month = thaiMonthIndex[thaiMatch[3]];
+        year = parseInt(thaiMatch[4], 10) - 543;
+        hour = parseInt(thaiMatch[5], 10);
+        minute = parseInt(thaiMatch[6], 10);
+      }
+
+      if (!weekdayEnglish || month === undefined || year < 1 || hour > 23 || minute > 59) return source;
 
       const date = new Date(year, month, day, hour, minute);
       if (
@@ -655,10 +683,14 @@
         date.getDate() !== day
       ) return source;
 
-      const thaiDay = thaiDays[match[1].toLowerCase()] || '';
-      const buddhistYear = date.getFullYear() + 543;
       const hh = String(hour).padStart(2, '0');
       const mm = String(minute).padStart(2, '0');
+      if (language === 'en') {
+        return `${weekdayEnglish}, ${englishMonths[month]} ${day}, ${year} ${hh}:${mm}`;
+      }
+
+      const thaiDay = thaiDays[weekdayEnglish.toLowerCase()] || '';
+      const buddhistYear = year + 543;
       return `${thaiDay} ที่ ${day} ${thaiMonths[month]} พ.ศ. ${buddhistYear} เวลา ${hh}:${mm} น.`;
     }
 
