@@ -107,19 +107,30 @@
     .uih-frame-shell{width:100%;height:100%;min-height:0;overflow:hidden;padding:0;background:rgba(0,0,0,.08)}
     #uihFrame{display:block;width:100%;height:100%;min-height:720px;border:0;background:transparent}
     @media(max-width:900px){#view-uih{overflow:visible}.uih-frame-shell{height:auto;min-height:820px}.uih-frame-shell #uihFrame{min-height:820px}}
-/* traffic-ip-reputation-v2 */
-    .ip-rep-panel{position:relative;overflow:hidden;border:1px solid rgba(var(--accentRgb),.16);background:linear-gradient(135deg,rgba(var(--accentRgb),.055),rgba(255,255,255,.018));border-radius:14px;padding:14px 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:.25s ease}
+/* traffic-ip-reputation-v3 */
+    .ip-rep-panel{position:relative;overflow:hidden;border:1px solid rgba(var(--accentRgb),.16);background:linear-gradient(135deg,rgba(var(--accentRgb),.055),rgba(255,255,255,.018));border-radius:14px;padding:14px 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:border-color .25s ease,box-shadow .25s ease,background .25s ease}
     .ip-rep-panel[data-state="high"]{border-color:rgba(239,68,68,.55);box-shadow:0 0 24px rgba(239,68,68,.09),inset 0 0 24px rgba(239,68,68,.035)}
     .ip-rep-panel[data-state="caution"]{border-color:rgba(245,158,11,.52);box-shadow:0 0 22px rgba(245,158,11,.07),inset 0 0 20px rgba(245,158,11,.03)}
     .ip-rep-panel[data-state="low"]{border-color:rgba(34,197,94,.38);box-shadow:0 0 20px rgba(34,197,94,.055)}
     .ip-rep-panel[data-state="private"]{border-color:rgba(59,130,246,.38)}
-    .ip-rep-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .ip-rep-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;transition:margin-bottom .36s cubic-bezier(.2,.8,.2,1)}
+    .ip-rep-panel.is-collapsed .ip-rep-head{margin-bottom:0}
     .ip-rep-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+    .ip-rep-actions{display:flex;align-items:center;gap:7px;min-width:0}
     .ip-risk-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);font:800 10px/1 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
     .ip-rep-panel[data-state="high"] .ip-risk-badge{color:#fecaca;border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.10)}
     .ip-rep-panel[data-state="caution"] .ip-risk-badge{color:#fde68a;border-color:rgba(245,158,11,.42);background:rgba(245,158,11,.09)}
     .ip-rep-panel[data-state="low"] .ip-risk-badge{color:#bbf7d0;border-color:rgba(34,197,94,.34);background:rgba(34,197,94,.08)}
     .ip-rep-panel[data-state="private"] .ip-risk-badge{color:#bfdbfe;border-color:rgba(59,130,246,.34);background:rgba(59,130,246,.08)}
+    .ip-rep-toggle{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:78px;height:28px;padding:0 9px;border-radius:999px;border:1px solid rgba(var(--accentRgb),.28);background:linear-gradient(135deg,rgba(var(--accentRgb),.12),rgba(var(--accentRgb),.035));color:var(--accent);font:800 9px/1 'JetBrains Mono',monospace;letter-spacing:.06em;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease}
+    .ip-rep-toggle::before{content:"";position:absolute;top:-60%;left:-35%;width:22%;height:220%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transition:left .38s ease}
+    .ip-rep-toggle:hover{transform:translateY(-1px);border-color:rgba(var(--accentRgb),.58);background:rgba(var(--accentRgb),.16);box-shadow:0 0 18px rgba(var(--accentRgb),.15)}
+    .ip-rep-toggle:hover::before{left:125%}
+    .ip-rep-toggle svg{transition:transform .36s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 5px rgba(var(--accentRgb),.42))}
+    .ip-rep-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+    .ip-rep-content{display:grid;grid-template-rows:1fr;opacity:1;transform:translateY(0);transition:grid-template-rows .38s cubic-bezier(.2,.8,.2,1),opacity .26s ease,transform .38s cubic-bezier(.2,.8,.2,1)}
+    .ip-rep-content-inner{min-height:0;overflow:hidden}
+    .ip-rep-panel.is-collapsed .ip-rep-content{grid-template-rows:0fr;opacity:0;transform:translateY(-6px);pointer-events:none}
     .ip-rep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
     .ip-rep-item{min-width:0;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.055);background:rgba(0,0,0,.16)}
     .ip-rep-item span{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
@@ -134,7 +145,7 @@
     .ip-flag b{font-family:'JetBrains Mono',monospace;color:#d1d5db}
     .ip-rep-note{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.055);color:var(--muted);font-size:9px;line-height:1.4}
     .ip-rep-note span:last-child{font-weight:900;letter-spacing:.06em;color:rgba(var(--accentRgb),.72);white-space:nowrap}
-    @media(max-width:900px){.ip-rep-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ip-rep-note{align-items:flex-start;flex-direction:column}.ip-rep-note span:last-child{white-space:normal}}
+    @media(max-width:900px){.ip-rep-head{align-items:flex-start}.ip-rep-actions{flex-wrap:wrap;justify-content:flex-end}.ip-rep-toggle{min-width:68px}.ip-rep-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ip-rep-note{align-items:flex-start;flex-direction:column}.ip-rep-note span:last-child{white-space:normal}}
   </style>
   <link rel="stylesheet" href="scroll-fix.css">
   <script src="local-ip-reputation.js"></script>
@@ -189,30 +200,37 @@
                 <div><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Source IP (ต้นทาง)</label><input id="srcIp" placeholder="e.g. 10.20.2.16" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono"></div>
                 <div><label class="block text-[11px] font-bold accent-text mb-2 uppercase tracking-widest">Destination IP (ปลายทาง)</label><input id="dstIp" placeholder="e.g. 10.109.1.16" class="cyber-input w-full rounded-xl px-5 py-3.5 font-mono" onblur="fetchISPData()"></div>
                 <div class="md:col-span-2"><div class="flex flex-wrap justify-between items-center gap-2 mb-2"><label class="text-[11px] font-bold accent-text uppercase tracking-widest">Network / ISP (ผู้ให้บริการ)</label><label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="showCountryToggle" class="cyber-check" onchange="renderISP()" checked><span class="text-xs" style="color:var(--muted)">+ COUNTRY (FULL)</span></label></div><div class="flex gap-3"><input id="ispInput" list="isp-list" placeholder="Auto-fetch data..." class="cyber-input w-full rounded-xl px-5 py-3.5"><datalist id="isp-list"><option value="PRIVATE"></option><option value="TRUE, Thailand"></option><option value="AIS, Thailand"></option><option value="3BB, Thailand"></option><option value="NT, Thailand"></option></datalist><button id="btnScanIp" onclick="fetchISPData()" class="btn-glow px-5 rounded-xl font-bold min-w-[120px] flex items-center justify-center gap-2"><i data-lucide="scan" class="w-4 h-4"></i>SCAN IP</button></div></div>
-<div id="ipReputationPanel" class="md:col-span-2 ip-rep-panel" data-state="idle">
+<div id="ipReputationPanel" class="md:col-span-2 ip-rep-panel is-collapsed" data-state="idle" data-expanded="false">
                   <div class="ip-rep-head">
                     <div class="ip-rep-title"><i data-lucide="shield-check" class="w-4 h-4"></i><span>IP REPUTATION · LOCAL ANALYSIS</span></div>
-                    <span id="ipRiskBadge" class="ip-risk-badge">NOT CHECKED</span>
+                    <div class="ip-rep-actions">
+                      <span id="ipRiskBadge" class="ip-risk-badge">NOT CHECKED</span>
+                      <button id="ipRepToggle" type="button" class="ip-rep-toggle" aria-expanded="false" aria-controls="ipReputationContent" onclick="toggleIPReputation()" title="เปิด/พับรายละเอียด IP Reputation"><span id="ipRepToggleLabel">DETAILS</span><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+                    </div>
                   </div>
-                  <div class="ip-rep-grid">
-                    <div class="ip-rep-item"><span>IP</span><strong id="ipRepIp">-</strong></div>
-                    <div class="ip-rep-item"><span>IP Type</span><strong id="ipRepIpType">-</strong></div>
-                    <div class="ip-rep-item"><span>Provider</span><strong id="ipRepProvider">-</strong></div>
-                    <div class="ip-rep-item"><span>ASN</span><strong id="ipRepAsn">-</strong></div>
-                    <div class="ip-rep-item"><span>Network Type</span><strong id="ipRepNetworkType">-</strong></div>
-                    <div class="ip-rep-item"><span>Local Score</span><strong id="ipRepLocalScore">-</strong></div>
+                  <div id="ipReputationContent" class="ip-rep-content" aria-hidden="true">
+                    <div class="ip-rep-content-inner">
+                      <div class="ip-rep-grid">
+                        <div class="ip-rep-item"><span>IP</span><strong id="ipRepIp">-</strong></div>
+                        <div class="ip-rep-item"><span>IP Type</span><strong id="ipRepIpType">-</strong></div>
+                        <div class="ip-rep-item"><span>Provider</span><strong id="ipRepProvider">-</strong></div>
+                        <div class="ip-rep-item"><span>ASN</span><strong id="ipRepAsn">-</strong></div>
+                        <div class="ip-rep-item"><span>Network Type</span><strong id="ipRepNetworkType">-</strong></div>
+                        <div class="ip-rep-item"><span>Local Score</span><strong id="ipRepLocalScore">-</strong></div>
+                      </div>
+                      <div class="ip-rep-reasons"><div class="ip-rep-reasons-title">เหตุผลที่ใช้วิเคราะห์</div><ul id="ipRepReasons"><li>กด SCAN IP เพื่อเริ่มวิเคราะห์</li></ul></div>
+                      <div class="ip-rep-external-title"><span>EXTERNAL THREAT DATA</span><b>NOT VERIFIED</b></div>
+                      <div class="ip-rep-flags">
+                        <span class="ip-flag">Abuser <b id="ipFlagAbuser">UNKNOWN</b></span>
+                        <span class="ip-flag">TOR <b id="ipFlagTor">UNKNOWN</b></span>
+                        <span class="ip-flag">Proxy <b id="ipFlagProxy">UNKNOWN</b></span>
+                        <span class="ip-flag">VPN <b id="ipFlagVpn">UNKNOWN</b></span>
+                        <span class="ip-flag">Spam/Attack <b id="ipFlagSpamAttack">UNKNOWN</b></span>
+                        <span class="ip-flag">Threat Feed <b id="ipFlagThreatFeed">NOT VERIFIED</b></span>
+                      </div>
+                      <div class="ip-rep-note"><span id="ipRepMessage">วิเคราะห์จาก IP + ISP/ASN/Organization ที่เว็บดึงได้เท่านั้น</span><span>VIEW ONLY · ไม่รวมใน COPY</span></div>
+                    </div>
                   </div>
-                  <div class="ip-rep-reasons"><div class="ip-rep-reasons-title">เหตุผลที่ใช้วิเคราะห์</div><ul id="ipRepReasons"><li>กด SCAN IP เพื่อเริ่มวิเคราะห์</li></ul></div>
-                  <div class="ip-rep-external-title"><span>EXTERNAL THREAT DATA</span><b>NOT VERIFIED</b></div>
-                  <div class="ip-rep-flags">
-                    <span class="ip-flag">Abuser <b id="ipFlagAbuser">UNKNOWN</b></span>
-                    <span class="ip-flag">TOR <b id="ipFlagTor">UNKNOWN</b></span>
-                    <span class="ip-flag">Proxy <b id="ipFlagProxy">UNKNOWN</b></span>
-                    <span class="ip-flag">VPN <b id="ipFlagVpn">UNKNOWN</b></span>
-                    <span class="ip-flag">Spam/Attack <b id="ipFlagSpamAttack">UNKNOWN</b></span>
-                    <span class="ip-flag">Threat Feed <b id="ipFlagThreatFeed">NOT VERIFIED</b></span>
-                  </div>
-                  <div class="ip-rep-note"><span id="ipRepMessage">วิเคราะห์จาก IP + ISP/ASN/Organization ที่เว็บดึงได้เท่านั้น</span><span>VIEW ONLY · ไม่รวมใน COPY</span></div>
                 </div>
               </div>
               <button onclick="generateLogs()" class="primary-action btn-glow w-full font-bold py-4 rounded-xl mb-8 flex justify-center items-center gap-3"><i data-lucide="zap" class="w-5 h-5"></i>GENERATE LOGS</button>
@@ -305,13 +323,15 @@
   function extractIPv4(v){const m=String(v||'').match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);return m&&validIp(m[0])?m[0]:''}function isPrivateIPv4(ip){const p=ip.split('.').map(Number);return p[0]===10||(p[0]===192&&p[1]===168)||(p[0]===172&&p[1]>=16&&p[1]<=31)}
   async function fetchJson(url,ms=5000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
 function setIPRepText(id,value){const el=document.getElementById(id);if(el)el.textContent=value??'-'}
+  function setIPReputationExpanded(expanded){const panel=document.getElementById('ipReputationPanel'),toggle=document.getElementById('ipRepToggle'),content=document.getElementById('ipReputationContent'),label=document.getElementById('ipRepToggleLabel');if(!panel)return;const open=Boolean(expanded);panel.classList.toggle('is-collapsed',!open);panel.dataset.expanded=open?'true':'false';if(toggle)toggle.setAttribute('aria-expanded',open?'true':'false');if(content)content.setAttribute('aria-hidden',open?'false':'true');if(label)label.textContent=open?'HIDE':'DETAILS'}
+  function toggleIPReputation(){const panel=document.getElementById('ipReputationPanel');if(!panel)return;setIPReputationExpanded(panel.classList.contains('is-collapsed'))}
   function setIPReputationState(state,badge,message){const panel=document.getElementById('ipReputationPanel');if(!panel)return;panel.dataset.state=state||'idle';setIPRepText('ipRiskBadge',badge||'NOT CHECKED');setIPRepText('ipRepMessage',message||'')}
   function setIPRepReasons(reasons){const ul=document.getElementById('ipRepReasons');if(!ul)return;const safe=(Array.isArray(reasons)&&reasons.length?reasons:['ยังไม่มีข้อมูลสำหรับวิเคราะห์']);ul.innerHTML='';safe.forEach(reason=>{const li=document.createElement('li');li.textContent=reason;ul.appendChild(li)})}
   function setExternalThreatUnknown(external={}){setIPRepText('ipFlagAbuser',external.abuser||'UNKNOWN');setIPRepText('ipFlagTor',external.tor||'UNKNOWN');setIPRepText('ipFlagProxy',external.proxy||'UNKNOWN');setIPRepText('ipFlagVpn',external.vpn||'UNKNOWN');setIPRepText('ipFlagSpamAttack',external.spamAttack||'UNKNOWN');setIPRepText('ipFlagThreatFeed',external.threatFeed||'NOT VERIFIED')}
   function resetIPReputation(){setIPReputationState('idle','NOT CHECKED','วิเคราะห์จาก IP + ISP/ASN/Organization ที่เว็บดึงได้เท่านั้น');['ipRepIp','ipRepIpType','ipRepProvider','ipRepAsn','ipRepNetworkType','ipRepLocalScore'].forEach(id=>setIPRepText(id,'-'));setIPRepReasons(['กด SCAN IP เพื่อเริ่มวิเคราะห์']);setExternalThreatUnknown()}
   function setIPReputationLoading(ip){setIPReputationState('idle','ANALYZING','กำลังวิเคราะห์ข้อมูลภายในเว็บ...');setIPRepText('ipRepIp',ip);['ipRepIpType','ipRepProvider','ipRepAsn','ipRepNetworkType','ipRepLocalScore'].forEach(id=>setIPRepText(id,'...'));setIPRepReasons(['กำลังตรวจประเภท IP และลักษณะ Provider/ASN']);setExternalThreatUnknown()}
   function renderLocalIPReputation(input){if(!window.LocalIPReputation){setIPReputationState('idle','UNAVAILABLE','Local analyzer โหลดไม่สำเร็จ');return}const result=window.LocalIPReputation.analyzeNetwork(input||{}),state=result.risk?.severity==='high'?'high':result.risk?.severity==='caution'?'caution':result.ipType&&result.ipType!=='PUBLIC'&&result.ipType!=='INVALID'?'private':'low';setIPReputationState(state,result.risk?.level||'UNKNOWN','LOCAL HEURISTIC · ไม่ใช่ Threat Feed');setIPRepText('ipRepIp',result.ip||input?.ip||'-');setIPRepText('ipRepIpType',result.ipType||'-');setIPRepText('ipRepProvider',input?.provider||input?.org||'-');setIPRepText('ipRepAsn',input?.asn||'-');setIPRepText('ipRepNetworkType',result.networkType||'-');setIPRepText('ipRepLocalScore',`${Number(result.score||0)} / 100`);setIPRepReasons(result.reasons);setExternalThreatUnknown(result.externalThreat)}
-  async function fetchISPData(){const raw=document.getElementById('dstIp').value.trim(),btn=document.getElementById('btnScanIp');if(!raw){resetIPReputation();return}const ip=extractIPv4(raw);if(!ip){fetchedISP='IP ไม่ถูกต้อง';fetchedCountry='';renderISP();renderLocalIPReputation({ip:raw});return}const localType=window.LocalIPReputation?.classifyIpType(ip);if(localType?.local||isPrivateIPv4(ip)){fetchedISP=localType?.label||'PRIVATE';fetchedCountry='';renderISP();renderLocalIPReputation({ip,provider:fetchedISP,org:fetchedISP});return}const old=btn.innerHTML;btn.innerHTML='<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>SCANNING';lucide.createIcons();document.getElementById('ispInput').value='SCANNING...';setIPReputationLoading(ip);let analysisInput={ip,provider:'',org:'',asn:'',domain:'',country:''};try{const d=await fetchJson(`https://ipwho.is/${ip}`);if(!d.success)throw new Error('main api failed');const c=d.connection||{},provider=c.isp||c.org||'ไม่พบข้อมูล';fetchedISP=formatIspName(provider);fetchedCountry=d.country||'';analysisInput={ip,provider,org:c.org||'',asn:c.asn?`AS${String(c.asn).replace(/^AS/i,'')}`:'',domain:c.domain||'',country:d.country||''}}catch{try{const d=await fetchJson(`https://ipapi.co/${ip}/json/`);if(d.error||!d.org)throw new Error('fallback api failed');fetchedISP=formatIspName(d.org);fetchedCountry=d.country_name||'';analysisInput={ip,provider:d.org||'',org:d.org||'',asn:d.asn||'',domain:'',country:d.country_name||''}}catch{fetchedISP='เชื่อมต่อล้มเหลว (Network Blocked)';fetchedCountry='';analysisInput={ip}}}renderISP();renderLocalIPReputation(analysisInput);btn.innerHTML=old;lucide.createIcons()}
+  async function fetchISPData(){const raw=document.getElementById('dstIp').value.trim(),btn=document.getElementById('btnScanIp');if(!raw){resetIPReputation();return}setIPReputationExpanded(true);const ip=extractIPv4(raw);if(!ip){fetchedISP='IP ไม่ถูกต้อง';fetchedCountry='';renderISP();renderLocalIPReputation({ip:raw});return}const localType=window.LocalIPReputation?.classifyIpType(ip);if(localType?.local||isPrivateIPv4(ip)){fetchedISP=localType?.label||'PRIVATE';fetchedCountry='';renderISP();renderLocalIPReputation({ip,provider:fetchedISP,org:fetchedISP});return}const old=btn.innerHTML;btn.innerHTML='<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>SCANNING';lucide.createIcons();document.getElementById('ispInput').value='SCANNING...';setIPReputationLoading(ip);let analysisInput={ip,provider:'',org:'',asn:'',domain:'',country:''};try{const d=await fetchJson(`https://ipwho.is/${ip}`);if(!d.success)throw new Error('main api failed');const c=d.connection||{},provider=c.isp||c.org||'ไม่พบข้อมูล';fetchedISP=formatIspName(provider);fetchedCountry=d.country||'';analysisInput={ip,provider,org:c.org||'',asn:c.asn?`AS${String(c.asn).replace(/^AS/i,'')}`:'',domain:c.domain||'',country:d.country||''}}catch{try{const d=await fetchJson(`https://ipapi.co/${ip}/json/`);if(d.error||!d.org)throw new Error('fallback api failed');fetchedISP=formatIspName(d.org);fetchedCountry=d.country_name||'';analysisInput={ip,provider:d.org||'',org:d.org||'',asn:d.asn||'',domain:'',country:d.country_name||''}}catch{fetchedISP='เชื่อมต่อล้มเหลว (Network Blocked)';fetchedCountry='';analysisInput={ip}}}renderISP();renderLocalIPReputation(analysisInput);btn.innerHTML=old;lucide.createIcons()}
   function renderISP(){if(!fetchedISP)return;document.getElementById('ispInput').value=document.getElementById('showCountryToggle').checked&&fetchedCountry?`${fetchedISP}, ${fetchedCountry}`:fetchedISP}
   function maskIp(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');p[3]='xx';return p.join('.')}
   function maskIpWide(ip){const e=extractIPv4(ip);if(!e)return ip||'';const p=e.split('.');return `${p[0]}.x.x.x`}
