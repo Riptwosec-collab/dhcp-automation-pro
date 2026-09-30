@@ -8,6 +8,9 @@ on:
     paths:
       - 'index.html'
       - 'uih.html'
+      - 'tor-system-finder.html'
+      - 'assets/tor-system-data-1.js'
+      - 'assets/tor-system-matcher.js'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
@@ -16,11 +19,15 @@ on:
       - 'scripts/fullscreen-bilingual-uih.py'
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/add-traffic-ip-reputation.py'
+      - 'scripts/add-system-owner-finder.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
+      - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-system-owner-finder.js'
+      - '.github/workflows/test-traffic-log-layout.yml'
 
 jobs:
   test-layout:
@@ -31,6 +38,10 @@ jobs:
         run: python scripts/patch-traffic-log.py
       - name: Add traffic IP reputation panel
         run: python scripts/add-traffic-ip-reputation.py
+      - name: Add System Owner Finder panel
+        run: python scripts/add-system-owner-finder.py
+      - name: Verify System Owner Finder generator is idempotent
+        run: python scripts/add-system-owner-finder.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
       - name: Localize UIh Down Since in Thai
@@ -49,3 +60,7 @@ jobs:
         run: node scripts/test-local-ip-reputation.js
       - name: Verify optional legacy IP reputation API behavior
         run: node scripts/test-ip-reputation-api.js
+      - name: Verify System Owner Finder integration contract
+        run: python scripts/test-system-owner-finder.py
+      - name: Verify TOR System Owner matching behavior
+        run: node scripts/test-system-owner-finder.js
