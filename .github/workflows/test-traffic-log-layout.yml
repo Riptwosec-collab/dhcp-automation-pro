@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'uih.html'
       - 'system-owner-finder.html'
+      - 'assets/system-owner-finder-payload-*.txt'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
@@ -34,6 +35,8 @@ jobs:
         run: python scripts/patch-traffic-log.py
       - name: Add traffic IP reputation panel
         run: python scripts/add-traffic-ip-reputation.py
+      - name: Add System Owner Finder panel
+        run: python scripts/add-system-owner-finder.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
       - name: Localize UIh Down Since in Thai
