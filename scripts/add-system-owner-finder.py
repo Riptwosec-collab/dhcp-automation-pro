@@ -36,7 +36,7 @@ panel = r'''
                 <div id="systemOwnerFinderPanel" class="md:col-span-2 system-owner-finder-panel" hidden data-open="false">
                   <div class="system-owner-finder-head">
                     <div class="system-owner-finder-title"><i data-lucide="users-round" class="w-4 h-4"></i><div><strong>SYSTEM OWNER FINDER</strong><span>Incident → TOR Mapping & Contact Routing · runs locally in Browser</span></div></div>
-                    <button type="button" class="system-owner-finder-close" onclick="toggleSystemOwnerFinder(false)"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i><span>HIDE</span></button>
+                    <button type="button" class="system-owner-finder-close" onclick="setSystemOwnerFinderOpen(false)"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i><span>HIDE</span></button>
                   </div>
                   <iframe id="systemOwnerFinderFrame" class="system-owner-finder-frame" src="system-owner-finder.html" title="System Owner Finder" loading="lazy" onload="syncSystemOwnerFinderTheme()"></iframe>
                 </div>'''.strip()
@@ -51,12 +51,12 @@ helpers = r'''
   function currentSystemOwnerTheme(){return document.body?.dataset?.theme==='cyber'?'cyber':'gold'}
   function syncSystemOwnerFinderTheme(){const frame=document.getElementById('systemOwnerFinderFrame');if(!frame?.contentWindow)return;try{frame.contentWindow.postMessage({type:'dhcp-theme',theme:currentSystemOwnerTheme()},location.origin)}catch{}}
   function setSystemOwnerFinderOpen(open){const panel=document.getElementById('systemOwnerFinderPanel'),button=document.getElementById('btnSystemOwnerFinder');if(!panel)return;const show=Boolean(open);panel.hidden=!show;panel.dataset.open=show?'true':'false';if(button)button.setAttribute('aria-expanded',show?'true':'false');if(show){syncSystemOwnerFinderTheme();requestAnimationFrame(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}))}}
-  function toggleSystemOwnerFinder(force){const panel=document.getElementById('systemOwnerFinderPanel');if(!panel)return;setSystemOwnerFinderOpen(typeof force==='boolean'?force:panel.hidden)}
+  function toggleSystemOwnerFinder(){const panel=document.getElementById('systemOwnerFinderPanel');if(!panel)return;setSystemOwnerFinderOpen(panel.hidden)}
   if(typeof MutationObserver!=='undefined'){new MutationObserver(mutations=>{if(mutations.some(m=>m.attributeName==='data-theme'))syncSystemOwnerFinderTheme()}).observe(document.body,{attributes:true,attributeFilter:['data-theme']})}
   window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='system-owner-ready')syncSystemOwnerFinderTheme()})
 '''.strip()
 
-if 'function toggleSystemOwnerFinder()' not in text and 'function toggleSystemOwnerFinder(force)' not in text:
+if 'function toggleSystemOwnerFinder()' not in text:
     target = re.search(r'\n\s*async function fetchISPData\(\)\{', text)
     if not target:
         raise SystemExit('fetchISPData helper target not found')
