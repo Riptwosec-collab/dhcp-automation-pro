@@ -8,6 +8,7 @@ on:
     paths:
       - 'index.html'
       - 'uih.html'
+      - 'system-owner-finder.html'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
@@ -16,11 +17,13 @@ on:
       - 'scripts/fullscreen-bilingual-uih.py'
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/add-traffic-ip-reputation.py'
+      - 'scripts/add-system-owner-finder.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
+      - 'scripts/test-system-owner-finder.py'
 
 jobs:
   test-layout:
@@ -49,3 +52,5 @@ jobs:
         run: node scripts/test-local-ip-reputation.js
       - name: Verify optional legacy IP reputation API behavior
         run: node scripts/test-ip-reputation-api.js
+      - name: Verify System Owner Finder integration
+        run: python scripts/test-system-owner-finder.py
