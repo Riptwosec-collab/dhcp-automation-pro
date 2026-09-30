@@ -6,10 +6,13 @@ on:
       - main
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
+      - 'system-owner-finder.html'
+      - 'assets/system-owner-finder-payload-*.txt'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/add-traffic-ip-reputation.py'
+      - 'scripts/add-system-owner-finder.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
@@ -19,6 +22,7 @@ on:
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
+      - 'scripts/test-system-owner-finder.py'
 
 permissions:
   contents: write
@@ -36,6 +40,9 @@ jobs:
 
       - name: Add local traffic IP reputation analysis
         run: python scripts/add-traffic-ip-reputation.py
+
+      - name: Add System Owner Finder panel
+        run: python scripts/add-system-owner-finder.py
 
       - name: Fit Generate Log UIh to viewport
         run: python scripts/fit-uih-viewport.py
@@ -64,11 +71,14 @@ jobs:
       - name: Verify optional legacy IP reputation API behavior
         run: node scripts/test-ip-reputation-api.js
 
+      - name: Verify System Owner Finder integration
+        run: python scripts/test-system-owner-finder.py
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: keep Down Since bilingual'
+          git commit -m 'ui: add System Owner Finder to traffic log'
           git push origin HEAD:main
