@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'uih.html'
       - 'system-owner-finder.html'
+      - 'voip-finder.html'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
@@ -19,18 +20,22 @@ on:
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
+      - 'scripts/add-tools-nav.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-tools-nav.py'
 
 jobs:
   test-layout:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify top-level tools navigation contract
+        run: python scripts/test-tools-nav.py
       - name: Apply traffic log layout patch in test workspace
         run: python scripts/patch-traffic-log.py
       - name: Add traffic IP reputation panel
