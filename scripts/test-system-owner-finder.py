@@ -4,25 +4,43 @@ import gzip
 
 index = Path('index.html').read_text(encoding='utf-8')
 finder_path = Path('system-owner-finder.html')
+voip_path = Path('voip-finder.html')
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
+assert voip_path.exists(), 'voip-finder.html must be bundled with the app'
 loader = finder_path.read_text(encoding='utf-8')
+voip = voip_path.read_text(encoding='utf-8')
 
 required_index = [
-    'id="btnSystemOwnerFinder"',
+    'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
-    'id="systemOwnerFinderPanel"',
+    "switchTab('system-owner')",
+    'id="tab-voip"',
+    'VOIP Finder',
+    "switchTab('voip')",
+    'id="view-system-owner"',
     'id="systemOwnerFinderFrame"',
     'src="system-owner-finder.html"',
-    'function toggleSystemOwnerFinder()',
+    'id="view-voip"',
+    'id="voipFinderFrame"',
+    'src="voip-finder.html"',
     'function syncSystemOwnerFinderTheme()',
-    "postMessage({type:'dhcp-theme'",
+    'function syncVoipFinderTheme()',
+    'function parseOwnerContact(',
+    'data-owner-copy="prefix"',
+    'data-owner-copy="name"',
+    'data-owner-copy="phone"',
+    'data-owner-copy="email"',
 ]
 for needle in required_index:
-    assert needle in index, f'missing Generate Log traffic integration: {needle}'
+    assert needle in index, f'missing topbar tool integration: {needle}'
 
-start = index.find('function toggleSystemOwnerFinder()')
-assert start >= 0, 'toggle helper must exist'
-assert 'window.location.href' not in index[start:start + 2200], 'finder toggle must stay in-place and must not navigate away'
+assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must be removed from Generate Log traffic'
+assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must be removed from Generate Log traffic'
+
+uih_pos = index.find('id="tab-uih"')
+owner_pos = index.find('id="tab-system-owner"')
+voip_pos = index.find('id="tab-voip"')
+assert 0 <= uih_pos < owner_pos < voip_pos, 'System Owner and VOIP tabs must sit immediately after Generate Log UIh'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -52,4 +70,15 @@ assert 'body[data-theme="gold"]' in finder and 'body[data-theme="cyber"]' in fin
 assert 'target="_blank"' in finder, 'existing endpoint links must remain independently openable'
 assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled source locally in browser'
 
-print('system owner finder integration: OK')
+required_voip = [
+    'VOIP Finder',
+    'หัวข้อใหญ่',
+    'พื้นที่ / หน่วยงาน',
+    'VOIP',
+    'data-theme="gold"',
+    'dhcp-theme',
+]
+for needle in required_voip:
+    assert needle in voip, f'missing VOIP Finder behavior/theme bridge: {needle}'
+
+print('topbar System Owner + VOIP integration: OK')
