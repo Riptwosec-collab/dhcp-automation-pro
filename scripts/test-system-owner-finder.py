@@ -8,7 +8,7 @@ voip_path = Path('voip-finder.html')
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
 assert voip_path.exists(), 'voip-finder.html must be bundled with the app'
 loader = finder_path.read_text(encoding='utf-8')
-voip = voip_path.read_text(encoding='utf-8')
+voip_loader = voip_path.read_text(encoding='utf-8')
 
 required_index = [
     'id="tab-system-owner"',
@@ -72,15 +72,15 @@ assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled
 for needle in ['owner-split-copy', 'OWNER QUICK COPY', 'PREFIX', 'NAME', 'PHONE', 'EMAIL']:
     assert needle in loader, f'missing contact split/copy enhancement: {needle}'
 
-required_voip = [
-    'VOIP Finder',
-    'หัวข้อใหญ่',
-    'พื้นที่ / หน่วยงาน',
-    'VOIP',
-    'data-theme="gold"',
-    'dhcp-theme',
-]
-for needle in required_voip:
-    assert needle in voip, f'missing VOIP Finder behavior/theme bridge: {needle}'
+voip_payload_paths = [Path(f'assets/voip-finder-payload-{i:02d}.txt') for i in range(1, 9)]
+for payload_path in voip_payload_paths:
+    assert payload_path.exists(), f'missing VOIP Finder payload: {payload_path}'
+    assert payload_path.name in voip_loader, f'VOIP loader must fetch {payload_path.name}'
+voip_payload_b64 = ''.join(path.read_text(encoding='ascii').strip() for path in voip_payload_paths)
+voip_source = gzip.decompress(base64.b64decode(voip_payload_b64)).decode('utf-8')
+for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นที่ / หน่วยงาน', 'VOIP', '1090']:
+    assert needle in voip_source, f'missing source VOIP Finder content: {needle}'
+for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
+    assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
 print('topbar System Owner + VOIP integration: OK')
