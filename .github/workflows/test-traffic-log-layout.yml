@@ -49,14 +49,34 @@ jobs:
           fi
       - name: Add topbar System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
-      - name: Fit UIh to the available viewport
-        run: python scripts/fit-uih-viewport.py
-      - name: Localize UIh Down Since in Thai
-        run: python scripts/add-thai-down-since.py
-      - name: Make UIh fullscreen and bilingual
-        run: python scripts/fullscreen-bilingual-uih.py
-      - name: Add independent Down Since language toggle
-        run: python scripts/add-downsince-language-toggle.py
+      - name: Fit UIh to the available viewport when missing
+        run: |
+          if grep -q 'uih-fit-viewport-v1' uih.html; then
+            echo 'UIh viewport layer already materialized'
+          else
+            python scripts/fit-uih-viewport.py
+          fi
+      - name: Localize UIh Down Since in Thai when missing
+        run: |
+          if grep -q 'thai-down-since-v2' uih.html; then
+            echo 'UIh Down Since localization already materialized'
+          else
+            python scripts/add-thai-down-since.py
+          fi
+      - name: Make UIh fullscreen and bilingual when missing
+        run: |
+          if grep -q 'uih-fullscreen-bilingual-v1' uih.html; then
+            echo 'UIh fullscreen bilingual layer already materialized'
+          else
+            python scripts/fullscreen-bilingual-uih.py
+          fi
+      - name: Add independent Down Since language toggle when missing
+        run: |
+          if grep -q 'uih-down-since-language-v1' uih.html; then
+            echo 'UIh Down Since language toggle already materialized'
+          else
+            python scripts/add-downsince-language-toggle.py
+          fi
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
       - name: Verify bilingual Down Since behavior
