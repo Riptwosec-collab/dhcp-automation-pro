@@ -22,10 +22,12 @@ required_index = [
     'function closeUtilityToolsOnOutside(',
     'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
-    "switchTab('system-owner')",
+    'href="system-owner-finder.html"',
     'id="tab-voip"',
     'VOIP Finder',
-    "switchTab('voip')",
+    'href="voip-finder.html"',
+    'target="_blank"',
+    'rel="noopener noreferrer"',
     'id="view-system-owner"',
     'id="systemOwnerFinderFrame"',
     'src="system-owner-finder.html"',
@@ -43,8 +45,8 @@ required_index = [
 for needle in required_index:
     assert needle in index, f'missing hidden utility dock integration: {needle}'
 
-for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools']:
-    assert needle in generator, f'generator must preserve hidden utility dock behavior: {needle}'
+for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools', 'system-owner-finder.html', 'voip-finder.html', 'target="_blank"', 'rel="noopener noreferrer"']:
+    assert needle in generator, f'generator must preserve hidden utility dock standalone-tab behavior: {needle}'
 
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must be removed from Generate Log traffic'
 assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must be removed from Generate Log traffic'
@@ -59,8 +61,10 @@ menu_end = index.find('</div>', menu_pos)
 assert menu_end > voip_pos, 'System Owner and VOIP actions must live inside the hidden utility menu'
 assert "document.addEventListener('pointerdown',closeUtilityToolsOnOutside" in index, 'outside pointer interaction must close the utility menu'
 assert "event.key==='Escape'" in index, 'Escape must close the utility menu'
-assert "setUtilityToolsOpen(false);switchTab('system-owner')" in index, 'System Owner action must close the dock and preserve existing tab navigation'
-assert "setUtilityToolsOpen(false);switchTab('voip')" in index, 'VOIP action must close the dock and preserve existing tab navigation'
+assert 'href="system-owner-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'System Owner action must open its standalone page in a new tab securely'
+assert 'href="voip-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'VOIP action must open its standalone page in a new tab securely'
+assert "setUtilityToolsOpen(false);switchTab('system-owner')" not in index, 'System Owner dock action must no longer replace the DHCP workspace'
+assert "setUtilityToolsOpen(false);switchTab('voip')" not in index, 'VOIP dock action must no longer replace the DHCP workspace'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -103,4 +107,4 @@ for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นท
 for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
     assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
-print('hidden utility dock + System Owner + VOIP integration: OK')
+print('hidden utility dock + standalone System Owner + VOIP integration: OK')
