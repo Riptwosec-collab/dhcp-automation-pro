@@ -69,6 +69,8 @@ assert '--accent:' in finder and '--accentRgb:' in finder, 'finder must expose p
 assert 'body[data-theme="gold"]' in finder and 'body[data-theme="cyber"]' in finder, 'finder must support GOLD and CYBER theme envelopes'
 assert 'target="_blank"' in finder, 'existing endpoint links must remain independently openable'
 assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled source locally in browser'
+for needle in ['owner-split-copy', 'OWNER QUICK COPY', 'PREFIX', 'NAME', 'PHONE', 'EMAIL']:
+    assert needle in loader, f'missing contact split/copy enhancement: {needle}'
 
 required_voip = [
     'VOIP Finder',
