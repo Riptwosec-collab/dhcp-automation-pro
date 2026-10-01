@@ -8,21 +8,19 @@ assert finder_path.exists(), 'system-owner-finder.html must be bundled with the 
 loader = finder_path.read_text(encoding='utf-8')
 
 required_index = [
-    'id="btnSystemOwnerFinder"',
+    'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
-    'id="systemOwnerFinderPanel"',
+    'id="view-system-owner"',
     'id="systemOwnerFinderFrame"',
     'src="system-owner-finder.html"',
-    'function toggleSystemOwnerFinder()',
-    'function syncSystemOwnerFinderTheme()',
-    "postMessage({type:'dhcp-theme'",
+    'function syncToolFramesTheme(',
+    "postMessage({type:'dhcp-theme',theme}",
 ]
 for needle in required_index:
-    assert needle in index, f'missing Generate Log traffic integration: {needle}'
+    assert needle in index, f'missing System Owner top-level integration: {needle}'
 
-start = index.find('function toggleSystemOwnerFinder()')
-assert start >= 0, 'toggle helper must exist'
-assert 'window.location.href' not in index[start:start + 2200], 'finder toggle must stay in-place and must not navigate away'
+assert 'id="btnSystemOwnerFinder"' not in index, 'legacy traffic-form Finder trigger must be removed'
+assert 'id="systemOwnerFinderPanel"' not in index, 'legacy traffic-form Finder panel must be removed'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -51,5 +49,6 @@ assert '--accent:' in finder and '--accentRgb:' in finder, 'finder must expose p
 assert 'body[data-theme="gold"]' in finder and 'body[data-theme="cyber"]' in finder, 'finder must support GOLD and CYBER theme envelopes'
 assert 'target="_blank"' in finder, 'existing endpoint links must remain independently openable'
 assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled source locally in browser'
+assert 'contact-copy-v2:' in loader, 'loader must enhance contact fields with independent copy controls'
 
 print('system owner finder integration: OK')
