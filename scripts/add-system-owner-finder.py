@@ -4,63 +4,112 @@ import re
 path = Path('index.html')
 text = path.read_text(encoding='utf-8')
 
-css_marker = '/* system-owner-finder-v1 */'
-css = r'''
-    /* system-owner-finder-v1 */
-    .system-owner-finder-trigger{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:0 11px;border-radius:9px;border:1px solid rgba(var(--accentRgb),.24);background:rgba(var(--accentRgb),.07);color:var(--accent);font:800 10px/1 'JetBrains Mono',monospace;letter-spacing:.055em;transition:.22s ease;white-space:nowrap}
-    .system-owner-finder-trigger:hover{border-color:rgba(var(--accentRgb),.58);background:rgba(var(--accentRgb),.15);box-shadow:0 0 20px rgba(var(--accentRgb),.12);transform:translateY(-1px)}
-    .system-owner-finder-trigger[aria-expanded='true']{background:rgba(var(--accentRgb),.18);border-color:var(--borderStrong);box-shadow:0 0 22px rgba(var(--accentRgb),.14)}
-    .system-owner-finder-panel{position:relative;overflow:hidden;border:1px solid rgba(var(--accentRgb),.18);border-radius:16px;background:linear-gradient(145deg,var(--panel),rgba(3,7,12,.94));box-shadow:0 18px 46px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.035)}
-    .system-owner-finder-panel[hidden]{display:none!important}
-    .system-owner-finder-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(var(--accentRgb),.12);background:linear-gradient(90deg,rgba(var(--accentRgb),.07),transparent 62%)}
-    .system-owner-finder-title{display:flex;align-items:center;gap:9px;min-width:0}.system-owner-finder-title i{color:var(--accent);filter:drop-shadow(0 0 7px rgba(var(--accentRgb),.32))}.system-owner-finder-title strong{display:block;color:#fff;font-size:11px;letter-spacing:.085em}.system-owner-finder-title span{display:block;margin-top:2px;color:var(--muted);font-size:9px}
-    .system-owner-finder-close{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.035);color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.06em}.system-owner-finder-close:hover{color:var(--accent);border-color:rgba(var(--accentRgb),.38);background:rgba(var(--accentRgb),.08)}
-    .system-owner-finder-frame{display:block;width:100%;height:min(72vh,760px);min-height:560px;border:0;background:#060a0f}
-    @media(max-width:900px){.system-owner-finder-frame{height:70vh;min-height:520px}.system-owner-finder-head{align-items:flex-start}.system-owner-finder-title span{display:none}}
-    @media(max-width:640px){.system-owner-finder-trigger{width:100%;justify-content:center}.system-owner-finder-frame{height:74vh;min-height:500px}}
-'''.strip()
+# Remove the legacy inline placement from Generate Log traffic.
+text = re.sub(r'\s*<button id="btnSystemOwnerFinder"[^>]*>.*?</button>', '', text, count=1, flags=re.S)
+text = re.sub(r'\s*<div id="systemOwnerFinderPanel".*?<iframe id="systemOwnerFinderFrame".*?</iframe>\s*</div>', '', text, count=1, flags=re.S)
 
+# Remove legacy helper lines so the new top-level helpers are unique.
+for name in ('currentSystemOwnerTheme', 'syncSystemOwnerFinderTheme', 'setSystemOwnerFinderOpen', 'toggleSystemOwnerFinder'):
+    text = re.sub(rf'\n\s*function {name}\([^\n]*\n', '\n', text, count=1)
+text = re.sub(r"\n\s*if\(typeof MutationObserver!=='undefined'\)\{new MutationObserver\(mutations=>\{if\(mutations\.some\(m=>m\.attributeName==='data-theme'\)\)syncSystemOwnerFinderTheme\(\)\}\)\.observe\(document\.body,\{attributes:true,attributeFilter:\['data-theme'\]\}\)\}\n?", '\n', text, count=1)
+text = re.sub(r"\n\s*window\.addEventListener\('message',event=>\{if\(event\.origin!==location\.origin\)return;if\(event\.data\?\.type==='system-owner-ready'\)syncSystemOwnerFinderTheme\(\)\}\)\n?", '\n', text, count=1)
+
+css_marker = '/* topbar-owner-voip-v2 */'
+css = r'''
+    /* topbar-owner-voip-v2 */
+    #view-system-owner,#view-voip{min-height:0;overflow:hidden}
+    .tool-frame-shell{display:flex;flex-direction:column;width:100%;height:100%;min-height:0;overflow:hidden;padding:0;background:rgba(0,0,0,.08)}
+    .tool-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(var(--accentRgb),.13);background:linear-gradient(90deg,rgba(var(--accentRgb),.075),transparent 62%)}
+    .tool-frame-title{display:flex;align-items:center;gap:9px;min-width:0}.tool-frame-title i{color:var(--accent);filter:drop-shadow(0 0 7px rgba(var(--accentRgb),.3))}.tool-frame-title strong{display:block;color:#fff;font-size:11px;letter-spacing:.08em}.tool-frame-title span{display:block;margin-top:2px;color:var(--muted);font-size:9px}
+    .tool-frame{display:block;width:100%;height:100%;min-height:650px;border:0;background:#060a0f;flex:1 1 auto}
+    .owner-copy-dock{padding:12px 13px;border-bottom:1px solid rgba(var(--accentRgb),.13);background:rgba(var(--accentRgb),.028)}
+    .owner-copy-row{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(4,minmax(112px,.6fr));gap:8px;align-items:stretch}
+    .owner-contact-input{min-height:42px!important;height:42px!important;resize:none!important;padding:10px 12px!important;font:500 11px/1.45 'JetBrains Mono',monospace}
+    .owner-copy-card{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:7px 9px;border:1px solid rgba(var(--accentRgb),.16);border-radius:9px;background:rgba(255,255,255,.025);cursor:pointer;transition:.2s;text-align:left}
+    .owner-copy-card:hover{border-color:rgba(var(--accentRgb),.48);background:rgba(var(--accentRgb),.08);transform:translateY(-1px)}
+    .owner-copy-card small{color:var(--muted);font:800 8px/1 'JetBrains Mono',monospace;letter-spacing:.08em;margin-bottom:5px}.owner-copy-card strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent);font-size:11px}
+    .owner-copy-hint{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.45}.owner-copy-hint b{color:var(--accent)}
+    @media(max-width:1100px){.owner-copy-row{grid-template-columns:1fr 1fr 1fr}.owner-contact-input{grid-column:1/-1}.tool-frame{min-height:720px}}
+    @media(max-width:700px){#view-system-owner,#view-voip{overflow:visible}.tool-frame-shell{height:auto;min-height:860px}.owner-copy-row{grid-template-columns:1fr 1fr}.owner-contact-input{grid-column:1/-1}.tool-frame{min-height:720px}.tool-frame-title span{display:none}}
+'''.strip()
 if css_marker not in text:
     if '</style>' not in text:
         raise SystemExit('Style closing tag not found')
     text = text.replace('</style>', css + '\n  </style>', 1)
 
-button = r'''<button id="btnSystemOwnerFinder" type="button" onclick="toggleSystemOwnerFinder()" class="system-owner-finder-trigger" aria-expanded="false" aria-controls="systemOwnerFinderPanel"><i data-lucide="user-search" class="w-3.5 h-3.5"></i><span>FIND SYSTEM OWNER</span></button>'''
-if 'id="btnSystemOwnerFinder"' not in text:
-    scan_pattern = re.compile(r'(<button id="btnScanIp"[^>]*>.*?</button>)', re.S)
-    text, count = scan_pattern.subn(r'\1\n' + button, text, count=1)
+# Put both tools directly beside Generate Log UIh in the top navigation.
+if 'id="tab-system-owner"' not in text:
+    nav_buttons = r'''<button onclick="switchTab('system-owner')" id="tab-system-owner" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="user-search" class="w-4 h-4 inline-block mr-2"></i>FIND SYSTEM OWNER</button><button onclick="switchTab('voip')" id="tab-voip" class="tab-btn h-full px-4 border-b-2 border-transparent whitespace-nowrap" style="color:var(--muted)"><i data-lucide="phone-call" class="w-4 h-4 inline-block mr-2"></i>VOIP Finder</button>'''
+    pattern = re.compile(r'(<button onclick="switchTab\(\'uih\'\)" id="tab-uih".*?</button>)', re.S)
+    text, count = pattern.subn(r'\1' + nav_buttons, text, count=1)
     if count != 1:
-        raise SystemExit('SCAN IP button target not found')
+        raise SystemExit('Generate Log UIh tab target not found')
 
-panel = r'''
-                <div id="systemOwnerFinderPanel" class="md:col-span-2 system-owner-finder-panel" hidden data-open="false">
-                  <div class="system-owner-finder-head">
-                    <div class="system-owner-finder-title"><i data-lucide="users-round" class="w-4 h-4"></i><div><strong>SYSTEM OWNER FINDER</strong><span>Incident → TOR Mapping & Contact Routing · runs locally in Browser</span></div></div>
-                    <button type="button" class="system-owner-finder-close" onclick="setSystemOwnerFinderOpen(false)"><i data-lucide="chevron-up" class="w-3.5 h-3.5"></i><span>HIDE</span></button>
-                  </div>
-                  <iframe id="systemOwnerFinderFrame" class="system-owner-finder-frame" src="system-owner-finder.html" title="System Owner Finder" loading="lazy" onload="syncSystemOwnerFinderTheme()"></iframe>
-                </div>'''.strip()
+# Add full themed views for both tools.
+if 'id="view-system-owner"' not in text:
+    views = r'''
 
-if 'id="systemOwnerFinderPanel"' not in text:
-    marker = '<button onclick="generateLogs()"'
-    if marker not in text:
-        raise SystemExit('Generate Logs button target not found')
-    text = text.replace(marker, panel + '\n              ' + marker, 1)
+          <section id="view-system-owner" class="view-panel hidden h-full min-h-0 flex-col animate-enter">
+            <div class="tool-frame-shell glass-panel rounded-2xl accent-border">
+              <div class="tool-frame-head">
+                <div class="tool-frame-title"><i data-lucide="users-round" class="w-4 h-4"></i><div><strong>SYSTEM OWNER FINDER</strong><span>TOR mapping · contact routing · local browser processing</span></div></div>
+              </div>
+              <div class="owner-copy-dock">
+                <div class="owner-copy-row">
+                  <textarea id="ownerContactInput" class="cyber-input owner-contact-input" placeholder="วาง Contact Routing เพื่อแยกคำนำหน้า / ชื่อ / โทร / Email แล้ว Copy แยกได้" oninput="renderOwnerContactQuickCopy()"></textarea>
+                  <button type="button" class="owner-copy-card" data-owner-copy="prefix" onclick="copyOwnerPart('prefix')"><small>PREFIX</small><strong id="ownerPrefixValue">-</strong></button>
+                  <button type="button" class="owner-copy-card" data-owner-copy="name" onclick="copyOwnerPart('name')"><small>NAME</small><strong id="ownerNameValue">-</strong></button>
+                  <button type="button" class="owner-copy-card" data-owner-copy="phone" onclick="copyOwnerPart('phone')"><small>PHONE</small><strong id="ownerPhoneValue">-</strong></button>
+                  <button type="button" class="owner-copy-card" data-owner-copy="email" onclick="copyOwnerPart('email')"><small>EMAIL</small><strong id="ownerEmailValue">-</strong></button>
+                </div>
+                <div class="owner-copy-hint">แยกคำนำหน้า <b>นาย / นาง / นางสาว / คุณ / น.ส.</b> ออกจากชื่ออัตโนมัติ · กดแต่ละช่องเพื่อ Copy ค่าเฉพาะส่วนนั้น</div>
+              </div>
+              <iframe id="systemOwnerFinderFrame" class="tool-frame" src="system-owner-finder.html" title="System Owner Finder" loading="eager" onload="syncSystemOwnerFinderTheme(document.body.dataset.theme || 'gold')"></iframe>
+            </div>
+          </section>
 
-helpers = r'''
-  function currentSystemOwnerTheme(){return document.body?.dataset?.theme==='cyber'?'cyber':'gold'}
-  function syncSystemOwnerFinderTheme(){const frame=document.getElementById('systemOwnerFinderFrame');if(!frame?.contentWindow)return;try{frame.contentWindow.postMessage({type:'dhcp-theme',theme:currentSystemOwnerTheme()},location.origin)}catch{}}
-  function setSystemOwnerFinderOpen(open){const panel=document.getElementById('systemOwnerFinderPanel'),button=document.getElementById('btnSystemOwnerFinder');if(!panel)return;const show=Boolean(open);panel.hidden=!show;panel.dataset.open=show?'true':'false';if(button)button.setAttribute('aria-expanded',show?'true':'false');if(show){syncSystemOwnerFinderTheme();requestAnimationFrame(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}))}}
-  function toggleSystemOwnerFinder(){const panel=document.getElementById('systemOwnerFinderPanel');if(!panel)return;setSystemOwnerFinderOpen(panel.hidden)}
-  if(typeof MutationObserver!=='undefined'){new MutationObserver(mutations=>{if(mutations.some(m=>m.attributeName==='data-theme'))syncSystemOwnerFinderTheme()}).observe(document.body,{attributes:true,attributeFilter:['data-theme']})}
-  window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='system-owner-ready')syncSystemOwnerFinderTheme()})
+          <section id="view-voip" class="view-panel hidden h-full min-h-0 flex-col animate-enter">
+            <div class="tool-frame-shell glass-panel rounded-2xl accent-border">
+              <div class="tool-frame-head">
+                <div class="tool-frame-title"><i data-lucide="phone-call" class="w-4 h-4"></i><div><strong>VOIP FINDER</strong><span>หัวข้อใหญ่ · พื้นที่ / หน่วยงาน · หัวข้อ · VOIP</span></div></div>
+              </div>
+              <iframe id="voipFinderFrame" class="tool-frame" src="voip-finder.html" title="VOIP Finder" loading="lazy" onload="syncVoipFinderTheme(document.body.dataset.theme || 'gold')"></iframe>
+            </div>
+          </section>'''.rstrip()
+    pattern = re.compile(r'(<section id="view-uih".*?</section>)', re.S)
+    text, count = pattern.subn(r'\1' + views, text, count=1)
+    if count != 1:
+        raise SystemExit('Generate Log UIh view target not found')
+
+helpers_marker = 'function parseOwnerContact('
+if helpers_marker not in text:
+    helpers = r'''
+  function parseOwnerContact(raw){const original=String(raw||'').replace(/\s+/g,' ').trim();let text=original;const email=(text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)||[''])[0];if(email)text=text.replace(email,' ').replace(/\s+/g,' ').trim();const phone=(text.match(/(?:\+?66[\s-]?)?(?:0\d{1,2}|\d{4})(?:[\s-]?\d){3,10}/)||[''])[0];if(phone)text=text.replace(phone,' ').replace(/\s+/g,' ').trim();const prefixMatch=text.match(/^(นางสาว|น\.ส\.|น\.ส|นาย|นาง|คุณ)\s*/);const prefix=prefixMatch?prefixMatch[1]:'';if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();return{prefix,name:text,phone:phone.trim(),email}}
+  function renderOwnerContactQuickCopy(){const parsed=parseOwnerContact(document.getElementById('ownerContactInput')?.value||'');[['Prefix','prefix'],['Name','name'],['Phone','phone'],['Email','email']].forEach(([label,key])=>{const el=document.getElementById(`owner${label}Value`);if(el)el.textContent=parsed[key]||'-'});return parsed}
+  function copyOwnerPart(part){const parsed=renderOwnerContactQuickCopy(),value=parsed[part]||'';if(!value)return;copyString(value)}
+  function syncSystemOwnerFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('systemOwnerFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
+  function syncVoipFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('voipFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
+  window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const type=event.data?.type;if(type==='system-owner-ready')syncSystemOwnerFinderTheme();if(type==='voip-ready')syncVoipFinderTheme()})
 '''.strip()
-
-if 'function toggleSystemOwnerFinder()' not in text:
     target = re.search(r'\n\s*async function fetchISPData\(\)\{', text)
     if not target:
         raise SystemExit('fetchISPData helper target not found')
     text = text[:target.start()] + '\n' + helpers + text[target.start():]
 
+# Theme changes must be forwarded to all embedded tools.
+old_theme = 'syncUIhTheme(theme);lucide.createIcons()'
+new_theme = 'syncUIhTheme(theme);syncSystemOwnerFinderTheme(theme);syncVoipFinderTheme(theme);lucide.createIcons()'
+if new_theme not in text:
+    if old_theme not in text:
+        raise SystemExit('setTheme sync target not found')
+    text = text.replace(old_theme, new_theme, 1)
+
+old_tabs = "['dhcp','subnet','log','uih'].forEach"
+new_tabs = "['dhcp','subnet','log','uih','system-owner','voip'].forEach"
+if new_tabs not in text:
+    if old_tabs not in text:
+        raise SystemExit('switchTab target list not found')
+    text = text.replace(old_tabs, new_tabs, 1)
+
 path.write_text(text, encoding='utf-8')
-print('System Owner Finder integrated into Generate Log traffic')
+print('System Owner Finder moved beside Generate Log UIh; VOIP Finder added')
