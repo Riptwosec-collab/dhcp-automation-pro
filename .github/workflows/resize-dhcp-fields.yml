@@ -37,8 +37,13 @@ jobs:
         with:
           ref: main
 
-      - name: Patch Generate Log traffic and UIh pages
-        run: python scripts/patch-traffic-log.py
+      - name: Patch Generate Log traffic and UIh pages when missing
+        run: |
+          if grep -q 'traffic-log-layout-v3' index.html && grep -q 'id="view-uih"' index.html; then
+            echo 'Traffic/UIh layout already materialized'
+          else
+            python scripts/patch-traffic-log.py
+          fi
 
       - name: Add local traffic IP reputation analysis when missing
         run: |
