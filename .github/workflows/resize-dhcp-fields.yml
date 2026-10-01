@@ -56,17 +56,37 @@ jobs:
       - name: Add topbar System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
 
-      - name: Fit Generate Log UIh to viewport
-        run: python scripts/fit-uih-viewport.py
+      - name: Fit Generate Log UIh to viewport when missing
+        run: |
+          if grep -q 'uih-fit-viewport-v1' uih.html; then
+            echo 'UIh viewport layer already materialized'
+          else
+            python scripts/fit-uih-viewport.py
+          fi
 
-      - name: Localize Generate Log UIh Down Since
-        run: python scripts/add-thai-down-since.py
+      - name: Localize Generate Log UIh Down Since when missing
+        run: |
+          if grep -q 'thai-down-since-v2' uih.html; then
+            echo 'UIh Down Since localization already materialized'
+          else
+            python scripts/add-thai-down-since.py
+          fi
 
-      - name: Make Generate Log UIh fullscreen and bilingual
-        run: python scripts/fullscreen-bilingual-uih.py
+      - name: Make Generate Log UIh fullscreen and bilingual when missing
+        run: |
+          if grep -q 'uih-fullscreen-bilingual-v1' uih.html; then
+            echo 'UIh fullscreen bilingual layer already materialized'
+          else
+            python scripts/fullscreen-bilingual-uih.py
+          fi
 
-      - name: Add independent Down Since language toggle
-        run: python scripts/add-downsince-language-toggle.py
+      - name: Add independent Down Since language toggle when missing
+        run: |
+          if grep -q 'uih-down-since-language-v1' uih.html; then
+            echo 'UIh Down Since language toggle already materialized'
+          else
+            python scripts/add-downsince-language-toggle.py
+          fi
 
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
