@@ -40,8 +40,6 @@ jobs:
         run: python scripts/add-traffic-ip-reputation.py
       - name: Add System Owner Finder panel
         run: python scripts/add-system-owner-finder.py
-      - name: Add top-level tools navigation
-        run: python scripts/add-tools-nav.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
       - name: Localize UIh Down Since in Thai
