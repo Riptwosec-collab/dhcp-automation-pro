@@ -5,7 +5,7 @@ path = Path('index.html')
 text = path.read_text(encoding='utf-8')
 
 # Remove legacy in-form trigger from Generate Log traffic.
-text = re.sub(r'\s*<button id="btnSystemOwnerFinder"\b.*?</button>', '', text, count=1, flags=re.S)
+text = re.sub(r'\s*<button id="btnSystemOwnerFinder".*?</button>', '', text, count=1, flags=re.S)
 
 legacy_panel = '''<div id="systemOwnerFinderPanel" class="md:col-span-2 system-owner-finder-panel" hidden data-open="false">
                   <div class="system-owner-finder-head">
