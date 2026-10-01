@@ -209,8 +209,8 @@
         <div id="utilityToolsDock" class="utility-tools-dock" data-open="false">
           <button id="utilityToolsToggle" type="button" class="utility-tools-toggle" onclick="toggleUtilityTools(event)" aria-label="Utility tools" title="Utility tools" aria-expanded="false" aria-controls="utilityToolsMenu"><i data-lucide="sparkles"></i></button>
           <div id="utilityToolsMenu" class="utility-tools-menu" role="group" aria-label="Utility tools" hidden>
-            <button type="button" onclick="setUtilityToolsOpen(false);switchTab('system-owner')" id="tab-system-owner" class="utility-tools-item" style="border-color:transparent;color:var(--muted)"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OWNER</span></button>
-            <button type="button" onclick="setUtilityToolsOpen(false);switchTab('voip')" id="tab-voip" class="utility-tools-item" style="border-color:transparent;color:var(--muted)"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">VOICE</span></button>
+            <a href="system-owner-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-system-owner" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open System Owner Finder in new tab"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OPEN ↗</span></a>
+            <a href="voip-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-voip" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open VOIP Finder in new tab"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">OPEN ↗</span></a>
           </div>
         </div>
         <div class="brand-block" aria-label="DHCP Mission Control">
