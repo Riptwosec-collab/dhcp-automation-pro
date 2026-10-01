@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
       - 'system-owner-finder.html'
+      - 'voip-finder.html'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
@@ -23,6 +24,7 @@ on:
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-navigation-tools.py'
 
 permissions:
   contents: write
@@ -38,10 +40,10 @@ jobs:
       - name: Patch Generate Log traffic and UIh pages
         run: python scripts/patch-traffic-log.py
 
-      - name: Add local traffic IP reputation analysis
-        run: python scripts/add-traffic-ip-reputation.py
+      - name: Add local traffic IP reputation analysis when missing
+        run: grep -q 'id="ipReputationPanel"' index.html || python scripts/add-traffic-ip-reputation.py
 
-      - name: Add System Owner Finder panel
+      - name: Add top-level System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
 
       - name: Fit Generate Log UIh to viewport
@@ -74,11 +76,14 @@ jobs:
       - name: Verify System Owner Finder integration
         run: python scripts/test-system-owner-finder.py
 
+      - name: Verify navigation tools and per-contact copy
+        run: python scripts/test-navigation-tools.py
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: add System Owner Finder to traffic log'
+          git commit -m 'ui: move System Owner and VOIP Finder to navigation'
           git push origin HEAD:main
