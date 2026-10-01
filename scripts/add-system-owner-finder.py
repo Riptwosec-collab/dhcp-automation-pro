@@ -52,7 +52,7 @@ dock_css = r'''
     body[data-theme="cyber"] .utility-tools-menu{background:linear-gradient(145deg,rgba(4,14,29,.985),rgba(5,10,22,.985))}
     .utility-tools-menu[hidden]{display:none!important}
     .utility-tools-menu::before{content:"";position:absolute;right:12px;top:-1px;width:55px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 12px rgba(var(--accentRgb),.5)}
-    .utility-tools-item{width:100%;min-height:44px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid rgba(var(--accentRgb),.12);border-radius:10px;background:rgba(var(--accentRgb),.035);color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.02em;text-align:left;white-space:nowrap;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease}
+    .utility-tools-item{width:100%;min-height:44px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid rgba(var(--accentRgb),.12);border-radius:10px;background:rgba(var(--accentRgb),.035);color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.02em;text-align:left;text-decoration:none;white-space:nowrap;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease}
     .utility-tools-item i{width:16px;height:16px;flex:0 0 auto;color:var(--accent);filter:drop-shadow(0 0 6px rgba(var(--accentRgb),.28))}
     .utility-tools-item:hover,.utility-tools-item.active{transform:translateY(-1px);border-color:rgba(var(--accentRgb),.5);background:rgba(var(--accentRgb),.105);color:#fff;box-shadow:0 0 18px rgba(var(--accentRgb),.07)}
     .utility-tools-meta{margin-left:auto;color:rgba(148,163,184,.58);font:700 8px/1 'JetBrains Mono',monospace;letter-spacing:.08em}
@@ -65,12 +65,15 @@ if dock_css_marker not in text:
         raise SystemExit('Style closing tag not found for Utility Dock')
     text = text.replace('</style>', dock_css + '\n  </style>', 1)
 
+dock_owner_action = r'''<a href="system-owner-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-system-owner" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open System Owner Finder in new tab"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OPEN ↗</span></a>'''
+dock_voip_action = r'''<a href="voip-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-voip" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open VOIP Finder in new tab"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">OPEN ↗</span></a>'''
+
 # Replace the two direct topbar actions with one compact Utility Dock.
-dock_html = r'''<div id="utilityToolsDock" class="utility-tools-dock" data-open="false">
+dock_html = rf'''<div id="utilityToolsDock" class="utility-tools-dock" data-open="false">
           <button id="utilityToolsToggle" type="button" class="utility-tools-toggle" onclick="toggleUtilityTools(event)" aria-label="Utility tools" title="Utility tools" aria-expanded="false" aria-controls="utilityToolsMenu"><i data-lucide="sparkles"></i></button>
           <div id="utilityToolsMenu" class="utility-tools-menu" role="group" aria-label="Utility tools" hidden>
-            <button type="button" onclick="setUtilityToolsOpen(false);switchTab('system-owner')" id="tab-system-owner" class="utility-tools-item" style="border-color:transparent;color:var(--muted)"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OWNER</span></button>
-            <button type="button" onclick="setUtilityToolsOpen(false);switchTab('voip')" id="tab-voip" class="utility-tools-item" style="border-color:transparent;color:var(--muted)"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">VOICE</span></button>
+            {dock_owner_action}
+            {dock_voip_action}
           </div>
         </div>'''
 
@@ -87,6 +90,17 @@ if 'id="utilityToolsDock"' not in text:
     text, count = nav_brand.subn(r'\1' + dock_html + r'\n        \2', text, count=1)
     if count != 1:
         raise SystemExit('Topbar navigation insertion target not found')
+
+# Existing generated docks are normalized too, so rerunning this generator upgrades
+# the two actions without rebuilding the rest of the page.
+for action_id, replacement in (
+    ('tab-system-owner', dock_owner_action),
+    ('tab-voip', dock_voip_action),
+):
+    action_pattern = re.compile(rf'<(?:button|a)\b[^>]*id="{re.escape(action_id)}"[^>]*>.*?</(?:button|a)>', re.S)
+    text, count = action_pattern.subn(replacement, text, count=1)
+    if count != 1:
+        raise SystemExit(f'Utility Dock action not found: {action_id}')
 
 # Add full themed views for both tools.
 if 'id="view-system-owner"' not in text:
@@ -173,4 +187,4 @@ if new_tabs not in text:
     text = text.replace(old_tabs, new_tabs, 1)
 
 path.write_text(text, encoding='utf-8')
-print('System Owner and VOIP tools moved into Hidden Utility Dock')
+print('System Owner and VOIP tools open in standalone tabs from Hidden Utility Dock')
