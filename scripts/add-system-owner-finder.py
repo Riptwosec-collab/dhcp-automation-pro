@@ -8,8 +8,9 @@ text = path.read_text(encoding='utf-8')
 text = re.sub(r'\s*<button id="btnSystemOwnerFinder"[^>]*>.*?</button>', '', text, count=1, flags=re.S)
 text = re.sub(r'\s*<div id="systemOwnerFinderPanel".*?<iframe id="systemOwnerFinderFrame".*?</iframe>\s*</div>', '', text, count=1, flags=re.S)
 
-# Remove legacy helper lines so the new top-level helpers are unique.
-for name in ('currentSystemOwnerTheme', 'syncSystemOwnerFinderTheme', 'setSystemOwnerFinderOpen', 'toggleSystemOwnerFinder'):
+# Remove only obsolete inline-panel helpers. The active top-level theme bridge
+# is shared by the System Owner view and must survive regeneration.
+for name in ('currentSystemOwnerTheme', 'setSystemOwnerFinderOpen', 'toggleSystemOwnerFinder'):
     text = re.sub(rf'\n\s*function {name}\([^\n]*\n', '\n', text, count=1)
 text = re.sub(r"\n\s*if\(typeof MutationObserver!=='undefined'\)\{new MutationObserver\(mutations=>\{if\(mutations\.some\(m=>m\.attributeName==='data-theme'\)\)syncSystemOwnerFinderTheme\(\)\}\)\.observe\(document\.body,\{attributes:true,attributeFilter:\['data-theme'\]\}\)\}\n?", '\n', text, count=1)
 text = re.sub(r"\n\s*window\.addEventListener\('message',event=>\{if\(event\.origin!==location\.origin\)return;if\(event\.data\?\.type==='system-owner-ready'\)syncSystemOwnerFinderTheme\(\)\}\)\n?", '\n', text, count=1)
