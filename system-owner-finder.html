@@ -16,7 +16,32 @@
     const binary=atob(payload);
     const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-    const html=await new Response(stream).text();
+    let html=await new Response(stream).text();
+    const quickCopyStyle=`<style id="ownerQuickCopyStyle">
+      .owner-split-copy{margin:12px 0 10px;padding:11px;border:1px solid rgba(var(--accentRgb),.18);border-radius:12px;background:rgba(var(--accentRgb),.045)}
+      .owner-split-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;color:var(--accent);font:800 9px/1.2 'JetBrains Mono',monospace;letter-spacing:.1em}
+      .owner-split-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.owner-split-cell{min-width:0;padding:8px;border:1px solid rgba(var(--accentRgb),.13);border-radius:9px;background:rgba(255,255,255,.025)}
+      .owner-split-cell>label{display:block;margin-bottom:6px;color:var(--muted);font:800 8px/1 'JetBrains Mono',monospace;letter-spacing:.08em}.owner-split-cell .chip-wrap{display:flex;gap:6px;flex-wrap:wrap}
+      .owner-split-cell .contact-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      @media(max-width:760px){.owner-split-grid{grid-template-columns:1fr 1fr}}
+    </style>`;
+    const quickCopyScript=`<script id="ownerQuickCopyScript">(()=>{
+      const uniq=a=>[...new Set(a.filter(Boolean))];
+      const esc=s=>String(s||'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+      function splitOwnerContact(raw){
+        const text=String(raw||'').replace(/\\s+/g,' ').trim();
+        const emails=uniq((text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi)||[]).map(x=>x.trim()));
+        const phones=uniq((text.match(/(?:\\+66[\\s-]?|0)\\d(?:[\\s-]?\\d){7,10}|\\b\\d{4}(?:-\\d)?\\b/g)||[]).map(x=>x.trim().replace(/\\s+/g,' ')));
+        const prefixes=[],names=[];
+        const rx=/(นางสาว|น\\.ส\\.|น\\.ส|นาย|นาง|คุณ)\\s*([ก-๙A-Za-z.'-]+(?:\\s+[ก-๙A-Za-z.'-]+){0,2})/g;
+        let m;while((m=rx.exec(text))){const prefix=m[1],name=m[2].replace(/\\s+(?:โทร|เบอร์)$/,'').trim();prefixes.push(prefix);if(name)names.push(name)}
+        return{prefixes:uniq(prefixes),names:uniq(names),phones,emails};
+      }
+      function chips(values){return values.length?values.map(v=>'<button class="contact-chip copy-value" data-copy="'+esc(v)+'">'+esc(v)+'</button>').join(''):'<span class="dim">-</span>'}
+      function enhance(){document.querySelectorAll('.contact-panel').forEach(panel=>{if(panel.querySelector('.owner-split-copy'))return;const raw=panel.querySelector('pre')?.textContent||'';const p=splitOwnerContact(raw);const box=document.createElement('div');box.className='owner-split-copy';box.innerHTML='<div class="owner-split-title"><span>OWNER QUICK COPY</span><span>PREFIX · NAME · PHONE · EMAIL</span></div><div class="owner-split-grid"><div class="owner-split-cell"><label>PREFIX</label><div class="chip-wrap">'+chips(p.prefixes)+'</div></div><div class="owner-split-cell"><label>NAME</label><div class="chip-wrap">'+chips(p.names)+'</div></div><div class="owner-split-cell"><label>PHONE</label><div class="chip-wrap">'+chips(p.phones)+'</div></div><div class="owner-split-cell"><label>EMAIL</label><div class="chip-wrap">'+chips(p.emails)+'</div></div></div>';const rawLabel=panel.querySelector('.raw-label');panel.insertBefore(box,rawLabel||panel.querySelector('pre'))})}
+      new MutationObserver(enhance).observe(document.body,{childList:true,subtree:true});enhance();
+    })();<\/script>`;
+    html=html.replace('</head>',quickCopyStyle+'</head>').replace('</body>',quickCopyScript+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){
     document.body.innerHTML='<div class="boot">SYSTEM OWNER FINDER COULD NOT START</div>';
