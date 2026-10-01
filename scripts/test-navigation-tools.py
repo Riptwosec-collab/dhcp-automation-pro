@@ -38,9 +38,12 @@ for needle in [
 # VOIP Finder is bundled locally and restores the user-derived hierarchy page.
 voip_loader = Path('voip-finder.html').read_text(encoding='utf-8')
 assert "DecompressionStream('gzip')" in voip_loader, 'VOIP Finder must restore its bundled page locally'
-payload_match = re.search(r'const payload="([A-Za-z0-9+/=]+)";', voip_loader)
-assert payload_match, 'VOIP Finder inline payload missing'
-voip_html = gzip.decompress(base64.b64decode(payload_match.group(1))).decode('utf-8')
+voip_payload_paths = [Path(f'assets/voip-finder-payload-{i:02d}.txt') for i in range(1, 5)]
+for payload_path in voip_payload_paths:
+    assert payload_path.exists(), f'missing VOIP payload: {payload_path}'
+    assert payload_path.name in voip_loader, f'VOIP loader must fetch {payload_path.name}'
+voip_payload = ''.join(''.join(path.read_text(encoding='ascii').split()) for path in voip_payload_paths)
+voip_html = gzip.decompress(base64.b64decode(voip_payload)).decode('utf-8')
 for needle in ['VOIP Finder', 'dhcp-theme', 'document.body.dataset.theme', 'หัวข้อใหญ่', 'พื้นที่ / หน่วยงาน', '1,090']:
     assert needle in voip_html, f'missing VOIP Finder behavior/theme/hierarchy: {needle}'
 assert 'ไม่ระบุพื้นที่' not in voip_html, 'old inferred unknown-area label must not return'
