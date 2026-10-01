@@ -18,7 +18,7 @@ checks = {
     "format 3 moves ISP parentheses to next line with no split": format3_expected in html,
     "UIh tab sits beside traffic log": 'id="tab-uih"' in html and "switchTab('uih')" in html and 'Generate Log UIh' in html,
     "UIh view is embedded": 'id="view-uih"' in html and 'id="uihFrame"' in html and 'src="uih.html"' in html,
-    "tab switcher includes UIh": "['dhcp','subnet','log','uih']" in html,
+    "tab switcher includes UIh and tool views": "['dhcp','subnet','log','uih','system-owner','voip']" in html,
     "main theme syncs to UIh": 'syncUIhTheme(theme)' in html and "type:'mission-theme'" in html,
     "UIh standalone page exists": bool(uih),
     "UIh supports gold and cyber themes": 'body[data-theme="gold"]' in uih and 'body[data-theme="cyber"]' in uih and '--accent-rgb:' in uih,
