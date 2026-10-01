@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify top-level tools navigation contract
+        run: python scripts/test-tools-nav.py
       - name: Apply traffic log layout patch in test workspace
         run: python scripts/patch-traffic-log.py
       - name: Add traffic IP reputation panel
@@ -60,5 +62,3 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner Finder integration
         run: python scripts/test-system-owner-finder.py
-      - name: Verify top-level tools navigation
-        run: python scripts/test-tools-nav.py
