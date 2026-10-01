@@ -40,8 +40,13 @@ jobs:
       - name: Patch Generate Log traffic and UIh pages
         run: python scripts/patch-traffic-log.py
 
-      - name: Add local traffic IP reputation analysis
-        run: python scripts/add-traffic-ip-reputation.py
+      - name: Add local traffic IP reputation analysis when missing
+        run: |
+          if grep -q 'id="ipReputationPanel"' index.html; then
+            echo 'IP reputation panel already generated'
+          else
+            python scripts/add-traffic-ip-reputation.py
+          fi
 
       - name: Add topbar System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
