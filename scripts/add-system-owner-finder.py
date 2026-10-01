@@ -64,7 +64,7 @@ views = r'''
           </section>'''.rstrip()
 
 if 'id="view-system-owner"' not in text:
-    pattern = re.compile(r'(<section id="view-uih"\b.*?</section>)', re.S)
+    pattern = re.compile(r'(<section id="view-uih".*?</section>)', re.S)
     text, count = pattern.subn(r'\1' + views, text, count=1)
     if count != 1:
         raise SystemExit('Generate Log UIh view target not found')
@@ -91,6 +91,7 @@ if "data.type==='voip-ready'" not in text:
         raise SystemExit('UIh ready listener target not found')
     text = text.replace(marker, marker + '\n  ' + ready_listener, 1)
 
+# Theme selection propagates to all embedded tools.
 old_theme = "function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem('missionTheme',theme);document.getElementById('themeGold').classList.toggle('active',theme==='gold');document.getElementById('themeCyber').classList.toggle('active',theme==='cyber');syncUIhTheme(theme);lucide.createIcons()}"
 new_theme = "function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem('missionTheme',theme);document.getElementById('themeGold').classList.toggle('active',theme==='gold');document.getElementById('themeCyber').classList.toggle('active',theme==='cyber');syncUIhTheme(theme);syncToolFramesTheme(theme);lucide.createIcons()}"
 if old_theme in text:
