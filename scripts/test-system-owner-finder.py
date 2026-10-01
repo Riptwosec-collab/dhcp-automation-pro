@@ -3,6 +3,7 @@ import base64
 import gzip
 
 index = Path('index.html').read_text(encoding='utf-8')
+generator = Path('scripts/add-system-owner-finder.py').read_text(encoding='utf-8')
 finder_path = Path('system-owner-finder.html')
 voip_path = Path('voip-finder.html')
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
@@ -11,6 +12,14 @@ loader = finder_path.read_text(encoding='utf-8')
 voip_loader = voip_path.read_text(encoding='utf-8')
 
 required_index = [
+    'id="utilityToolsDock"',
+    'id="utilityToolsToggle"',
+    'id="utilityToolsMenu"',
+    'aria-expanded="false"',
+    '/* utility-tools-dock-v1 */',
+    'function setUtilityToolsOpen(',
+    'function toggleUtilityTools(',
+    'function closeUtilityToolsOnOutside(',
     'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
     "switchTab('system-owner')",
@@ -32,15 +41,26 @@ required_index = [
     'data-owner-copy="email"',
 ]
 for needle in required_index:
-    assert needle in index, f'missing topbar tool integration: {needle}'
+    assert needle in index, f'missing hidden utility dock integration: {needle}'
+
+for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools']:
+    assert needle in generator, f'generator must preserve hidden utility dock behavior: {needle}'
 
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must be removed from Generate Log traffic'
 assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must be removed from Generate Log traffic'
 
 uih_pos = index.find('id="tab-uih"')
+dock_pos = index.find('id="utilityToolsDock"')
+menu_pos = index.find('id="utilityToolsMenu"')
 owner_pos = index.find('id="tab-system-owner"')
 voip_pos = index.find('id="tab-voip"')
-assert 0 <= uih_pos < owner_pos < voip_pos, 'System Owner and VOIP tabs must sit immediately after Generate Log UIh'
+assert 0 <= uih_pos < dock_pos < menu_pos < owner_pos < voip_pos, 'Utility dock must replace direct System Owner and VOIP topbar tabs after Generate Log UIh'
+menu_end = index.find('</div>', menu_pos)
+assert menu_end > voip_pos, 'System Owner and VOIP actions must live inside the hidden utility menu'
+assert "document.addEventListener('pointerdown',closeUtilityToolsOnOutside" in index, 'outside pointer interaction must close the utility menu'
+assert "event.key==='Escape'" in index, 'Escape must close the utility menu'
+assert "setUtilityToolsOpen(false);switchTab('system-owner')" in index, 'System Owner action must close the dock and preserve existing tab navigation'
+assert "setUtilityToolsOpen(false);switchTab('voip')" in index, 'VOIP action must close the dock and preserve existing tab navigation'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -83,4 +103,4 @@ for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นท
 for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
     assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
-print('topbar System Owner + VOIP integration: OK')
+print('hidden utility dock + System Owner + VOIP integration: OK')
