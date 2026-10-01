@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>VOIP Finder</title>
+  <!-- VOIP Finder · หัวข้อใหญ่ · พื้นที่ / หน่วยงาน · VOIP -->
+  <style>html,body{margin:0;min-height:100%;background:#060a0f;color:#eaf7fb;font-family:Inter,system-ui,sans-serif}.boot{min-height:100vh;display:grid;place-items:center;font-size:12px;letter-spacing:.12em;color:#78909d}</style>
+</head>
+<body data-theme="gold"><div class="boot">LOADING VOIP FINDER…</div>
+<script>
+(async()=>{
+  try{
+    const parts=[
+      'assets/voip-finder-payload-01.txt','assets/voip-finder-payload-02.txt','assets/voip-finder-payload-03.txt','assets/voip-finder-payload-04.txt',
+      'assets/voip-finder-payload-05.txt','assets/voip-finder-payload-06.txt','assets/voip-finder-payload-07.txt','assets/voip-finder-payload-08.txt'
+    ];
+    const payload=(await Promise.all(parts.map(async path=>{const r=await fetch(path,{cache:'force-cache'});if(!r.ok)throw new Error('Payload '+path+' '+r.status);return (await r.text()).trim()}))).join('');
+    const binary=atob(payload);
+    const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+    const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    let html=await new Response(stream).text();
+    const bridgeStyle=`<style id="missionVoipTheme">
+      body[data-theme="gold"]{--bg:#010204;--panel:#070a0f;--panel2:#0a0e15;--line:rgba(245,197,66,.20);--text:#fff;--muted:#89909b;--cyan:#f5c542;--yellow:#ffe38a;--green:#22c55e;--shadow:0 20px 55px rgba(0,0,0,.46)}
+      body[data-theme="cyber"]{--bg:#020716;--panel:#071427;--panel2:#091b32;--line:rgba(34,211,238,.20);--text:#f8fbff;--muted:#91a6c7;--cyan:#22d3ee;--yellow:#8cecff;--green:#2dd4bf;--shadow:0 20px 55px rgba(0,4,16,.5)}
+    </style>`;
+    const bridgeScript=`<script id="missionVoipBridge">window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='dhcp-theme'){document.body.dataset.theme=event.data.theme==='cyber'?'cyber':'gold'}});window.parent?.postMessage({type:'voip-ready'},location.origin);<\/script>`;
+    html=html.replace(/<body([^>]*)>/i,'<body$1 data-theme="gold">').replace('</head>',bridgeStyle+'</head>').replace('</body>',bridgeScript+'</body>');
+    document.open();document.write(html);document.close();
+  }catch(error){
+    document.body.innerHTML='<div class="boot">VOIP FINDER COULD NOT START</div>';
+    console.error(error);
+  }
+})();
+</script></body></html>
