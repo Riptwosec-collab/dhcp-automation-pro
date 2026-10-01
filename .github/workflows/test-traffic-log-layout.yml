@@ -33,8 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply traffic log layout patch in test workspace
-        run: python scripts/patch-traffic-log.py
+      - name: Apply traffic log layout patch in test workspace when missing
+        run: |
+          if grep -q 'traffic-log-layout-v3' index.html && grep -q 'id="view-uih"' index.html; then
+            echo 'Traffic/UIh layout already materialized'
+          else
+            python scripts/patch-traffic-log.py
+          fi
       - name: Add traffic IP reputation panel when missing
         run: |
           if grep -q 'id="ipReputationPanel"' index.html; then
