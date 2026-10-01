@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - fix/format3-line-breaks
+      - feature/nav-owner-voip-theme
   pull_request:
     paths:
       - 'index.html'
       - 'uih.html'
       - 'system-owner-finder.html'
+      - 'voip-finder.html'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
@@ -25,6 +27,7 @@ on:
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-navigation-tools.py'
 
 jobs:
   test-layout:
@@ -57,3 +60,5 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner Finder integration
         run: python scripts/test-system-owner-finder.py
+      - name: Verify navigation tools and per-contact copy
+        run: python scripts/test-navigation-tools.py
