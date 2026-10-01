@@ -48,7 +48,7 @@ dock_css = r'''
     .utility-tools-toggle:hover,.utility-tools-dock[data-open="true"] .utility-tools-toggle,.utility-tools-dock:has(.utility-tools-item.active) .utility-tools-toggle{transform:translateY(-1px);border-color:rgba(var(--accentRgb),.72);background:linear-gradient(145deg,rgba(var(--accentRgb),.18),rgba(2,7,14,.82));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 10px 26px rgba(0,0,0,.34),0 0 24px rgba(var(--accentRgb),.18)}
     .utility-tools-dock[data-open="true"] .utility-tools-toggle::after{opacity:1;transform:scaleX(1.35)}
     .utility-tools-toggle i{width:17px;height:17px;filter:drop-shadow(0 0 7px rgba(var(--accentRgb),.38))}
-    .utility-tools-menu{position:absolute;right:0;top:calc(100% + 8px);width:max-content;min-width:330px;display:grid;gap:6px;padding:7px;border:1px solid rgba(var(--accentRgb),.25);border-radius:14px;background:linear-gradient(145deg,rgba(5,9,15,.98),rgba(8,13,22,.98));backdrop-filter:blur(20px) saturate(135%);-webkit-backdrop-filter:blur(20px) saturate(135%);box-shadow:0 24px 60px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.045),0 0 28px rgba(var(--accentRgb),.08);transform-origin:top right;animation:utilityDockIn .16s ease-out}
+    .utility-tools-menu{position:fixed;left:auto;right:auto;top:auto;width:max-content;min-width:330px;display:grid;gap:6px;padding:7px;border:1px solid rgba(var(--accentRgb),.25);border-radius:14px;background:linear-gradient(145deg,rgba(5,9,15,.98),rgba(8,13,22,.98));backdrop-filter:blur(20px) saturate(135%);-webkit-backdrop-filter:blur(20px) saturate(135%);box-shadow:0 24px 60px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.045),0 0 28px rgba(var(--accentRgb),.08);transform-origin:top right;animation:utilityDockIn .16s ease-out}
     body[data-theme="cyber"] .utility-tools-menu{background:linear-gradient(145deg,rgba(4,14,29,.985),rgba(5,10,22,.985))}
     .utility-tools-menu[hidden]{display:none!important}
     .utility-tools-menu::before{content:"";position:absolute;right:12px;top:-1px;width:55px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 12px rgba(var(--accentRgb),.5)}
@@ -64,6 +64,12 @@ if dock_css_marker not in text:
     if '</style>' not in text:
         raise SystemExit('Style closing tag not found for Utility Dock')
     text = text.replace('</style>', dock_css + '\n  </style>', 1)
+
+# Upgrade already-generated desktop menus so they are not clipped by .topbar overflow:hidden.
+legacy_menu_position = '.utility-tools-menu{position:absolute;right:0;top:calc(100% + 8px);'
+fixed_menu_position = '.utility-tools-menu{position:fixed;left:auto;right:auto;top:auto;'
+if legacy_menu_position in text:
+    text = text.replace(legacy_menu_position, fixed_menu_position, 1)
 
 dock_owner_action = r'''<a href="system-owner-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-system-owner" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open System Owner Finder in new tab"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OPEN ↗</span></a>'''
 dock_voip_action = r'''<a href="voip-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-voip" class="utility-tools-item" style="border-color:transparent;color:var(--muted)" title="Open VOIP Finder in new tab"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">OPEN ↗</span></a>'''
@@ -138,38 +144,57 @@ if 'id="view-system-owner"' not in text:
     if count != 1:
         raise SystemExit('Generate Log UIh view target not found')
 
+position_helper = r'''function positionUtilityToolsMenu(){const toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!toggle||!menu||menu.hidden)return;const rect=toggle.getBoundingClientRect(),gap=8,edge=10;if(window.matchMedia('(max-width:760px)').matches){menu.style.left=`${edge}px`;menu.style.right=`${edge}px`;menu.style.top=`${Math.round(rect.bottom+gap)}px`;menu.style.width='auto';return}menu.style.width='';menu.style.right='auto';const width=menu.getBoundingClientRect().width||330;const left=Math.max(edge,Math.min(rect.right-width,window.innerWidth-width-edge));menu.style.left=`${Math.round(left)}px`;menu.style.top=`${Math.round(rect.bottom+gap)}px`}'''
+set_open_helper = r'''function setUtilityToolsOpen(open){const dock=document.getElementById('utilityToolsDock'),toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!dock||!toggle||!menu)return;const show=Boolean(open);dock.dataset.open=show?'true':'false';toggle.setAttribute('aria-expanded',show?'true':'false');menu.hidden=!show;if(show)requestAnimationFrame(()=>{positionUtilityToolsMenu();lucide.createIcons()})}'''
+
+# Upgrade existing generated helper so opening the dock also positions the fixed menu.
+if 'function positionUtilityToolsMenu(' not in text and 'function setUtilityToolsOpen(' in text:
+    old_set_open = "function setUtilityToolsOpen(open){const dock=document.getElementById('utilityToolsDock'),toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!dock||!toggle||!menu)return;const show=Boolean(open);dock.dataset.open=show?'true':'false';toggle.setAttribute('aria-expanded',show?'true':'false');menu.hidden=!show;if(show)requestAnimationFrame(()=>lucide.createIcons())}"
+    if old_set_open not in text:
+        raise SystemExit('Existing Utility Dock open helper could not be upgraded')
+    text = text.replace(old_set_open, position_helper + '\n  ' + set_open_helper, 1)
+
 helpers_marker = 'function parseOwnerContact('
 if helpers_marker not in text:
-    helpers = r'''
-  function parseOwnerContact(raw){const original=String(raw||'').replace(/\s+/g,' ').trim();let text=original;const email=(text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)||[''])[0];if(email)text=text.replace(email,' ').replace(/\s+/g,' ').trim();const phone=(text.match(/(?:\+?66[\s-]?)?(?:0\d{1,2}|\d{4})(?:[\s-]?\d){3,10}/)||[''])[0];if(phone)text=text.replace(phone,' ').replace(/\s+/g,' ').trim();const prefixMatch=text.match(/^(นางสาว|น\.ส\.|น\.ส|นาย|นาง|คุณ)\s*/);const prefix=prefixMatch?prefixMatch[1]:'';if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();return{prefix,name:text,phone:phone.trim(),email}}
-  function renderOwnerContactQuickCopy(){const parsed=parseOwnerContact(document.getElementById('ownerContactInput')?.value||'');[['Prefix','prefix'],['Name','name'],['Phone','phone'],['Email','email']].forEach(([label,key])=>{const el=document.getElementById(`owner${label}Value`);if(el)el.textContent=parsed[key]||'-'});return parsed}
-  function copyOwnerPart(part){const parsed=renderOwnerContactQuickCopy(),value=parsed[part]||'';if(!value)return;copyString(value)}
-  function syncSystemOwnerFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('systemOwnerFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
-  function syncVoipFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('voipFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
-  function setUtilityToolsOpen(open){const dock=document.getElementById('utilityToolsDock'),toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!dock||!toggle||!menu)return;const show=Boolean(open);dock.dataset.open=show?'true':'false';toggle.setAttribute('aria-expanded',show?'true':'false');menu.hidden=!show;if(show)requestAnimationFrame(()=>lucide.createIcons())}
-  function toggleUtilityTools(event){event?.preventDefault?.();event?.stopPropagation?.();const dock=document.getElementById('utilityToolsDock');setUtilityToolsOpen(dock?.dataset.open!=='true')}
-  function closeUtilityToolsOnOutside(event){const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true'&&!dock.contains(event.target))setUtilityToolsOpen(false)}
+    helpers = rf'''
+  function parseOwnerContact(raw){{const original=String(raw||'').replace(/\s+/g,' ').trim();let text=original;const email=(text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{{2,}}/i)||[''])[0];if(email)text=text.replace(email,' ').replace(/\s+/g,' ').trim();const phone=(text.match(/(?:\+?66[\s-]?)?(?:0\d{{1,2}}|\d{{4}})(?:[\s-]?\d){{3,10}}/)||[''])[0];if(phone)text=text.replace(phone,' ').replace(/\s+/g,' ').trim();const prefixMatch=text.match(/^(นางสาว|น\.ส\.|น\.ส|นาย|นาง|คุณ)\s*/);const prefix=prefixMatch?prefixMatch[1]:'';if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();return{{prefix,name:text,phone:phone.trim(),email}}}}
+  function renderOwnerContactQuickCopy(){{const parsed=parseOwnerContact(document.getElementById('ownerContactInput')?.value||'');[['Prefix','prefix'],['Name','name'],['Phone','phone'],['Email','email']].forEach(([label,key])=>{{const el=document.getElementById(`owner${{label}}Value`);if(el)el.textContent=parsed[key]||'-'}});return parsed}}
+  function copyOwnerPart(part){{const parsed=renderOwnerContactQuickCopy(),value=parsed[part]||'';if(!value)return;copyString(value)}}
+  function syncSystemOwnerFinderTheme(theme=document.body.dataset.theme||'gold'){{const frame=document.getElementById('systemOwnerFinderFrame');if(frame?.contentWindow)try{{frame.contentWindow.postMessage({{type:'dhcp-theme',theme}},location.origin)}}catch{{}}}}
+  function syncVoipFinderTheme(theme=document.body.dataset.theme||'gold'){{const frame=document.getElementById('voipFinderFrame');if(frame?.contentWindow)try{{frame.contentWindow.postMessage({{type:'dhcp-theme',theme}},location.origin)}}catch{{}}}}
+  {position_helper}
+  {set_open_helper}
+  function toggleUtilityTools(event){{event?.preventDefault?.();event?.stopPropagation?.();const dock=document.getElementById('utilityToolsDock');setUtilityToolsOpen(dock?.dataset.open!=='true')}}
+  function closeUtilityToolsOnOutside(event){{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true'&&!dock.contains(event.target))setUtilityToolsOpen(false)}}
   document.addEventListener('pointerdown',closeUtilityToolsOnOutside,true)
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')setUtilityToolsOpen(false)})
-  window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const type=event.data?.type;if(type==='system-owner-ready')syncSystemOwnerFinderTheme();if(type==='voip-ready')syncVoipFinderTheme()})
+  document.addEventListener('keydown',event=>{{if(event.key==='Escape')setUtilityToolsOpen(false)}})
+  window.addEventListener('resize',()=>{{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true')positionUtilityToolsMenu()}})
+  window.addEventListener('message',event=>{{if(event.origin!==location.origin)return;const type=event.data?.type;if(type==='system-owner-ready')syncSystemOwnerFinderTheme();if(type==='voip-ready')syncVoipFinderTheme()}})
 '''.strip()
     target = re.search(r'\n\s*async function fetchISPData\(\)\{', text)
     if not target:
         raise SystemExit('fetchISPData helper target not found')
     text = text[:target.start()] + '\n' + helpers + text[target.start():]
 else:
-    utility_helpers = r'''
-  function setUtilityToolsOpen(open){const dock=document.getElementById('utilityToolsDock'),toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!dock||!toggle||!menu)return;const show=Boolean(open);dock.dataset.open=show?'true':'false';toggle.setAttribute('aria-expanded',show?'true':'false');menu.hidden=!show;if(show)requestAnimationFrame(()=>lucide.createIcons())}
-  function toggleUtilityTools(event){event?.preventDefault?.();event?.stopPropagation?.();const dock=document.getElementById('utilityToolsDock');setUtilityToolsOpen(dock?.dataset.open!=='true')}
-  function closeUtilityToolsOnOutside(event){const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true'&&!dock.contains(event.target))setUtilityToolsOpen(false)}
+    utility_helpers = rf'''
+  {position_helper}
+  {set_open_helper}
+  function toggleUtilityTools(event){{event?.preventDefault?.();event?.stopPropagation?.();const dock=document.getElementById('utilityToolsDock');setUtilityToolsOpen(dock?.dataset.open!=='true')}}
+  function closeUtilityToolsOnOutside(event){{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true'&&!dock.contains(event.target))setUtilityToolsOpen(false)}}
   document.addEventListener('pointerdown',closeUtilityToolsOnOutside,true)
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')setUtilityToolsOpen(false)})
+  document.addEventListener('keydown',event=>{{if(event.key==='Escape')setUtilityToolsOpen(false)}})
+  window.addEventListener('resize',()=>{{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true')positionUtilityToolsMenu()}})
 '''.strip()
     if 'function setUtilityToolsOpen(' not in text:
         target = re.search(r'\n\s*async function fetchISPData\(\)\{', text)
         if not target:
             raise SystemExit('Utility Dock helper insertion target not found')
         text = text[:target.start()] + '\n' + utility_helpers + text[target.start():]
+    elif "window.addEventListener('resize',()=>{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true')positionUtilityToolsMenu()})" not in text:
+        resize_listener = "\n  window.addEventListener('resize',()=>{const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true')positionUtilityToolsMenu()})"
+        escape_listener = "document.addEventListener('keydown',event=>{if(event.key==='Escape')setUtilityToolsOpen(false)})"
+        if escape_listener in text:
+            text = text.replace(escape_listener, escape_listener + resize_listener, 1)
 
 # Theme changes must be forwarded to all embedded tools.
 old_theme = 'syncUIhTheme(theme);lucide.createIcons()'
@@ -187,4 +212,4 @@ if new_tabs not in text:
     text = text.replace(old_tabs, new_tabs, 1)
 
 path.write_text(text, encoding='utf-8')
-print('System Owner and VOIP tools open in standalone tabs from Hidden Utility Dock')
+print('System Owner and VOIP tools open in standalone tabs from visible Hidden Utility Dock')

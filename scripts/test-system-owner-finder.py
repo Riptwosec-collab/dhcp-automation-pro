@@ -17,6 +17,7 @@ required_index = [
     'id="utilityToolsMenu"',
     'aria-expanded="false"',
     '/* utility-tools-dock-v1 */',
+    'function positionUtilityToolsMenu(',
     'function setUtilityToolsOpen(',
     'function toggleUtilityTools(',
     'function closeUtilityToolsOnOutside(',
@@ -45,7 +46,7 @@ required_index = [
 for needle in required_index:
     assert needle in index, f'missing hidden utility dock integration: {needle}'
 
-for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools', 'system-owner-finder.html', 'voip-finder.html', 'target="_blank"', 'rel="noopener noreferrer"']:
+for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'positionUtilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools', 'system-owner-finder.html', 'voip-finder.html', 'target="_blank"', 'rel="noopener noreferrer"']:
     assert needle in generator, f'generator must preserve hidden utility dock standalone-tab behavior: {needle}'
 
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must be removed from Generate Log traffic'
@@ -61,6 +62,9 @@ menu_end = index.find('</div>', menu_pos)
 assert menu_end > voip_pos, 'System Owner and VOIP actions must live inside the hidden utility menu'
 assert "document.addEventListener('pointerdown',closeUtilityToolsOnOutside" in index, 'outside pointer interaction must close the utility menu'
 assert "event.key==='Escape'" in index, 'Escape must close the utility menu'
+assert '.utility-tools-menu{position:fixed;' in index, 'Utility menu must escape the topbar overflow clipping context'
+assert '.utility-tools-menu{position:absolute;' not in index, 'Utility menu must not be clipped by the topbar overflow:hidden rule'
+assert 'const rect=toggle.getBoundingClientRect()' in index, 'Utility menu must be positioned from the visible toggle button'
 assert 'href="system-owner-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'System Owner action must open its standalone page in a new tab securely'
 assert 'href="voip-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'VOIP action must open its standalone page in a new tab securely'
 assert "setUtilityToolsOpen(false);switchTab('system-owner')" not in index, 'System Owner dock action must no longer replace the DHCP workspace'
