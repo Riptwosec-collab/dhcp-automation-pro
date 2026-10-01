@@ -34,13 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: RED contract - navigation tools and per-contact copy
-        run: python scripts/test-navigation-tools.py
       - name: Apply traffic log layout patch in test workspace
         run: python scripts/patch-traffic-log.py
-      - name: Add traffic IP reputation panel
-        run: python scripts/add-traffic-ip-reputation.py
-      - name: Add System Owner Finder panel
+      - name: Add traffic IP reputation panel when missing
+        run: grep -q 'id="ipReputationPanel"' index.html || python scripts/add-traffic-ip-reputation.py
+      - name: Add top-level System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
       - name: Fit UIh to the available viewport
         run: python scripts/fit-uih-viewport.py
@@ -62,3 +60,5 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner Finder integration
         run: python scripts/test-system-owner-finder.py
+      - name: Verify navigation tools and per-contact copy
+        run: python scripts/test-navigation-tools.py
