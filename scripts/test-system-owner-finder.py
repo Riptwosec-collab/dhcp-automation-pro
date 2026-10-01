@@ -3,6 +3,7 @@ import base64
 import gzip
 
 index = Path('index.html').read_text(encoding='utf-8')
+generator = Path('scripts/add-system-owner-finder.py').read_text(encoding='utf-8')
 finder_path = Path('system-owner-finder.html')
 voip_path = Path('voip-finder.html')
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
@@ -41,6 +42,9 @@ required_index = [
 ]
 for needle in required_index:
     assert needle in index, f'missing hidden utility dock integration: {needle}'
+
+for needle in ['utility-tools-dock-v1', 'utilityToolsDock', 'utilityToolsToggle', 'utilityToolsMenu', 'setUtilityToolsOpen', 'toggleUtilityTools']:
+    assert needle in generator, f'generator must preserve hidden utility dock behavior: {needle}'
 
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must be removed from Generate Log traffic'
 assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must be removed from Generate Log traffic'
