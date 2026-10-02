@@ -36,7 +36,7 @@ required_index = [
 for needle in required_index:
     assert needle in index, f'missing direct System Owner / VOIP integration: {needle}'
 
-for needle in ['system-owner-finder.html', 'voip-finder.html', 'switchTab(\\\'system-owner\\\')', 'switchTab(\\\'voip\\\')']:
+for needle in ['system-owner-finder.html', 'voip-finder.html', "switchTab('system-owner')", "switchTab('voip')"]:
     assert needle in generator, f'generator must preserve direct themed topbar integration: {needle}'
 
 assert 'id="utilityToolsDock"' not in index, 'hidden utility dock must be removed'
