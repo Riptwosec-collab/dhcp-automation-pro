@@ -45,6 +45,7 @@ on:
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
+      - 'scripts/test-unified-finder-operations-consistency.js'
 
 jobs:
   test-layout:
@@ -131,3 +132,5 @@ jobs:
         run: node scripts/test-business-hours.js
       - name: Verify Operations Visual Refresh v2
         run: node scripts/test-operations-visual-refresh.js
+      - name: Verify Unified Finder + Operations Consistency v1
+        run: node scripts/test-unified-finder-operations-consistency.js
