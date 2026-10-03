@@ -35,8 +35,9 @@ for needle in [
     assert needle in finder, f'canonical Finder source contract changed: {needle}'
 
 # The upgrade must bridge the current runtime record set, not copy a static owner DB.
-assert 'tor-system-finder-upgrade-v1' in loader, 'upgrade version marker missing from generated loader'
-assert loader.count('tor-system-finder-upgrade-v1') == 1, 'upgrade marker must be injected exactly once'
+assert 'tor-system-finder-upgrade-v1:start' in loader, 'upgrade version marker missing from generated loader'
+assert loader.count('tor-system-finder-upgrade-v1:start') == 1, 'upgrade start marker must be injected exactly once'
+assert loader.count('tor-system-finder-upgrade-v1:end') == 1, 'upgrade end marker must be injected exactly once'
 assert 'window.__torSystemFinderGetRecords' in loader, 'runtime TOR record bridge missing'
 assert 'currentRawRecords' in loader, 'bridge must expose the runtime currentRawRecords source'
 assert 'BUNDLED_TOR.primary' not in generator, 'upgrade generator must not hard-code a second bundled TOR database'
