@@ -30,14 +30,37 @@ function testReturnsEveryOwnerAndMapsParallelContacts() {
   }]);
   const owners = core.resolveOwners(record);
   assert.equal(owners.length, 2);
-  assert.equal(owners[0].prefix, 'นาย');
   assert.equal(owners[0].name, 'สมชาย ใจดี');
   assert.deepEqual(owners[0].phones, ['0811111111']);
   assert.deepEqual(owners[0].emails, ['somchai@rd.go.th']);
-  assert.equal(owners[1].prefix, 'นางสาว');
   assert.equal(owners[1].name, 'สุดา ดีมาก');
   assert.deepEqual(owners[1].phones, ['0822222222']);
   assert.deepEqual(owners[1].emails, ['suda@rd.go.th']);
+}
+
+function testSequentialContactChunksStayWithPrecedingOwner() {
+  const [record] = core.normalizeTorRecords([{
+    id: 8,
+    systemName: 'Sequential',
+    contactRaw: 'นายอริยวิทย์ แท่นจันทร์ 089-7121534, tcl.it@rd.go.th, 081-1111111',
+  }]);
+  const owners = core.resolveOwners(record);
+  assert.equal(owners.length, 1, 'phone/email chunks after a named owner belong on that owner card until another name starts');
+  assert.equal(owners[0].name, 'อริยวิทย์ แท่นจันทร์');
+  assert.deepEqual(owners[0].phones, ['089-7121534', '081-1111111']);
+  assert.deepEqual(owners[0].emails, ['tcl.it@rd.go.th']);
+}
+
+function testStripsCommonNameTitlesFromCopyName() {
+  const [record] = core.normalizeTorRecords([{
+    id: 9,
+    systemName: 'Titles',
+    contactRaw: 'ดร. สมชาย ใจดี 0811111111 somchai@rd.go.th, รศ.ดร. สุดา ดีมาก 0822222222 suda@rd.go.th',
+  }]);
+  const owners = core.resolveOwners(record);
+  assert.equal(owners.length, 2);
+  assert.equal(owners[0].name, 'สมชาย ใจดี');
+  assert.equal(owners[1].name, 'สุดา ดีมาก');
 }
 
 function testDeduplicatesInsideOwnerButKeepsDistinctOwners() {
@@ -64,27 +87,27 @@ function testDeduplicatesInsideOwnerButKeepsDistinctOwners() {
   assert.deepEqual(two[1].phones, ['0811111111']);
 }
 
-function testKeepsAmbiguousContactsWithoutInventingAssociation() {
+function testKeepsEveryContactWhileGroupingSequentialChunks() {
   const [record] = core.normalizeTorRecords([{
     id: 3,
-    systemName: 'Ambiguous',
+    systemName: 'Sequential ambiguous',
     contactRaw: 'ศิรัณย์ ธรปติธนโรจน์, อดุลย์ พวกไธสง 0991239407, 0818677085 sirun.ta@rd.go.th',
   }]);
   const owners = core.resolveOwners(record);
-  assert.ok(owners.some(owner => owner.name === 'ศิรัณย์ ธรปติธนโรจน์'));
-  assert.ok(owners.some(owner => owner.name === 'อดุลย์ พวกไธสง'));
-  const allPhones = owners.flatMap(owner => owner.phones);
-  const allEmails = owners.flatMap(owner => owner.emails);
-  assert.ok(allPhones.includes('0991239407'));
-  assert.ok(allPhones.includes('0818677085'));
-  assert.ok(allEmails.includes('sirun.ta@rd.go.th'));
+  assert.equal(owners.length, 2);
+  assert.equal(owners[0].name, 'ศิรัณย์ ธรปติธนโรจน์');
+  assert.equal(owners[1].name, 'อดุลย์ พวกไธสง');
+  assert.deepEqual(owners[1].phones, ['0991239407', '0818677085']);
+  assert.deepEqual(owners[1].emails, ['sirun.ta@rd.go.th']);
 }
 
 const tests = [
   testNormalizesCanonicalTorRecord,
   testReturnsEveryOwnerAndMapsParallelContacts,
+  testSequentialContactChunksStayWithPrecedingOwner,
+  testStripsCommonNameTitlesFromCopyName,
   testDeduplicatesInsideOwnerButKeepsDistinctOwners,
-  testKeepsAmbiguousContactsWithoutInventingAssociation,
+  testKeepsEveryContactWhileGroupingSequentialChunks,
 ];
 for (const test of tests) test();
 console.log(`TOR System Finder owner/core tests: ${tests.length}/${tests.length} PASS`);
