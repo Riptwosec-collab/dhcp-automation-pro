@@ -12,6 +12,7 @@ on:
       - 'assets/system-owner-finder-payload-*.txt'
       - 'voip-finder.html'
       - 'assets/voip-finder-payload-*.txt'
+      - 'operations-messages.html'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
@@ -21,12 +22,14 @@ on:
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
+      - 'scripts/add-responsive-fit.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-responsive-fit.py'
 
 jobs:
   test-layout:
@@ -63,7 +66,7 @@ jobs:
           else
             python scripts/add-thai-down-since.py
           fi
-      - name: Make UIh fullscreen and bilingual when missing
+      - name: Make Generate Log UIh fullscreen and bilingual when missing
         run: |
           if grep -q 'uih-fullscreen-bilingual-v1' uih.html; then
             echo 'UIh fullscreen bilingual layer already materialized'
@@ -89,3 +92,5 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner and VOIP integration
         run: python scripts/test-system-owner-finder.py
+      - name: Verify adaptive responsive fit
+        run: python scripts/test-responsive-fit.py
