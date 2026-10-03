@@ -5,10 +5,12 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const vm = require('vm');
+const {execFileSync} = require('child_process');
 const core = require('../tor-system-finder-core.js');
 
 const root = path.resolve(__dirname, '..');
-const operations = fs.readFileSync(path.join(root, 'operations-messages.html'), 'utf8');
+const operationsPath = path.join(root, 'operations-messages.html');
+const operations = fs.readFileSync(operationsPath, 'utf8');
 const ownerLoader = fs.readFileSync(path.join(root, 'system-owner-finder.html'), 'utf8');
 const ownerUi = fs.readFileSync(path.join(root, 'tor-system-finder-upgrade.js'), 'utf8');
 const ownerTheme = fs.readFileSync(path.join(root, 'tor-system-finder-upgrade.css'), 'utf8');
@@ -81,6 +83,16 @@ function testWaitingPanelAndThemeContract(){
   assert.ok(voipLoader.includes('unified-finder-theme-v1'), 'VOIP interior must include the unified premium visual theme');
 }
 
-const tests=[testCanonicalAccNewParity,testWaitingPanelAndThemeContract,testOperationsSingleSource];
+function testProductionWorkflowAndIdempotency(){
+  const workflow=fs.readFileSync(path.join(root,'.github','workflows','resize-dhcp-fields.yml'),'utf8');
+  assert.ok(workflow.includes('python scripts/add-unified-finder-operations-consistency.py'),'main-generation workflow must apply the unified consistency generator');
+  assert.ok(workflow.includes('node scripts/test-unified-finder-operations-consistency.js'),'main-generation workflow must verify unified consistency before commit');
+  const before=fs.readFileSync(operationsPath);
+  execFileSync('python',[path.join(root,'scripts','add-unified-finder-operations-consistency.py')],{cwd:root,stdio:'pipe'});
+  const after=fs.readFileSync(operationsPath);
+  assert.ok(before.equals(after),'Unified consistency generator must be byte-for-byte idempotent');
+}
+
+const tests=[testCanonicalAccNewParity,testWaitingPanelAndThemeContract,testOperationsSingleSource,testProductionWorkflowAndIdempotency];
 for(const test of tests)test();
 console.log(`Unified Finder + Operations Consistency tests: ${tests.length}/${tests.length} PASS`);
