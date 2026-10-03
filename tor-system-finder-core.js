@@ -15,6 +15,29 @@
       .replace(/\\\//g,'/');
   }
 
+  function trimBlankEdges(lines){
+    const copy=[...lines];
+    while(copy.length&&!String(copy[0]).trim())copy.shift();
+    while(copy.length&&!String(copy[copy.length-1]).trim())copy.pop();
+    return copy;
+  }
+
+  function extractRawIncidentParts(rawText){
+    const raw=String(rawText||'').replace(/\r\n?/g,'\n');
+    const lines=raw.split('\n');
+    const monitorStart=lines.findIndex(line=>/^\s*monitor\b/i.test(line));
+    if(monitorStart<0){
+      return {monitorRaw:'',incidentRaw:trimBlankEdges(lines).join('\n')};
+    }
+    const marker=/^\s*(?:url\s*:|hosted\s+on\b|(?:เวลา|time)\s*:)/i;
+    let monitorEnd=monitorStart+1;
+    while(monitorEnd<lines.length&&!marker.test(lines[monitorEnd]))monitorEnd++;
+    const monitorRaw=trimBlankEdges(lines.slice(monitorStart,monitorEnd)).join('\n').trim();
+    const remaining=[...lines.slice(0,monitorStart),...lines.slice(monitorEnd)];
+    const incidentRaw=trimBlankEdges(remaining).join('\n');
+    return {monitorRaw,incidentRaw};
+  }
+
   function deriveDomain(host){
     const value=String(host||'').toLowerCase().replace(/^\.+|\.+$/g,'');
     if(!value)return '';
@@ -75,6 +98,7 @@
 
   function parseIncident(rawText){
     const raw=String(rawText||'');
+    const rawParts=extractRawIncidentParts(raw);
     const normalized=normalizeUrlEscapes(raw).replace(/\r\n?/g,'\n');
     const lines=normalized.split('\n').map(line=>line.trim()).filter(Boolean);
 
@@ -113,6 +137,8 @@
     return {
       raw,
       monitor,
+      monitorRaw:rawParts.monitorRaw,
+      incidentRaw:rawParts.incidentRaw,
       systemName:normalizeSystemName(monitor),
       url,
       host,
@@ -140,8 +166,8 @@
     const text=String(value||'');
     const matches=[];
     for(const match of text.matchAll(regexp)){
-      const raw=match[0];
-      const normalized=transform?transform(raw):raw;
+      const found=match[0];
+      const normalized=transform?transform(found):found;
       if(normalized)matches.push(normalized);
     }
     return matches;
@@ -166,8 +192,8 @@
       .replace(/^(?:โทร|โทรศัพท์|เบอร์|phone|email|e-mail)\s*[:\-]?\s*/i,'')
       .trim();
     if(!text)return null;
-    const prefixMatch=text.match(/^(นางสาว|น\.ส\.?|นาย|นาง|คุณ)\s*/i);
-    const prefix=prefixMatch?prefixMatch[1]:'';
+    const prefixMatch=text.match(/^(?:(?:นางสาว|น\.ส\.?|นาย|นาง|คุณ|ดร\.?|ผศ\.?|รศ\.?|ศ\.?|อาจารย์)\s*)+/i);
+    const prefix=prefixMatch?prefixMatch[0].trim():'';
     if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();
     const words=text.split(/\s+/).filter(Boolean);
     if(words.length<2)return null;
@@ -182,8 +208,7 @@
     const phoneRe=/(?<!\d)(?:\+66[\s-]?|0)\d(?:[\s-]?\d){7,10}(?!\d)/g;
     const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
     const owners=[];
-    const orphanPhones=[];
-    const orphanEmails=[];
+    let currentOwner=null;
 
     function addContacts(owner,phones,emails){
       owner.phones=unique([...(owner.phones||[]),...phones]);
@@ -211,16 +236,22 @@
         };
         addContacts(owner,phones,emails);
         owners.push(owner);
+        currentOwner=owner;
       }else if(phones.length||emails.length){
-        owners.push({
-          id:`${recordId??'record'}:contact:${owners.length+1}`,
-          kind:'unassigned',
-          prefix:'',
-          name:'',
-          phones:unique(phones),
-          emails:unique(emails),
-          raw:chunk,
-        });
+        if(currentOwner){
+          addContacts(currentOwner,phones,emails);
+          currentOwner.raw=[currentOwner.raw,chunk].filter(Boolean).join(', ');
+        }else{
+          owners.push({
+            id:`${recordId??'record'}:contact:${owners.length+1}`,
+            kind:'unassigned',
+            prefix:'',
+            name:'',
+            phones:unique(phones),
+            emails:unique(emails),
+            raw:chunk,
+          });
+        }
       }
     }
 
@@ -239,10 +270,6 @@
         });
       }
       return owners;
-    }
-
-    if(orphanPhones.length||orphanEmails.length){
-      addContacts(owners[0],orphanPhones,orphanEmails);
     }
 
     return owners.map(owner=>({
@@ -286,7 +313,7 @@
   }
 
   function resolveOwners(record){
-    const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||'',record?.id);
+    const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||record?.contactRaw||'',record?.id);
     return owners.map((owner,index)=>({
       id:owner.id||`${record?.id??'record'}:owner:${index+1}`,
       kind:owner.kind||(cleanSpaces(owner.name||'')?'owner':'unassigned'),
@@ -294,7 +321,7 @@
       name:cleanSpaces(owner.name||''),
       phones:unique(normalizedList(owner.phones,normalizePhone)),
       emails:unique(normalizedList(owner.emails,value=>String(value||'').trim())),
-      raw:String(owner.raw||record?.raw?.contactRaw||''),
+      raw:String(owner.raw||record?.raw?.contactRaw||record?.contactRaw||''),
     }));
   }
 
@@ -364,11 +391,13 @@
 
   function buildOperationalBlocks(incident){
     const monitor=String(incident?.monitor||'').trim();
+    const monitorOriginal=String(incident?.monitorRaw||'').trim()||(monitor?`Monitor ${monitor}`:'');
     const url=String(incident?.url||'').trim();
     const urlNormal=url?`ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`:'';
     const urlAbnormal=url?`ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`:'';
     return {
-      combinedResolution:monitor&&urlNormal?`Monitor ${monitor}\nแก้ไขโดย : ${urlNormal}`:monitor?`Monitor ${monitor}`:'',
+      monitorOriginal,
+      combinedResolution:monitorOriginal&&urlNormal?`${monitorOriginal}\nแก้ไขโดย : ${urlNormal}`:monitorOriginal,
       urlNormal,
       urlAbnormal,
       ticketAction:'กดตั๊กเพิ่มไม่ได้',
@@ -378,19 +407,13 @@
 
   function buildMailDraft(incident,selectedRecord){
     void selectedRecord;
-    const lines=['เรียน ผู้ดูแลระบบ',''];
-    const monitor=String(incident?.monitor||'').trim();
-    const url=String(incident?.url||'').trim();
-    const target=String(incident?.ip||incident?.host||'').trim();
-    const error=String(incident?.error||'').trim();
-    const time=String(incident?.time||'').trim();
-    if(monitor)lines.push(`Monitor ${monitor}`,'');
-    if(url)lines.push(`Url: ${url}`);
-    if(target&&error)lines.push(`hosted on ${target} of ${error}`);
-    else if(error)lines.push(error);
-    if(time)lines.push(`เวลา : ${time}`);
-    lines.push('','ติดต่อเจ้าหน้าที่ RDNOC','เบอร์ 02-272-8891 - 3','Line ID: @RDNOC','ขอบคุณครับ/ขอบคุณค่ะ');
-    return lines.join('\n');
+    const sections=['เรียน ผู้ดูแลระบบ'];
+    const monitorOriginal=String(incident?.monitorRaw||'').trim()||(incident?.monitor?`Monitor ${String(incident.monitor).trim()}`:'');
+    const incidentRaw=String(incident?.incidentRaw||'').trim();
+    if(monitorOriginal)sections.push(monitorOriginal);
+    if(incidentRaw)sections.push(incidentRaw);
+    sections.push('ติดต่อเจ้าหน้าที่ RDNOC\nเบอร์ 02-272-8891 - 3\nLine ID: @RDNOC\nขอบคุณครับ/ขอบคุณค่ะ');
+    return sections.join('\n\n');
   }
 
   return {
