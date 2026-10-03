@@ -36,6 +36,44 @@
     @media(max-width:430px){body{padding:8px}.ops-group-head{padding:10px}.ops-grid,.ops-group.alerts .ops-grid{padding:8px}.ops-card-head{gap:7px}.ops-card-title{font-size:11px}.ops-copy{min-height:28px;padding:0 8px;font-size:8px}}
     @media(max-height:760px) and (min-width:768px){body{padding:8px 12px}.ops-group{margin-top:9px}.ops-group-head{padding:9px 12px}.ops-grid,.ops-group.alerts .ops-grid{gap:8px;padding:9px}.ops-card{padding:10px}.ops-desc{margin:5px 0 7px}}
     /* /responsive-fit-v1 */
+  
+    /* operations-visual-refresh-v2:start */
+    body{background:
+      radial-gradient(circle at 10% 0%,rgba(var(--accentRgb),.075),transparent 28%),
+      radial-gradient(circle at 92% 8%,rgba(var(--alertRgb),.045),transparent 26%),
+      var(--bg)}
+    .ops-shell{max-width:1800px}
+    .ops-topline{padding:clamp(8px,1vw,14px) clamp(2px,.5vw,8px) clamp(16px,1.4vw,22px);border-bottom-color:rgba(var(--accentRgb),.24)}
+    .ops-title-wrap small{font-size:clamp(10px,.72vw,12px);line-height:1.4;letter-spacing:.16em;color:var(--accent2)}
+    .ops-title-wrap h1{margin-top:7px;font-size:clamp(24px,2vw,34px);line-height:1.15;font-weight:950;letter-spacing:.015em;text-shadow:0 0 24px rgba(var(--accentRgb),.16)}
+    .ops-live{gap:9px;padding:10px 14px;font-size:clamp(11px,.82vw,13px);border-color:rgba(var(--accentRgb),.38);background:rgba(var(--accentRgb),.10);box-shadow:0 0 22px rgba(var(--accentRgb),.07)}
+    .ops-live::before{width:8px;height:8px}
+
+    .ops-group{margin-top:clamp(16px,1.4vw,24px);border-radius:22px;border-color:rgba(var(--accentRgb),.34);background:linear-gradient(145deg,rgba(var(--accentRgb),.075),rgba(4,8,13,.97) 36%,rgba(2,5,10,.985));box-shadow:0 22px 58px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.045),0 0 34px rgba(var(--accentRgb),.045)}
+    .ops-group.alerts{border-color:rgba(var(--alertRgb),.52);background:linear-gradient(145deg,rgba(var(--alertRgb),.11),rgba(9,7,12,.97) 38%,rgba(3,5,10,.985));box-shadow:0 22px 58px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.04),0 0 32px rgba(var(--alertRgb),.055)}
+    .ops-group-head{padding:clamp(16px,1.5vw,24px);border-bottom-color:rgba(var(--accentRgb),.22);background:linear-gradient(90deg,rgba(var(--accentRgb),.13),rgba(var(--accentRgb),.035) 48%,transparent)}
+    .ops-group.alerts .ops-group-head{border-bottom-color:rgba(var(--alertRgb),.30);background:linear-gradient(90deg,rgba(var(--alertRgb),.15),rgba(var(--alertRgb),.035) 48%,transparent)}
+    .ops-group-title{gap:14px}.ops-icon{width:44px;height:44px;border-radius:13px;font-size:18px;border-color:rgba(var(--accentRgb),.48);background:rgba(var(--accentRgb),.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 20px rgba(var(--accentRgb),.08)}
+    .ops-kicker{font-size:clamp(9px,.72vw,11px);letter-spacing:.18em}.ops-name{margin-top:5px;font-size:clamp(17px,1.2vw,21px);line-height:1.2}.ops-count{padding:7px 10px;font-size:clamp(10px,.72vw,12px)}
+
+    .ops-grid,.ops-group.alerts .ops-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:clamp(12px,1.2vw,18px);padding:clamp(14px,1.4vw,22px)}
+    .ops-card{min-width:0;padding:clamp(16px,1.4vw,22px);border-radius:17px;border-color:rgba(var(--accentRgb),.27);background:linear-gradient(145deg,rgba(var(--accentRgb),.075),rgba(4,8,13,.91) 54%,rgba(2,5,9,.96));box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 10px 30px rgba(0,0,0,.18)}
+    .ops-group.alerts .ops-card{border-color:rgba(var(--alertRgb),.30);background:linear-gradient(145deg,rgba(var(--alertRgb),.075),rgba(7,7,12,.92) 52%,rgba(2,5,9,.96))}
+    .ops-card:hover{transform:translateY(-2px);border-color:rgba(var(--accentRgb),.62);box-shadow:0 16px 36px rgba(0,0,0,.30),0 0 25px rgba(var(--accentRgb),.10),inset 0 1px 0 rgba(255,255,255,.045)}
+    .ops-group.alerts .ops-card:hover{border-color:rgba(var(--alertRgb),.62);box-shadow:0 16px 36px rgba(0,0,0,.30),0 0 25px rgba(var(--alertRgb),.10),inset 0 1px 0 rgba(255,255,255,.045)}
+    .ops-card-head{gap:14px;align-items:flex-start}.ops-card-title{min-width:0;font-size:clamp(16px,1.18vw,20px);line-height:1.35;font-weight:950;color:#fff;overflow:visible;overflow-wrap:anywhere;white-space:normal}
+    .ops-card-title::before{width:4px;height:17px;margin-right:9px;vertical-align:-2px}
+    .ops-desc{margin:clamp(11px,.9vw,15px) 0 clamp(12px,1vw,16px);font-size:clamp(13px,1vw,16px);line-height:1.7;color:#b9c1cd;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:normal}
+    body[data-theme="cyber"] .ops-desc{color:#b9cce6}
+    .ops-stamp{gap:10px;font-size:clamp(11px,.82vw,13px);line-height:1.3}
+    .ops-copy{min-width:76px;min-height:40px;padding:0 14px;border-radius:10px;border-color:rgba(var(--accentRgb),.48);background:linear-gradient(145deg,rgba(var(--accentRgb),.15),rgba(var(--accentRgb),.07));font-size:clamp(10px,.76vw,12px);line-height:1.25;letter-spacing:.035em;white-space:normal;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 0 16px rgba(var(--accentRgb),.06)}
+    .ops-copy:hover{background:rgba(var(--accentRgb),.22);border-color:rgba(var(--accentRgb),.82);box-shadow:0 0 22px rgba(var(--accentRgb),.16)}
+    .ops-group.alerts .ops-copy{border-color:rgba(var(--alertRgb),.46);background:linear-gradient(145deg,rgba(var(--alertRgb),.14),rgba(var(--alertRgb),.06));color:#fec1ca}
+
+    @media(max-width:767px){.ops-group{border-radius:17px}.ops-group-head{padding:14px}.ops-icon{width:40px;height:40px}.ops-grid,.ops-group.alerts .ops-grid{padding:12px;gap:11px}.ops-card{padding:16px}.ops-copy{min-width:70px;min-height:40px;max-width:46%}}
+    @media(max-width:430px){.ops-title-wrap h1{font-size:24px}.ops-group-head{padding:12px}.ops-name{font-size:17px}.ops-grid,.ops-group.alerts .ops-grid{padding:9px}.ops-card{padding:15px}.ops-card-title{font-size:16px}.ops-desc{font-size:13px;line-height:1.65}.ops-copy{padding:0 10px;font-size:10px}}
+    @media(max-height:760px) and (min-width:768px){.ops-group{margin-top:12px}.ops-group-head{padding:13px 16px}.ops-grid,.ops-group.alerts .ops-grid{padding:12px;gap:11px}.ops-card{padding:16px}.ops-desc{margin:9px 0 11px}}
+    /* operations-visual-refresh-v2:end */
   </style>
 </head>
 <body data-theme="gold">
@@ -54,8 +92,8 @@
     <div class="ops-group standard">
       <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">≡</div><div><div class="ops-kicker">OPERATIONS</div><div class="ops-name">Standard Operations</div></div></div><div class="ops-count">6 ITEMS</div></div>
       <div class="ops-grid">
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ปิดระบบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('shutdown-10',this)">COPY</button></div><p class="ops-desc">รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ครบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('ten-complete',this)">COPY</button></div><p class="ops-desc">ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ปิดระบบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('shutdown-10',this)">COPY</button></div><p class="ops-desc">รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง</p></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ครบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('ten-complete',this)">COPY</button></div><p class="ops-desc">ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย</p></article>
         <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
         <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - แก้ไข</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">ข้อความแก้ไขสำหรับวงจรที่กลับมาปกติแล้ว</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
         <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ / Log reboot - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('power-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบ Log reboot คาดว่าไฟฟ้าดับ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
@@ -67,6 +105,7 @@
   <script>
     function formatOperationsNow(date=new Date()){const pad=n=>String(n).padStart(2,'0');return{date:pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543),time:pad(date.getHours())+'.'+pad(date.getMinutes())}}
     function renderOperationsNow(){const now=formatOperationsNow();document.querySelectorAll('[data-op-date]').forEach(el=>el.textContent=now.date);document.querySelectorAll('[data-op-time]').forEach(el=>el.textContent=now.time)}
+
 
     /* business-hours-v1:start */
     function getNoContactFollowUp(date=new Date()){
