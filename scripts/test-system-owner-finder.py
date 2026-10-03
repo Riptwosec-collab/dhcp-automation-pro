@@ -45,13 +45,17 @@ for needle in [
 ]:
     assert needle not in index, f'finder must be standalone instead of embedded in main workspace: {needle}'
 
+# Generator may reference the old IDs only as cleanup targets; it must never contain the legacy builder block.
 for needle in [
-    'id="view-system-owner"',
-    'id="systemOwnerFinderFrame"',
-    'id="view-voip"',
-    'id="voipFinderFrame"',
+    "views = r'''",
+    'Add full themed legacy views',
+    '.tool-frame-shell{display:flex',
+    '<iframe id="systemOwnerFinderFrame" class="tool-frame"',
+    '<iframe id="voipFinderFrame" class="tool-frame"',
 ]:
-    assert needle not in generator, f'generator must not restore embedded finder views: {needle}'
+    assert needle not in generator, f'generator must not build embedded finder views: {needle}'
+assert "text = re.sub(r'\\n\\s*<section id=\"view-system-owner\".*?</section>'" in generator, 'generator must remove legacy System Owner view'
+assert "text = re.sub(r'\\n\\s*<section id=\"view-voip\".*?</section>'" in generator, 'generator must remove legacy VOIP view'
 
 assert 'onclick="switchTab(\'system-owner\')" id="tab-system-owner"' not in index, 'System Owner must not remain a direct topbar tab'
 assert 'onclick="switchTab(\'voip\')" id="tab-voip"' not in index, 'VOIP Finder must not remain a direct topbar tab'
