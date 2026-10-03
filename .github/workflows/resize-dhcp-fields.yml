@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/resize-dhcp-fields.yml'
       - 'system-owner-finder.html'
+      - 'tor-system-finder-core.js'
+      - 'tor-system-finder-upgrade.js'
+      - 'tor-system-finder-upgrade.css'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'voip-finder.html'
       - 'assets/voip-finder-payload-*.txt'
@@ -16,6 +19,7 @@ on:
       - 'scripts/patch-traffic-log.py'
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
+      - 'scripts/add-tor-system-finder-upgrade.py'
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
       - 'scripts/add-operations-visual-refresh.py'
@@ -29,6 +33,11 @@ on:
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-tor-system-finder-core.js'
+      - 'scripts/test-tor-system-finder-owner-core.js'
+      - 'scripts/test-tor-system-finder-ui-state.js'
+      - 'scripts/test-tor-system-finder-review-regressions.js'
+      - 'scripts/test-tor-system-finder-upgrade.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
@@ -62,6 +71,9 @@ jobs:
 
       - name: Add topbar System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
+
+      - name: Apply TOR System Finder Upgrade v1
+        run: python scripts/add-tor-system-finder-upgrade.py
 
       - name: Fit Generate Log UIh to viewport when missing
         run: |
@@ -122,6 +134,21 @@ jobs:
       - name: Verify System Owner and VOIP integration
         run: python scripts/test-system-owner-finder.py
 
+      - name: Verify TOR System Finder core
+        run: node scripts/test-tor-system-finder-core.js
+
+      - name: Verify TOR System Finder owner normalization
+        run: node scripts/test-tor-system-finder-owner-core.js
+
+      - name: Verify TOR System Finder UI state
+        run: node scripts/test-tor-system-finder-ui-state.js
+
+      - name: Verify TOR review regressions
+        run: node scripts/test-tor-system-finder-review-regressions.js
+
+      - name: Verify TOR System Finder upgrade integration
+        run: python scripts/test-tor-system-finder-upgrade.py
+
       - name: Verify adaptive responsive fit
         run: python scripts/test-responsive-fit.py
 
@@ -135,7 +162,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html uih.html system-owner-finder.html voip-finder.html operations-messages.html
+          git add index.html uih.html system-owner-finder.html voip-finder.html operations-messages.html tor-system-finder-core.js tor-system-finder-upgrade.js tor-system-finder-upgrade.css
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: apply Operations Visual Refresh v2'
+          git commit -m 'ui: apply TOR System Finder Upgrade v1'
           git push origin HEAD:main

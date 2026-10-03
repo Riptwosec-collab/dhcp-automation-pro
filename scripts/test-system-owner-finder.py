@@ -7,10 +7,16 @@ generator = Path('scripts/add-system-owner-finder.py').read_text(encoding='utf-8
 finder_path = Path('system-owner-finder.html')
 voip_path = Path('voip-finder.html')
 operations_path = Path('operations-messages.html')
+tor_core_path = Path('tor-system-finder-core.js')
+tor_ui_path = Path('tor-system-finder-upgrade.js')
+tor_css_path = Path('tor-system-finder-upgrade.css')
 
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
 assert voip_path.exists(), 'voip-finder.html must be bundled with the app'
 assert operations_path.exists(), 'operations-messages.html must be bundled with the app'
+assert tor_core_path.exists(), 'TOR System Finder core must be bundled with the app'
+assert tor_ui_path.exists(), 'TOR System Finder upgrade UI must be bundled with the app'
+assert tor_css_path.exists(), 'TOR System Finder upgrade CSS must be bundled with the app'
 
 loader = finder_path.read_text(encoding='utf-8')
 voip_loader = voip_path.read_text(encoding='utf-8')
@@ -99,6 +105,14 @@ assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled
 for needle in ['owner-split-copy', 'OWNER QUICK COPY', 'PREFIX', 'NAME', 'PHONE', 'EMAIL']:
     assert needle in loader, f'missing contact split/copy enhancement: {needle}'
 
+# TOR System Finder Upgrade must remain layered onto the existing payload rather than replacing it.
+assert loader.count('tor-system-finder-upgrade-v1:start') == 1, 'TOR upgrade start marker must appear once'
+assert loader.count('tor-system-finder-upgrade-v1:end') == 1, 'TOR upgrade end marker must appear once'
+assert 'window.__torSystemFinderGetRecords' in loader, 'TOR upgrade must expose the current runtime record bridge'
+assert 'currentRawRecords' in loader, 'TOR upgrade bridge must follow current imported/bundled records'
+for asset in ['tor-system-finder-core.js', 'tor-system-finder-upgrade.js', 'tor-system-finder-upgrade.css']:
+    assert loader.count(asset) == 1, f'TOR upgrade asset must be injected once: {asset}'
+
 voip_payload_paths = [Path(f'assets/voip-finder-payload-{i:02d}.txt') for i in range(1, 9)]
 for payload_path in voip_payload_paths:
     assert payload_path.exists(), f'missing VOIP Finder payload: {payload_path}'
@@ -138,4 +152,4 @@ for needle in required_operations:
 for stale_time in ['20.49', '08.30', '20.59']:
     assert stale_time not in operations, f'operations timestamps must be generated at runtime, not hard-coded: {stale_time}'
 
-print('same-page Utility v1 + themed live-time Operations Messages: OK')
+print('same-page Utility + TOR System Finder Upgrade + themed Operations regression: OK')
