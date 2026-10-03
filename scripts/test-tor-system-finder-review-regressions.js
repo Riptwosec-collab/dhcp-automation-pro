@@ -18,24 +18,21 @@ hosted on 10.20.17.71 of Network connection failed. Unable to connect to the rem
   const incident = core.parseIncident(raw);
   assert.equal(incident.monitor,'ระบบการจัดทำใบกำกับภาษี โดยการประทับรับรองเวลา (Time Stamp) ไม่สามารถเรียกใช้งานได้');
   assert.equal(incident.systemName,'ระบบการจัดทำใบกำกับภาษี โดยการประทับรับรองเวลา (Time Stamp)');
+  assert.equal(incident.monitorRaw,'Monitor ระบบการจัดทำใบกำกับภาษี\nโดยการประทับรับรองเวลา (Time Stamp)\nไม่สามารถเรียกใช้งานได้');
 }
 
-function testAmbiguousStandaloneContactsStayUnassignedInsteadOfBeingInventedForLastOwner() {
-  const [record] = core.normalizeTorRecords([{id:88,systemName:'Ambiguous contacts',contactRaw:'ศิรัณย์ ธรปติธนโรจน์, อดุลย์ พวกไธสง 0991239407, 0818677085 sirun.ta@rd.go.th'}]);
+function testSequentialStandaloneContactsGroupWithLastNamedOwner() {
+  const [record] = core.normalizeTorRecords([{id:88,systemName:'Grouped contacts',contactRaw:'ศิรัณย์ ธรปติธนโรจน์, อดุลย์ พวกไธสง 0991239407, 0818677085 sirun.ta@rd.go.th'}]);
   const owners = core.resolveOwners(record);
-  assert.equal(owners.length,3,'standalone contact chunk must remain a separate unassigned contact card');
+  assert.equal(owners.length,2,'contact-only chunks after a named owner stay on that owner card');
   assert.equal(owners[0].name,'ศิรัณย์ ธรปติธนโรจน์');
   assert.equal(owners[0].kind,'owner');
   assert.deepEqual(owners[0].phones,[]);
   assert.deepEqual(owners[0].emails,[]);
   assert.equal(owners[1].name,'อดุลย์ พวกไธสง');
   assert.equal(owners[1].kind,'owner');
-  assert.deepEqual(owners[1].phones,['0991239407']);
-  assert.deepEqual(owners[1].emails,[]);
-  assert.equal(owners[2].name,'');
-  assert.equal(owners[2].kind,'unassigned');
-  assert.deepEqual(owners[2].phones,['0818677085']);
-  assert.deepEqual(owners[2].emails,['sirun.ta@rd.go.th']);
+  assert.deepEqual(owners[1].phones,['0991239407','0818677085']);
+  assert.deepEqual(owners[1].emails,['sirun.ta@rd.go.th']);
 }
 
 function extractBalancedObject(source,start){
@@ -71,7 +68,7 @@ function loadBundledTor(){
   return vm.runInNewContext(`(${literal})`,Object.create(null));
 }
 
-function testCanonicalTorPayloadMapsIntoAnalyzerRecords(){
+function testCanonicalTorPayloadMapsIntoOwnerRecords(){
   const bundled=loadBundledTor();
   assert.ok(Array.isArray(bundled.primary)&&bundled.primary.length>0,'canonical primary TOR dataset must contain records');
   const normalized=core.normalizeTorRecords(bundled.primary);
@@ -82,6 +79,6 @@ function testCanonicalTorPayloadMapsIntoAnalyzerRecords(){
   assert.ok(normalized.some(record=>core.resolveOwners(record).some(owner=>owner.name||owner.phones.length||owner.emails.length)),'canonical records must yield owner/contact data');
 }
 
-const tests=[testMultilineMonitorIsCapturedUntilIncidentMarkers,testAmbiguousStandaloneContactsStayUnassignedInsteadOfBeingInventedForLastOwner,testCanonicalTorPayloadMapsIntoAnalyzerRecords];
+const tests=[testMultilineMonitorIsCapturedUntilIncidentMarkers,testSequentialStandaloneContactsGroupWithLastNamedOwner,testCanonicalTorPayloadMapsIntoOwnerRecords];
 for(const test of tests)test();
 console.log(`TOR System Finder review regression tests: ${tests.length}/${tests.length} PASS`);
