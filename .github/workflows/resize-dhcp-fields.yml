@@ -36,6 +36,7 @@ on:
       - 'scripts/test-tor-system-finder-core.js'
       - 'scripts/test-tor-system-finder-owner-core.js'
       - 'scripts/test-tor-system-finder-ui-state.js'
+      - 'scripts/test-tor-system-finder-review-regressions.js'
       - 'scripts/test-tor-system-finder-upgrade.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
@@ -141,6 +142,9 @@ jobs:
 
       - name: Verify TOR System Finder UI state
         run: node scripts/test-tor-system-finder-ui-state.js
+
+      - name: Verify TOR review regressions
+        run: node scripts/test-tor-system-finder-review-regressions.js
 
       - name: Verify TOR System Finder upgrade integration
         run: python scripts/test-tor-system-finder-upgrade.py
