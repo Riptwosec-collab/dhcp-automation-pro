@@ -53,8 +53,8 @@ assert "DecompressionStream('gzip')" in loader, 'existing compressed payload loa
 # One continuous-page analyzer: resources are injected into the decompressed Finder, not a new Utility view/tab.
 for asset in ['tor-system-finder-core.js', 'tor-system-finder-upgrade.js', 'tor-system-finder-upgrade.css']:
     assert loader.count(asset) == 1, f'{asset} must be injected exactly once by the loader'
+assert "rootEl.id='torIncidentAnalyzer'" in ui or 'id="torIncidentAnalyzer"' in ui, 'analyzer root id must be created exactly in the existing Finder page'
 for needle in [
-    'id="torIncidentAnalyzer"',
     'id="torAnalyzeError"',
     'ANALYZE ERROR',
     'id="torExtractedFields"',
