@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import textwrap
 
 path = Path('operations-messages.html')
 text = path.read_text(encoding='utf-8')
@@ -14,7 +15,7 @@ business_pattern = re.compile(
 business_match = business_pattern.search(text)
 if not business_match:
     raise SystemExit('Business Hours v1 block not found before consistency generation')
-business_block = business_match.group(0).strip()
+business_block = textwrap.dedent(business_match.group(0)).strip()
 text = business_pattern.sub('', text, count=1)
 
 # Remove our previous runtime block before recreating it.
@@ -117,8 +118,10 @@ runtime = r'''
 anchor = '    function applyMissionTheme(theme)'
 if anchor not in text:
     raise SystemExit('Operations theme function anchor not found')
-# Normalize blank lines around the runtime boundary so repeated runs are byte-identical.
-text = re.sub(r'\n{3,}(?=\s*function applyMissionTheme\(theme\))', '\n', text, count=1)
+# Canonicalize whitespace immediately before the runtime boundary.
+prefix, suffix = text.split(anchor, 1)
+prefix = prefix.rstrip() + '\n'
+text = prefix + anchor + suffix
 replacement = '    ' + business_block.replace('\n', '\n    ') + '\n' + runtime + '\n' + anchor
 text = text.replace(anchor, replacement, 1)
 
