@@ -34,6 +34,7 @@ on:
       - 'scripts/test-system-owner-finder.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
+      - 'scripts/test-operations-visual-refresh.js'
 
 jobs:
   test-layout:
@@ -104,3 +105,5 @@ jobs:
         run: python scripts/test-responsive-fit.py
       - name: Verify Business Hours v1
         run: node scripts/test-business-hours.js
+      - name: Verify Operations Visual Refresh v2
+        run: node scripts/test-operations-visual-refresh.js
