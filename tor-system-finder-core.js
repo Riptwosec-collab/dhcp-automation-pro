@@ -127,6 +127,162 @@
     return output;
   }
 
+  function extractAll(value,regexp,transform){
+    const text=String(value||'');
+    const matches=[];
+    for(const match of text.matchAll(regexp)){
+      const raw=match[0];
+      const normalized=transform?transform(raw):raw;
+      if(normalized)matches.push(normalized);
+    }
+    return matches;
+  }
+
+  function unique(values){
+    const seen=new Set();
+    return values.filter(value=>{
+      if(!value||seen.has(value))return false;
+      seen.add(value);
+      return true;
+    });
+  }
+
+  function normalizePhone(value){
+    return cleanSpaces(value).replace(/\s+/g,'');
+  }
+
+  function splitOwnerName(value){
+    let text=cleanSpaces(value)
+      .replace(/^[,;:/\-]+|[,;:/\-]+$/g,'')
+      .replace(/^(?:โทร|โทรศัพท์|เบอร์|phone|email|e-mail)\s*[:\-]?\s*/i,'')
+      .trim();
+    if(!text)return null;
+    const prefixMatch=text.match(/^(นางสาว|น\.ส\.?|นาย|นาง|คุณ)\s*/i);
+    const prefix=prefixMatch?prefixMatch[1]:'';
+    if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();
+    const words=text.split(/\s+/).filter(Boolean);
+    if(words.length<2)return null;
+    if(!/[ก-๙A-Za-z]/.test(text))return null;
+    return {prefix,name:words.join(' ')};
+  }
+
+  function parseOwners(contactRaw,recordId){
+    const raw=String(contactRaw||'').trim();
+    if(!raw)return [];
+    const emailRe=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+    const phoneRe=/(?<!\d)(?:\+66[\s-]?|0)\d(?:[\s-]?\d){7,10}(?!\d)/g;
+    const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
+    const owners=[];
+    const orphanPhones=[];
+    const orphanEmails=[];
+
+    function addContacts(owner,phones,emails){
+      owner.phones=unique([...(owner.phones||[]),...phones]);
+      owner.emails=unique([...(owner.emails||[]),...emails]);
+    }
+
+    for(const chunk of chunks){
+      const emails=extractAll(chunk,emailRe,value=>value.trim());
+      const phones=extractAll(chunk,phoneRe,normalizePhone);
+      const stripped=chunk
+        .replace(emailRe,' ')
+        .replace(phoneRe,' ')
+        .replace(/\s+/g,' ')
+        .trim();
+      const ownerName=splitOwnerName(stripped);
+      if(ownerName){
+        const owner={
+          id:`${recordId??'record'}:owner:${owners.length+1}`,
+          prefix:ownerName.prefix,
+          name:ownerName.name,
+          phones:[],
+          emails:[],
+          raw:chunk,
+        };
+        addContacts(owner,phones,emails);
+        owners.push(owner);
+      }else if(phones.length||emails.length){
+        if(owners.length){
+          addContacts(owners[owners.length-1],phones,emails);
+        }else{
+          orphanPhones.push(...phones);
+          orphanEmails.push(...emails);
+        }
+      }
+    }
+
+    if(!owners.length){
+      const phones=unique(extractAll(raw,phoneRe,normalizePhone));
+      const emails=unique(extractAll(raw,emailRe,value=>value.trim()));
+      if(phones.length||emails.length){
+        owners.push({
+          id:`${recordId??'record'}:contact:1`,
+          prefix:'',
+          name:'',
+          phones,
+          emails,
+          raw,
+        });
+      }
+      return owners;
+    }
+
+    if(orphanPhones.length||orphanEmails.length){
+      addContacts(owners[0],orphanPhones,orphanEmails);
+    }
+
+    return owners.map(owner=>({
+      ...owner,
+      phones:unique(owner.phones),
+      emails:unique(owner.emails),
+    }));
+  }
+
+  function extractUrls(value){
+    return unique(extractAll(normalizeUrlEscapes(value),/https?:\/\/[^\s,;]+/gi,url=>url.replace(/[)\].,;]+$/,'')));
+  }
+
+  function extractIps(value){
+    return unique(extractAll(value,/\b(?:\d{1,3}\.){3}\d{1,3}\b/g,ip=>ip));
+  }
+
+  function normalizeTorRecords(sourceRecords){
+    const records=Array.isArray(sourceRecords)?sourceRecords:[];
+    return records.map((raw,index)=>{
+      const source=raw&&typeof raw==='object'?raw:{};
+      const urls=extractUrls(source.url||source.urls||'');
+      const hosts=unique(urls.map(url=>{
+        try{return new URL(url).hostname.toLowerCase();}catch(_error){return '';}
+      }).filter(Boolean));
+      const domains=unique(hosts.map(deriveDomain).filter(Boolean));
+      const ips=extractIps(source.ip||source.ips||'');
+      const id=source.id??index+1;
+      const owners=parseOwners(source.contactRaw||'',id);
+      return {
+        id,
+        systemName:cleanSpaces(source.systemName||''),
+        ips,
+        urls,
+        hosts,
+        domains,
+        owners,
+        raw:{...source},
+      };
+    });
+  }
+
+  function resolveOwners(record){
+    const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||'',record?.id);
+    return owners.map((owner,index)=>({
+      id:owner.id||`${record?.id??'record'}:owner:${index+1}`,
+      prefix:cleanSpaces(owner.prefix||''),
+      name:cleanSpaces(owner.name||''),
+      phones:unique(normalizedList(owner.phones,normalizePhone)),
+      emails:unique(normalizedList(owner.emails,value=>String(value||'').trim())),
+      raw:String(owner.raw||record?.raw?.contactRaw||''),
+    }));
+  }
+
   function evidence(field,incidentValue,torValue,matched,contribution,note){
     return {field,incidentValue:String(incidentValue||''),torValue:String(torValue||''),matched:Boolean(matched),contribution:Number(contribution||0),note:String(note||'')};
   }
@@ -196,6 +352,8 @@
     normalizeSystemName,
     systemNameSimilarity,
     deriveDomain,
+    normalizeTorRecords,
+    resolveOwners,
     scoreCandidate,
     findCandidates,
   };
