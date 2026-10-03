@@ -7,9 +7,10 @@ text = path.read_text(encoding='utf-8')
 start_marker = '/* business-hours-v1:start */'
 end_marker = '/* business-hours-v1:end */'
 
-# Keep this generator idempotent by replacing any previous Business Hours block.
+# Keep this generator idempotent by replacing any previous Business Hours block
+# without consuming indentation from the function that follows it.
 text = re.sub(
-    r'\n\s*/\* business-hours-v1:start \*/.*?/\* business-hours-v1:end \*/\s*',
+    r'\n[ \t]*/\* business-hours-v1:start \*/.*?/\* business-hours-v1:end \*/[ \t]*\n?',
     '\n',
     text,
     flags=re.S,
