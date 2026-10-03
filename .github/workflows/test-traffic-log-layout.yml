@@ -63,6 +63,8 @@ jobs:
           fi
       - name: Add topbar System Owner and VOIP tools
         run: python scripts/add-system-owner-finder.py
+      - name: Apply TOR System Finder runtime bridge
+        run: python scripts/add-tor-system-finder-upgrade.py
       - name: Fit UIh to the available viewport when missing
         run: |
           if grep -q 'uih-fit-viewport-v1' uih.html; then
