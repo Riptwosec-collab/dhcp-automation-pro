@@ -71,6 +71,15 @@ for needle in [
 ]:
     assert needle in ui, f'missing analyzer UI contract: {needle}'
 
+for needle in [
+    'TOR SYSTEM FINDER · SOURCE LOOKUP',
+    'Find TOR System + Find System Owner',
+    'ค้นจากฐาน TOR เดิม',
+    'URL / IP / ชื่อระบบ',
+]:
+    assert needle in ui, f'missing source-first Finder heading contract: {needle}'
+assert 'Analyze Monitor Error + Find System Owner' not in ui, 'heading must describe TOR source lookup, not error analysis'
+
 assert "addEventListener('click'" in ui and 'torAnalyzeError' in ui, 'analysis must be initiated by ANALYZE ERROR click'
 assert "addEventListener('paste'" not in ui, 'paste must not trigger analysis automatically'
 assert 'findCandidates(' in ui, 'analyzer must use deterministic core candidate matching'
