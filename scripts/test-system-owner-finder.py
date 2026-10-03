@@ -6,10 +6,15 @@ index = Path('index.html').read_text(encoding='utf-8')
 generator = Path('scripts/add-system-owner-finder.py').read_text(encoding='utf-8')
 finder_path = Path('system-owner-finder.html')
 voip_path = Path('voip-finder.html')
+operations_path = Path('operations-messages.html')
+
 assert finder_path.exists(), 'system-owner-finder.html must be bundled with the app'
 assert voip_path.exists(), 'voip-finder.html must be bundled with the app'
+assert operations_path.exists(), 'operations-messages.html must be bundled with the app'
+
 loader = finder_path.read_text(encoding='utf-8')
 voip_loader = voip_path.read_text(encoding='utf-8')
+operations = operations_path.read_text(encoding='utf-8')
 
 required_index = [
     'id="utilityToolsDock"',
@@ -17,50 +22,57 @@ required_index = [
     'id="utilityToolsMenu"',
     'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
-    'href="system-owner-finder.html"',
-    'target="_blank"',
-    'rel="noopener noreferrer"',
     'id="tab-voip"',
     'VOIP Finder',
-    'href="voip-finder.html"',
+    'id="tab-operations"',
+    'Operations Messages',
+    'function openUtilityWorkspace(',
+    'function returnFromUtilityWorkspace(',
     'function positionUtilityToolsMenu(',
     'function setUtilityToolsOpen(',
     'function toggleUtilityTools(',
     'function closeUtilityToolsOnOutside(',
-]
-for needle in required_index:
-    assert needle in index, f'missing standalone Utility Dock integration: {needle}'
-
-for needle in ['utilityToolsDock', 'positionUtilityToolsMenu', 'system-owner-finder.html', 'voip-finder.html']:
-    assert needle in generator, f'generator must preserve standalone Utility Dock integration: {needle}'
-
-# Finder tools must no longer be embedded as hidden workspace views/iframes.
-for needle in [
     'id="view-system-owner"',
     'id="systemOwnerFinderFrame"',
+    'src="system-owner-finder.html"',
     'id="view-voip"',
     'id="voipFinderFrame"',
-    "switchTab('system-owner')",
-    "switchTab('voip')",
-]:
-    assert needle not in index, f'finder must be standalone instead of embedded in main workspace: {needle}'
+    'src="voip-finder.html"',
+    'id="view-operations"',
+    'id="operationsMessagesFrame"',
+    'src="operations-messages.html"',
+]
+for needle in required_index:
+    assert needle in index, f'missing same-page Utility integration: {needle}'
 
-# Generator may reference the old IDs only as cleanup targets; it must never contain the legacy builder block.
-for needle in [
-    "views = r'''",
-    'Add full themed legacy views',
-    '.tool-frame-shell{display:flex',
-    '<iframe id="systemOwnerFinderFrame" class="tool-frame"',
-    '<iframe id="voipFinderFrame" class="tool-frame"',
-]:
-    assert needle not in generator, f'generator must not build embedded finder views: {needle}'
-assert "text = re.sub(r'\\n\\s*<section id=\"view-system-owner\".*?</section>'" in generator, 'generator must remove legacy System Owner view'
-assert "text = re.sub(r'\\n\\s*<section id=\"view-voip\".*?</section>'" in generator, 'generator must remove legacy VOIP view'
+for needle in ['utilityToolsDock', 'openUtilityWorkspace', 'view-system-owner', 'view-voip', 'view-operations', 'operations-messages.html']:
+    assert needle in generator, f'generator must preserve same-page Utility integration: {needle}'
 
-assert 'onclick="switchTab(\'system-owner\')" id="tab-system-owner"' not in index, 'System Owner must not remain a direct topbar tab'
-assert 'onclick="switchTab(\'voip\')" id="tab-voip"' not in index, 'VOIP Finder must not remain a direct topbar tab'
-assert 'href="system-owner-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'System Owner must open in a secure new tab'
-assert 'href="voip-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'VOIP Finder must open in a secure new tab'
+# Utility items must stay inside the current DHCP page: no navigation, no new browser tab.
+for tool_id in ['tab-system-owner', 'tab-voip', 'tab-operations']:
+    start = index.index(f'id="{tool_id}"')
+    tag_start = index.rfind('<', 0, start)
+    tag_end = index.find('>', start)
+    tag = index[tag_start:tag_end + 1]
+    assert tag.startswith('<button'), f'{tool_id} must be a same-page button, not a link'
+    assert 'target=' not in tag, f'{tool_id} must not open a new browser tab'
+    assert 'href=' not in tag, f'{tool_id} must not navigate away from the current URL'
+
+assert "openUtilityWorkspace('system-owner')" in index, 'System Owner menu item must open the same-page workspace view'
+assert "openUtilityWorkspace('voip')" in index, 'VOIP menu item must open the same-page workspace view'
+assert "openUtilityWorkspace('operations')" in index, 'Operations menu item must open the same-page workspace view'
+workspace_tabs = "['dhcp','subnet','log','uih','system-owner','voip','operations']"
+assert workspace_tabs in index, 'workspace switcher must include all three Utility views'
+assert 'history.pushState' not in generator and 'location.href' not in generator and 'window.open(' not in generator, 'Utility generator must not change browser URL or open new tabs'
+
+# The same-page tools need a visible way back to the last core DHCP workspace.
+assert index.count('onclick="returnFromUtilityWorkspace()"') >= 3, 'each Utility workspace must expose a back action'
+assert "let lastCoreTab='dhcp'" in index, 'main workspace must remember the last core tab'
+
+# Theme must propagate to all embedded Utility pages.
+for needle in ['syncSystemOwnerFinderTheme(theme)', 'syncVoipFinderTheme(theme)', 'syncOperationsMessagesTheme(theme)']:
+    assert needle in index, f'main theme must sync Utility iframe: {needle}'
+
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must stay removed from Generate Log traffic'
 assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must stay removed from Generate Log traffic'
 
@@ -69,10 +81,8 @@ nav_end = index.find('</nav>', uih_pos)
 dock_pos = index.find('id="utilityToolsDock"')
 brand_pos = index.find('class="brand-block"', dock_pos)
 assert 0 <= uih_pos < nav_end < dock_pos < brand_pos, 'Utility Dock must sit after the main navigation and before the DHCP brand block'
-
 assert '.utility-tools-menu{position:fixed;' in index, 'Utility menu must escape topbar overflow using fixed positioning'
 assert 'positionUtilityToolsMenu();' in index, 'Utility menu must anchor to the visible toggle when opened'
-assert "window.addEventListener('resize'" in index and 'positionUtilityToolsMenu()' in index, 'Utility menu must reposition on viewport changes'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -81,25 +91,10 @@ for payload_path in payload_paths:
 
 payload_b64 = ''.join(path.read_text(encoding='ascii').strip() for path in payload_paths)
 finder = gzip.decompress(base64.b64decode(payload_b64)).decode('utf-8')
-
-required_finder = [
-    'TOR SYSTEM FINDER',
-    'Analyze System',
-    'Import Excel',
-    'CONTACT ROUTING',
-    'const BUNDLED_TOR=',
-    'function findMatches(',
-    'async function parseTorXlsx(',
-    "window.addEventListener('message'",
-    "event.data?.type === 'dhcp-theme'",
-    'document.body.dataset.theme',
-]
-for needle in required_finder:
-    assert needle in finder, f'missing source TOR Finder behavior/theme bridge: {needle}'
-
+for needle in ['TOR SYSTEM FINDER', 'Analyze System', 'Import Excel', 'CONTACT ROUTING', 'const BUNDLED_TOR=', 'function findMatches(', 'async function parseTorXlsx(']:
+    assert needle in finder, f'missing source TOR Finder behavior: {needle}'
 assert '--accent:' in finder and '--accentRgb:' in finder, 'finder must expose parent-theme compatible accent variables'
 assert 'body[data-theme="gold"]' in finder and 'body[data-theme="cyber"]' in finder, 'finder must support GOLD and CYBER theme envelopes'
-assert 'target="_blank"' in finder, 'existing endpoint links must remain independently openable'
 assert "DecompressionStream('gzip')" in loader, 'loader must restore the bundled source locally in browser'
 for needle in ['owner-split-copy', 'OWNER QUICK COPY', 'PREFIX', 'NAME', 'PHONE', 'EMAIL']:
     assert needle in loader, f'missing contact split/copy enhancement: {needle}'
@@ -115,7 +110,8 @@ for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นท
 for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
     assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
-# Operations Messages must live on the standalone VOIP page and use live client time.
+# Operations Messages moved out of VOIP and into its own same-page Utility workspace.
+assert 'id="operationsMessages"' not in voip_loader, 'VOIP page must not duplicate Operations Messages after they move to their own Utility view'
 required_operations = [
     'operations-messages-v1',
     'id="operationsMessages"',
@@ -134,12 +130,12 @@ required_operations = [
     'function copyOperationMessage(',
     'new Date()',
     'data-op-time',
+    "type==='dhcp-theme'",
+    "type:'operations-ready'",
 ]
 for needle in required_operations:
-    assert needle in voip_loader, f'missing standalone VOIP operations feature: {needle}'
-
-# Avoid shipping the screenshot sample timestamps as fixed runtime values.
+    assert needle in operations, f'missing same-page Operations Messages feature: {needle}'
 for stale_time in ['20.49', '08.30', '20.59']:
-    assert stale_time not in voip_loader, f'operations timestamps must be generated at runtime, not hard-coded: {stale_time}'
+    assert stale_time not in operations, f'operations timestamps must be generated at runtime, not hard-coded: {stale_time}'
 
-print('standalone Finder pages + themed live-time Operations Messages: OK')
+print('same-page Utility v1 + themed live-time Operations Messages: OK')
