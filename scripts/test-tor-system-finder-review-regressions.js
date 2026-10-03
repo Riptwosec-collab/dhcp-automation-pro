@@ -38,17 +38,37 @@ function testAmbiguousStandaloneContactsStayUnassignedInsteadOfBeingInventedForL
   assert.deepEqual(owners[2].emails,['sirun.ta@rd.go.th']);
 }
 
+function extractBalancedObject(source,start){
+  const open=source.indexOf('{',start);
+  assert.ok(open>=0,'BUNDLED_TOR must begin with an object literal');
+  let depth=0, quote='', escaped=false;
+  for(let i=open;i<source.length;i++){
+    const ch=source[i];
+    if(quote){
+      if(escaped){escaped=false;continue;}
+      if(ch==='\\'){escaped=true;continue;}
+      if(ch===quote)quote='';
+      continue;
+    }
+    if(ch==='"'||ch==="'"||ch==='`'){quote=ch;continue;}
+    if(ch==='{')depth++;
+    else if(ch==='}'){
+      depth--;
+      if(depth===0)return source.slice(open,i+1);
+    }
+  }
+  throw new Error('unterminated BUNDLED_TOR object literal');
+}
+
 function loadBundledTor(){
   const root=path.resolve(__dirname,'..');
   let payload='';
   for(let i=1;i<=7;i++)payload+=fs.readFileSync(path.join(root,'assets',`system-owner-finder-payload-${String(i).padStart(2,'0')}.txt`),'utf8').trim();
   const source=zlib.gunzipSync(Buffer.from(payload,'base64')).toString('utf8');
   const start=source.indexOf('const BUNDLED_TOR=');
-  const end=source.indexOf('let currentRawRecords',start);
-  assert.ok(start>=0&&end>start,'must locate canonical BUNDLED_TOR declaration block');
-  const sandbox=Object.create(null);
-  vm.runInNewContext(`${source.slice(start,end)}\nglobalThis.__BUNDLED_TOR__=BUNDLED_TOR;`,sandbox);
-  return sandbox.__BUNDLED_TOR__;
+  assert.ok(start>=0,'must locate canonical BUNDLED_TOR declaration');
+  const literal=extractBalancedObject(source,start);
+  return vm.runInNewContext(`(${literal})`,Object.create(null));
 }
 
 function testCanonicalTorPayloadMapsIntoAnalyzerRecords(){
