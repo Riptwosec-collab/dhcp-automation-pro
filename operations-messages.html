@@ -20,7 +20,7 @@
     .ops-copy{flex:0 0 auto;min-height:30px;padding:0 10px;border-radius:8px;border:1px solid rgba(var(--accentRgb),.34);background:rgba(var(--accentRgb),.07);color:var(--accent);font:900 9px/1 ui-monospace,monospace;cursor:pointer;transition:.18s ease}.ops-copy:hover{background:rgba(var(--accentRgb),.15);border-color:rgba(var(--accentRgb),.62);box-shadow:0 0 14px rgba(var(--accentRgb),.12)}.ops-group.alerts .ops-copy{border-color:rgba(var(--alertRgb),.30);background:rgba(var(--alertRgb),.07);color:#fda4af}
     .ops-desc{margin:7px 0 10px;color:var(--muted);font-size:10px;line-height:1.55}.ops-stamp{display:flex;align-items:center;gap:8px;color:var(--accent2);font:800 9px/1 ui-monospace,monospace}.ops-stamp span:first-child{color:var(--muted)}
     @media(max-width:1050px){.ops-group.alerts .ops-grid{grid-template-columns:1fr 1fr}}@media(max-width:720px){body{padding:10px}.ops-topline{align-items:flex-start;flex-direction:column}.ops-grid,.ops-group.alerts .ops-grid{grid-template-columns:1fr}.ops-card{padding:13px}}@media(prefers-reduced-motion:reduce){.ops-card,.ops-copy{transition:none!important}}
-  
+
     /* responsive-fit-v1 */
     html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
     body{padding:clamp(8px,1.2vw,18px)}
@@ -46,7 +46,7 @@
       <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">△</div><div><div class="ops-kicker">ALERTS</div><div class="ops-name">Alerts & Incidents</div></div></div><div class="ops-count">3 ITEMS</div></div>
       <div class="ops-grid">
         <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">Device Hang</div><button class="ops-copy" type="button" onclick="copyOperationMessage('device-hang',this)">COPY</button></div><p class="ops-desc">ตรวจสอบ Switch และ Router พบ Log reboot และอุปกรณ์กลับมาใช้งานได้ปกติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไม่สามารถติดต่อเจ้าหน้าที่ได้</div><button class="ops-copy" type="button" onclick="copyOperationMessage('no-contact',this)">COPY</button></div><p class="ops-desc">ใช้สำหรับแจ้งกรณีติดต่อเจ้าหน้าที่ประจำสำนักงานไม่ได้ และรอตรวจสอบอีกครั้งในเวลาทำการ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไม่สามารถติดต่อเจ้าหน้าที่ได้</div><button class="ops-copy" type="button" onclick="copyOperationMessage('no-contact',this)">COPY</button></div><p class="ops-desc">ใช้สำหรับแจ้งกรณีติดต่อเจ้าหน้าที่ประจำสำนักงานไม่ได้ และรอตรวจสอบอีกครั้งในเวลาทำการ</p></article>
         <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-up',this)">COPY</button></div><p class="ops-desc">Link Up · สร้างข้อความด้วยวันที่และเวลาปัจจุบันอัตโนมัติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
       </div>
     </div>
@@ -67,9 +67,26 @@
   <script>
     function formatOperationsNow(date=new Date()){const pad=n=>String(n).padStart(2,'0');return{date:pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543),time:pad(date.getHours())+'.'+pad(date.getMinutes())}}
     function renderOperationsNow(){const now=formatOperationsNow();document.querySelectorAll('[data-op-date]').forEach(el=>el.textContent=now.date);document.querySelectorAll('[data-op-time]').forEach(el=>el.textContent=now.time)}
-    function operationText(key){const now=formatOperationsNow(),stamp='วันที่ '+now.date+' เวลา '+now.time+' น.';const messages={
+
+    /* business-hours-v1:start */
+    function getNoContactFollowUp(date=new Date()){
+      const next=new Date(date.getTime());
+      const day=next.getDay();
+      const minutes=next.getHours()*60+next.getMinutes();
+      const openMinutes=8*60+30;
+      const closeMinutes=18*60;
+      if(day===0){next.setDate(next.getDate()+1);next.setHours(8,30,0,0);return next}
+      if(day===6){next.setDate(next.getDate()+2);next.setHours(8,30,0,0);return next}
+      if(minutes<openMinutes){next.setHours(8,30,0,0);return next}
+      if(minutes>=closeMinutes){next.setDate(next.getDate()+(day===5?3:1));next.setHours(8,30,0,0);return next}
+      return next
+    }
+    function formatNoContactFollowUp(date){const pad=n=>String(n).padStart(2,'0'),days=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];return days[date.getDay()]+' '+pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543)+' เวลา '+pad(date.getHours())+'.'+pad(date.getMinutes())+' น.'}
+    function noContactMessage(date=new Date()){const next=getNoContactFollowUp(date),deferred=next.getTime()!==date.getTime(),when=formatNoContactFollowUp(next);return deferred?'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+when:'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ รอตรวจสอบอีกครั้ง '+when}
+    /* business-hours-v1:end */
+    function operationText(key,date=new Date()){const now=formatOperationsNow(date),stamp='วันที่ '+now.date+' เวลา '+now.time+' น.';const messages={
       'device-hang':'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ '+stamp,
-      'no-contact':'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+stamp,
+      'no-contact':noContactMessage(date),
       'link-up':'ขอแจ้งครับ Link up กลับมา '+stamp,
       'shutdown-10':'รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) รบกวนแจ้งเมื่อเปิดระบบอีกครั้ง '+stamp,
       'ten-complete':'ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลยครับ '+stamp,
