@@ -8,39 +8,32 @@ text = path.read_text(encoding='utf-8')
 # Business Hours and the visual layer; this layer owns only message parity.
 text = re.sub(
     r'\n[ \t]*/\* unified-operations-consistency-v1:start \*/.*?/\* unified-operations-consistency-v1:end \*/[ \t]*\n?',
-    '\n',
-    text,
-    count=1,
-    flags=re.S,
+    '\n', text, count=1, flags=re.S,
 )
 
 # Remove the legacy separate message/copy implementation if present.
 text = re.sub(
     r'\n\s*function operationText\(key(?:,date=new Date\(\))?\)\{.*?\n\s*async function copyOperationMessage\(key,button\)\{.*?\}\n(?=\s*function applyMissionTheme)',
-    '\n',
-    text,
-    count=1,
-    flags=re.S,
+    '\n', text, count=1, flags=re.S,
 )
 
-# Attach the operation key to the card itself. This lets COPY read exactly what
-# the operator sees instead of maintaining a second hidden text source.
+# Put the key on the COPY button, preserving the existing card tag so older
+# layout/Business Hours regressions continue to target the same DOM structure.
 def add_key(match):
-    attrs = match.group(1) or ''
+    attrs = re.sub(r'\s+data-operation-key="[^"]*"', '', match.group(1) or '')
     key = match.group(2)
-    attrs = re.sub(r'\s+data-operation-key="[^"]*"', '', attrs)
-    return f'<article class="ops-card"{attrs} data-operation-key="{key}">'
+    return f'<button class="ops-copy"{attrs} data-operation-key="{key}" onclick="copyOperationMessage(\'{key}\',this)">'
 
-card_start = re.compile(
-    r'<article class="ops-card"([^>]*)>(?=(?:(?!</article>)[\s\S])*?onclick="copyOperationMessage\(\'([^\']+)\',this\)")'
+button_re = re.compile(
+    r'<button class="ops-copy"([^>]*)\s+onclick="copyOperationMessage\(\'([^\']+)\',this\)">'
 )
-text, key_count = card_start.subn(add_key, text)
+text, key_count = button_re.subn(add_key, text)
 if key_count != 9:
-    raise SystemExit(f'expected 9 Operations cards, found {key_count}')
+    raise SystemExit(f'expected 9 Operations COPY buttons, found {key_count}')
 
-# Preserve the visual timestamp row for timestamped cards but make it one full,
-# human-readable string. The two 10-minute cards and no-contact intentionally
-# have no separate timestamp row.
+# Normalize each card's timestamp row. The two 10-minute cards and no-contact
+# intentionally have no separate timestamp; all other cards show the exact stamp
+# that COPY will append to the visible body.
 def normalize_card(match):
     card = match.group(0)
     key_match = re.search(r'data-operation-key="([^"]+)"', card)
@@ -52,7 +45,7 @@ def normalize_card(match):
         card = re.sub(r'<div class="ops-stamp">.*?</div>', '', card, flags=re.S)
     return card
 
-text = re.sub(r'<article class="ops-card"[^>]*data-operation-key="[^"]+"[^>]*>.*?</article>', normalize_card, text, flags=re.S)
+text = re.sub(r'<article class="ops-card">.*?</article>', normalize_card, text, flags=re.S)
 
 static_bodies = {
     'device-hang': 'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ',
@@ -67,7 +60,7 @@ static_bodies = {
 
 for key, body in static_bodies.items():
     pattern = re.compile(
-        rf'(<article class="ops-card"[^>]*data-operation-key="{re.escape(key)}"[^>]*>.*?<p class="ops-desc">).*?(</p>)',
+        rf'(<article class="ops-card">(?:(?!</article>)[\s\S])*?data-operation-key="{re.escape(key)}"(?:(?!</article>)[\s\S])*?<p class="ops-desc">).*?(</p>)',
         flags=re.S,
     )
     text, count = pattern.subn(lambda m, b=body: m.group(1) + b + m.group(2), text, count=1)
@@ -93,14 +86,14 @@ runtime = r'''
     }
     function operationText(key,date=new Date()){const message=operationParts(key,date);return [message.body,message.stamp].filter(Boolean).join(' ')}
     function renderOperationMessages(date=new Date()){
-      document.querySelectorAll('[data-operation-key]').forEach(card=>{
-        const message=operationParts(card.dataset.operationKey,date),desc=card.querySelector('.ops-desc'),stamp=card.querySelector('.ops-stamp');
+      document.querySelectorAll('[data-operation-key]').forEach(button=>{
+        const card=button.closest('.ops-card'),message=operationParts(button.dataset.operationKey,date),desc=card?.querySelector('.ops-desc'),stamp=card?.querySelector('.ops-stamp');
         if(desc)desc.textContent=message.body;
         if(stamp)stamp.textContent=message.stamp;
       })
     }
     async function copyOperationMessage(key,button){
-      const card=button?.closest?.('[data-operation-key]'),desc=card?.querySelector('.ops-desc')?.textContent?.trim()||'',stamp=card?.querySelector('.ops-stamp')?.textContent?.trim()||'';
+      const card=button?.closest?.('.ops-card'),desc=card?.querySelector('.ops-desc')?.textContent?.trim()||'',stamp=card?.querySelector('.ops-stamp')?.textContent?.trim()||'';
       const text=[desc,stamp].filter(Boolean).join(' ')||operationText(key);
       if(!text)return;
       try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
