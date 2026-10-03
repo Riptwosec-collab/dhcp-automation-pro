@@ -23,6 +23,7 @@ on:
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
       - 'scripts/add-responsive-fit.py'
+      - 'scripts/add-business-hours.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
@@ -83,6 +84,8 @@ jobs:
           fi
       - name: Apply Responsive Fit v1
         run: python scripts/add-responsive-fit.py
+      - name: Apply Business Hours v1
+        run: python scripts/add-business-hours.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
       - name: Verify bilingual Down Since behavior
