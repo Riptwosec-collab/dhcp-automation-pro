@@ -31,12 +31,15 @@ function testAmbiguousStandaloneContactsStayUnassignedInsteadOfBeingInventedForL
   const owners = core.resolveOwners(record);
   assert.equal(owners.length, 3, 'standalone contact chunk must remain a separate unassigned contact card');
   assert.equal(owners[0].name, 'ศิรัณย์ ธรปติธนโรจน์');
+  assert.equal(owners[0].kind, 'owner');
   assert.deepEqual(owners[0].phones, []);
   assert.deepEqual(owners[0].emails, []);
   assert.equal(owners[1].name, 'อดุลย์ พวกไธสง');
+  assert.equal(owners[1].kind, 'owner');
   assert.deepEqual(owners[1].phones, ['0991239407']);
   assert.deepEqual(owners[1].emails, []);
   assert.equal(owners[2].name, '');
+  assert.equal(owners[2].kind, 'unassigned');
   assert.deepEqual(owners[2].phones, ['0818677085']);
   assert.deepEqual(owners[2].emails, ['sirun.ta@rd.go.th']);
 }
