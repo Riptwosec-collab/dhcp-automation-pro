@@ -79,6 +79,6 @@ function testWaitingPanelAndThemeContract(){
   assert.ok(voipLoader.includes('unified-finder-theme-v1'), 'VOIP loader must include unified finder visual theme');
 }
 
-const tests=[testOperationsSingleSource,testCanonicalAccNewParity,testWaitingPanelAndThemeContract];
+const tests=[testCanonicalAccNewParity,testWaitingPanelAndThemeContract,testOperationsSingleSource];
 for(const test of tests)test();
 console.log(`Unified Finder + Operations Consistency tests: ${tests.length}/${tests.length} PASS`);
