@@ -55,9 +55,15 @@ function testOperationsSingleSource(){
 function testCanonicalAccNewParity(){
   const source=loadFinderSource();
   const bundled=loadBundledTor(source);
-  const all=[...(bundled.primary||[]),...(bundled.secondary||[])];
-  const raw=all.find(record=>JSON.stringify(record).toLowerCase().includes('accnew'));
+  const primary=bundled.primary||[];
+  const secondary=bundled.secondary||[];
+  const raw=primary.find(record=>JSON.stringify(record).toLowerCase().includes('accnew')) || secondary.find(record=>JSON.stringify(record).toLowerCase().includes('accnew'));
   assert.ok(raw,'canonical TOR payload must contain the AccNew record from the working top Finder');
+  const dataset=primary.includes(raw)?'primary':'secondary';
+  console.error('ACCNEW DATASET:',dataset);
+  console.error('ACCNEW RAW KEYS:',Object.keys(raw).join(','));
+  const fallbackIndex=source.indexOf('fallbackRecords');
+  if(fallbackIndex>=0)console.error('FALLBACK CONTEXT:',source.slice(Math.max(0,fallbackIndex-650),fallbackIndex+1200));
   const [normalized]=core.normalizeTorRecords([raw]);
   const incident=core.parseIncident(`Monitor ระบบงานบัญชีอิเล็กทรอนิกส์ AccNew Online ไม่สามารถเรียกใช้งานได้\n\nUrl: https://accnew.rd.go.th/Accnewpos/\nhosted on accnew.rd.go.th of Unexpected error occurred. HTTP 503. Temporarily unavailable. The remote server returned an error: (503) Server Unavailable.\nเวลา : Friday, October 2, 2026 12:25 AM`);
   const candidates=core.findCandidates(incident,[normalized]);
