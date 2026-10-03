@@ -25,6 +25,7 @@ on:
       - 'scripts/add-downsince-language-toggle.py'
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
+      - 'scripts/add-tor-system-finder-upgrade.py'
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
       - 'scripts/add-operations-visual-refresh.py'
@@ -36,6 +37,7 @@ on:
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
       - 'scripts/test-tor-system-finder-core.js'
+      - 'scripts/test-tor-system-finder-upgrade.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
@@ -111,6 +113,8 @@ jobs:
         run: python scripts/inspect-tor-payload.py
       - name: Verify TOR System Finder core parser
         run: node scripts/test-tor-system-finder-core.js
+      - name: Verify TOR System Finder canonical bridge
+        run: python scripts/test-tor-system-finder-upgrade.py
       - name: Verify adaptive responsive fit
         run: python scripts/test-responsive-fit.py
       - name: Verify Business Hours v1
