@@ -12,6 +12,8 @@ on:
       - 'uih.html'
       - 'system-owner-finder.html'
       - 'tor-system-finder-core.js'
+      - 'tor-system-finder-upgrade.js'
+      - 'tor-system-finder-upgrade.css'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'voip-finder.html'
       - 'assets/voip-finder-payload-*.txt'
@@ -38,6 +40,7 @@ on:
       - 'scripts/test-system-owner-finder.py'
       - 'scripts/test-tor-system-finder-core.js'
       - 'scripts/test-tor-system-finder-owner-core.js'
+      - 'scripts/test-tor-system-finder-ui-state.js'
       - 'scripts/test-tor-system-finder-upgrade.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
@@ -118,6 +121,8 @@ jobs:
         run: node scripts/test-tor-system-finder-core.js
       - name: Verify TOR System Finder owner normalization
         run: node scripts/test-tor-system-finder-owner-core.js
+      - name: Verify TOR System Finder UI state
+        run: node scripts/test-tor-system-finder-ui-state.js
       - name: Verify TOR System Finder canonical bridge
         run: python scripts/test-tor-system-finder-upgrade.py
       - name: Verify adaptive responsive fit
