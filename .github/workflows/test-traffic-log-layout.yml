@@ -6,6 +6,8 @@ on:
       - fix/format3-line-breaks
   pull_request:
     paths:
+      - '.github/workflows/test-traffic-log-layout.yml'
+      - '.github/workflows/resize-dhcp-fields.yml'
       - 'index.html'
       - 'uih.html'
       - 'system-owner-finder.html'
