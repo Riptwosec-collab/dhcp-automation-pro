@@ -7,13 +7,19 @@ root = Path(__file__).resolve().parents[1]
 loader_path = root / 'system-owner-finder.html'
 generator_path = root / 'scripts' / 'add-tor-system-finder-upgrade.py'
 core_path = root / 'tor-system-finder-core.js'
+ui_path = root / 'tor-system-finder-upgrade.js'
+css_path = root / 'tor-system-finder-upgrade.css'
 
 assert loader_path.exists(), 'system-owner-finder.html must exist'
 assert core_path.exists(), 'tor-system-finder-core.js must exist'
 assert generator_path.exists(), 'scripts/add-tor-system-finder-upgrade.py must exist'
+assert ui_path.exists(), 'tor-system-finder-upgrade.js must exist'
+assert css_path.exists(), 'tor-system-finder-upgrade.css must exist'
 
 loader = loader_path.read_text(encoding='utf-8')
 generator = generator_path.read_text(encoding='utf-8')
+ui = ui_path.read_text(encoding='utf-8')
+css = css_path.read_text(encoding='utf-8')
 
 payload_paths = [root / 'assets' / f'system-owner-finder-payload-{i:02d}.txt' for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -44,10 +50,36 @@ assert 'BUNDLED_TOR.primary' not in generator, 'upgrade generator must not hard-
 assert 'contactRaw' not in generator or 'currentRawRecords' in generator, 'owner data must come from canonical runtime records'
 assert "DecompressionStream('gzip')" in loader, 'existing compressed payload loader must remain intact'
 
+# One continuous-page analyzer: resources are injected into the decompressed Finder, not a new Utility view/tab.
+for asset in ['tor-system-finder-core.js', 'tor-system-finder-upgrade.js', 'tor-system-finder-upgrade.css']:
+    assert loader.count(asset) == 1, f'{asset} must be injected exactly once by the loader'
+for needle in [
+    'id="torIncidentAnalyzer"',
+    'id="torAnalyzeError"',
+    'ANALYZE ERROR',
+    'id="torExtractedFields"',
+    'id="torCandidates"',
+    'id="torSelectedSystem"',
+    'id="torOwners"',
+    'id="torCopyBlocks"',
+    'id="torMailDraft"',
+    'SELECT THIS SYSTEM',
+    'NO RELIABLE TOR MATCH >= 80%',
+]:
+    assert needle in ui, f'missing analyzer UI contract: {needle}'
+
+assert "addEventListener('click'" in ui and 'torAnalyzeError' in ui, 'analysis must be initiated by ANALYZE ERROR click'
+assert "addEventListener('paste'" not in ui, 'paste must not trigger analysis automatically'
+assert 'findCandidates(' in ui, 'analyzer must use deterministic core candidate matching'
+assert '__torSystemFinderGetRecords' in ui, 'analyzer must use the canonical runtime record bridge'
+assert 'resolveOwners(' in ui, 'selection must resolve owners from selected TOR record'
+assert 'text-overflow:ellipsis' not in css and '-webkit-line-clamp' not in css, 'analyzer output must never truncate copy text'
+assert '@media' in css, 'analyzer must include responsive layout rules'
+
 # A second generator run must be byte-for-byte idempotent.
 before = loader_path.read_bytes()
 subprocess.run(['python', str(generator_path)], cwd=root, check=True)
 after = loader_path.read_bytes()
 assert before == after, 'TOR System Finder upgrade generator must be idempotent on repeated runs'
 
-print('TOR System Finder canonical bridge/idempotency contract: OK')
+print('TOR System Finder bridge + one-page analyzer integration contract: OK')
