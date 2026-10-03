@@ -10,11 +10,13 @@ on:
       - 'assets/system-owner-finder-payload-*.txt'
       - 'voip-finder.html'
       - 'assets/voip-finder-payload-*.txt'
+      - 'operations-messages.html'
       - 'local-ip-reputation.js'
       - 'api/ip-reputation.js'
       - 'scripts/patch-traffic-log.py'
       - 'scripts/add-traffic-ip-reputation.py'
       - 'scripts/add-system-owner-finder.py'
+      - 'scripts/add-responsive-fit.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
@@ -25,6 +27,7 @@ on:
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-responsive-fit.py'
 
 permissions:
   contents: write
@@ -88,6 +91,9 @@ jobs:
             python scripts/add-downsince-language-toggle.py
           fi
 
+      - name: Apply Responsive Fit v1
+        run: python scripts/add-responsive-fit.py
+
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
@@ -106,11 +112,14 @@ jobs:
       - name: Verify System Owner and VOIP integration
         run: python scripts/test-system-owner-finder.py
 
+      - name: Verify adaptive responsive fit
+        run: python scripts/test-responsive-fit.py
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html uih.html
+          git add index.html uih.html system-owner-finder.html voip-finder.html operations-messages.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: add topbar System Owner and VOIP tools'
+          git commit -m 'ui: apply Responsive Fit v1'
           git push origin HEAD:main
