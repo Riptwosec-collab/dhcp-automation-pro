@@ -103,6 +103,7 @@ workflow_needles = [
     'scripts/test-tor-system-finder-core.js',
     'scripts/test-tor-system-finder-owner-core.js',
     'scripts/test-tor-system-finder-ui-state.js',
+    'scripts/test-tor-system-finder-review-regressions.js',
     'scripts/test-tor-system-finder-upgrade.py',
 ]
 for workflow_name, workflow in [('PR', pr_workflow), ('main generation', main_workflow)]:
@@ -110,6 +111,7 @@ for workflow_name, workflow in [('PR', pr_workflow), ('main generation', main_wo
         assert needle in workflow, f'{workflow_name} workflow missing TOR upgrade path/step: {needle}'
     assert 'python scripts/add-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must apply the TOR upgrade generator'
     assert 'node scripts/test-tor-system-finder-core.js' in workflow, f'{workflow_name} workflow must verify TOR core behavior'
+    assert 'node scripts/test-tor-system-finder-review-regressions.js' in workflow, f'{workflow_name} workflow must verify TOR review regressions'
     assert 'python scripts/test-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must verify TOR integration'
 
 before = loader_path.read_bytes()
