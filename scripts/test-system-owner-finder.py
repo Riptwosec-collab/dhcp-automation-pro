@@ -61,7 +61,8 @@ for tool_id in ['tab-system-owner', 'tab-voip', 'tab-operations']:
 assert "openUtilityWorkspace('system-owner')" in index, 'System Owner menu item must open the same-page workspace view'
 assert "openUtilityWorkspace('voip')" in index, 'VOIP menu item must open the same-page workspace view'
 assert "openUtilityWorkspace('operations')" in index, 'Operations menu item must open the same-page workspace view'
-assert "['dhcp','subnet','log','uih','system-owner','voip','operations'].forEach" in index, 'workspace switcher must include all three Utility views'
+workspace_tabs = "['dhcp','subnet','log','uih','system-owner','voip','operations']"
+assert workspace_tabs in index, 'workspace switcher must include all three Utility views'
 assert 'history.pushState' not in generator and 'location.href' not in generator and 'window.open(' not in generator, 'Utility generator must not change browser URL or open new tabs'
 
 # The same-page tools need a visible way back to the last core DHCP workspace.
