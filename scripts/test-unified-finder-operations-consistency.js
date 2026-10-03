@@ -39,7 +39,7 @@ function loadBundledTor(source){
 
 function cardByKey(key){
   const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  const re=new RegExp(`<article class="ops-card"[^>]*data-operation-key="${escaped}"(?:(?!<\\/article>)[\\s\\S])*?<\\/article>`);
+  const re=new RegExp(`<article class="ops-card">(?:(?!<\\/article>)[\\s\\S])*?copyOperationMessage\\('${escaped}',this\\)(?:(?!<\\/article>)[\\s\\S])*?<\\/article>`);
   const match=operations.match(re);
   assert.ok(match,`missing rendered operation card ${key}`);
   return match[0];
@@ -50,7 +50,7 @@ function testOperationsSingleSource(){
   assert.ok(operations.includes("'shutdown-10':{body:'รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง',stamp:''}"), 'shutdown-10 must match visible text and omit timestamp');
   assert.ok(operations.includes("'ten-complete':{body:'ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย',stamp:''}"), 'ten-complete must match visible text and omit timestamp');
   assert.ok(operations.includes("querySelector('.ops-desc')") && operations.includes("querySelector('.ops-stamp')") && operations.includes('navigator.clipboard.writeText(text)'), 'COPY must read visible description + visible stamp from the selected card');
-  assert.ok(operations.includes('function renderOperationMessages'), 'card text must be rendered from the same operation message source');
+  assert.ok(operations.includes('function renderOperationMessages') && operations.includes("querySelectorAll('[data-operation-key]')"), 'card text must be rendered from the same operation message source');
   assert.ok(!cardByKey('shutdown-10').includes('ops-stamp'), 'shutdown-10 visible card must have no timestamp');
   assert.ok(!cardByKey('ten-complete').includes('ops-stamp'), 'ten-complete visible card must have no timestamp');
   assert.ok(cardByKey('power-check').includes('ops-stamp'), 'power-check must visibly show the same timestamp copied with its message');
