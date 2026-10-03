@@ -5,6 +5,7 @@ on:
     branches:
       - fix/format3-line-breaks
   pull_request:
+    branches: [main]
     paths:
       - '.github/workflows/test-traffic-log-layout.yml'
       - '.github/workflows/resize-dhcp-fields.yml'
@@ -36,10 +37,19 @@ on:
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test-layout:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - name: Apply traffic log layout patch in test workspace when missing
