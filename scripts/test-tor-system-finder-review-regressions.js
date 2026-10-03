@@ -43,9 +43,12 @@ function loadBundledTor(){
   let payload='';
   for(let i=1;i<=7;i++)payload+=fs.readFileSync(path.join(root,'assets',`system-owner-finder-payload-${String(i).padStart(2,'0')}.txt`),'utf8').trim();
   const source=zlib.gunzipSync(Buffer.from(payload,'base64')).toString('utf8');
-  const match=source.match(/const BUNDLED_TOR=([\s\S]*?);\s*let currentRawRecords\s*=\s*BUNDLED_TOR\.primary;/);
-  assert.ok(match,'must locate canonical BUNDLED_TOR literal');
-  return vm.runInNewContext(`(${match[1]})`,Object.create(null));
+  const start=source.indexOf('const BUNDLED_TOR=');
+  const end=source.indexOf('let currentRawRecords',start);
+  assert.ok(start>=0&&end>start,'must locate canonical BUNDLED_TOR declaration block');
+  const sandbox=Object.create(null);
+  vm.runInNewContext(`${source.slice(start,end)}\nglobalThis.__BUNDLED_TOR__=BUNDLED_TOR;`,sandbox);
+  return sandbox.__BUNDLED_TOR__;
 }
 
 function testCanonicalTorPayloadMapsIntoAnalyzerRecords(){
