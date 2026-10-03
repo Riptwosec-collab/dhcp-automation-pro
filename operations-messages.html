@@ -82,21 +82,21 @@
     <div class="ops-group alerts">
       <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">△</div><div><div class="ops-kicker">ALERTS</div><div class="ops-name">Alerts & Incidents</div></div></div><div class="ops-count">3 ITEMS</div></div>
       <div class="ops-grid">
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">Device Hang</div><button class="ops-copy" type="button" onclick="copyOperationMessage('device-hang',this)">COPY</button></div><p class="ops-desc">ตรวจสอบ Switch และ Router พบ Log reboot และอุปกรณ์กลับมาใช้งานได้ปกติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไม่สามารถติดต่อเจ้าหน้าที่ได้</div><button class="ops-copy" type="button" onclick="copyOperationMessage('no-contact',this)">COPY</button></div><p class="ops-desc">ใช้สำหรับแจ้งกรณีติดต่อเจ้าหน้าที่ประจำสำนักงานไม่ได้ และรอตรวจสอบอีกครั้งในเวลาทำการ</p></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-up',this)">COPY</button></div><p class="ops-desc">Link Up · สร้างข้อความด้วยวันที่และเวลาปัจจุบันอัตโนมัติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">Device Hang</div><button class="ops-copy" type="button" data-operation-key="device-hang" onclick="copyOperationMessage('device-hang',this)">COPY</button></div><p class="ops-desc">ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ</p><div class="ops-stamp"></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไม่สามารถติดต่อเจ้าหน้าที่ได้</div><button class="ops-copy" type="button" data-operation-key="no-contact" onclick="copyOperationMessage('no-contact',this)">COPY</button></div><p class="ops-desc">ใช้สำหรับแจ้งกรณีติดต่อเจ้าหน้าที่ประจำสำนักงานไม่ได้ และรอตรวจสอบอีกครั้งในเวลาทำการ</p></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ</div><button class="ops-copy" type="button" data-operation-key="link-up" onclick="copyOperationMessage('link-up',this)">COPY</button></div><p class="ops-desc">ขอแจ้งครับ Link up กลับมา</p><div class="ops-stamp"></div></article>
       </div>
     </div>
 
     <div class="ops-group standard">
       <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">≡</div><div><div class="ops-kicker">OPERATIONS</div><div class="ops-name">Standard Operations</div></div></div><div class="ops-count">6 ITEMS</div></div>
       <div class="ops-grid">
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ปิดระบบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('shutdown-10',this)">COPY</button></div><p class="ops-desc">รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง</p></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ครบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('ten-complete',this)">COPY</button></div><p class="ops-desc">ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย</p></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - แก้ไข</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">ข้อความแก้ไขสำหรับวงจรที่กลับมาปกติแล้ว</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ / Log reboot - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('power-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบ Log reboot คาดว่าไฟฟ้าดับ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
-        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ - แก้ไข</div><button class="ops-copy" type="button" onclick="copyOperationMessage('power-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">การไฟฟ้าจ่ายกระแสไฟกลับมาและอุปกรณ์ใช้งานได้ปกติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ปิดระบบ 10 นาที</div><button class="ops-copy" type="button" data-operation-key="shutdown-10" onclick="copyOperationMessage('shutdown-10',this)">COPY</button></div><p class="ops-desc">รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง</p></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ครบ 10 นาที</div><button class="ops-copy" type="button" data-operation-key="ten-complete" onclick="copyOperationMessage('ten-complete',this)">COPY</button></div><p class="ops-desc">ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย</p></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - ตรวจสอบ</div><button class="ops-copy" type="button" data-operation-key="link-normal-check" onclick="copyOperationMessage('link-normal-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข</p><div class="ops-stamp"></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - แก้ไข</div><button class="ops-copy" type="button" data-operation-key="link-normal-fix" onclick="copyOperationMessage('link-normal-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">แก้ไขโดย : วงจรกลับมาปกติก่อนดำเนินการแก้ไข</p><div class="ops-stamp"></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ / Log reboot - ตรวจสอบ</div><button class="ops-copy" type="button" data-operation-key="power-check" onclick="copyOperationMessage('power-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ คาดว่าไฟฟ้าดับ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ</p><div class="ops-stamp"></div></article>
+        <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ - แก้ไข</div><button class="ops-copy" type="button" data-operation-key="power-fix" onclick="copyOperationMessage('power-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">แก้ไขโดย : การไฟฟ้าจ่ายกระแสไฟกลับมาใช้งานได้ปกติ</p><div class="ops-stamp"></div></article>
       </div>
     </div>
   </section>
@@ -104,9 +104,6 @@
   <script>
     function formatOperationsNow(date=new Date()){const pad=n=>String(n).padStart(2,'0');return{date:pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543),time:pad(date.getHours())+'.'+pad(date.getMinutes())}}
     function renderOperationsNow(){const now=formatOperationsNow();document.querySelectorAll('[data-op-date]').forEach(el=>el.textContent=now.date);document.querySelectorAll('[data-op-time]').forEach(el=>el.textContent=now.time)}
-
-
-
     /* business-hours-v1:start */
     function getNoContactFollowUp(date=new Date()){
       const next=new Date(date.getTime());
@@ -123,23 +120,43 @@
     function formatNoContactFollowUp(date){const pad=n=>String(n).padStart(2,'0'),days=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];return days[date.getDay()]+' '+pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543)+' เวลา '+pad(date.getHours())+'.'+pad(date.getMinutes())+' น.'}
     function noContactMessage(date=new Date()){const next=getNoContactFollowUp(date),deferred=next.getTime()!==date.getTime(),when=formatNoContactFollowUp(next);return deferred?'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+when:'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ รอตรวจสอบอีกครั้ง '+when}
     /* business-hours-v1:end */
-    function operationText(key,date=new Date()){const now=formatOperationsNow(date),stamp='วันที่ '+now.date+' เวลา '+now.time+' น.';const messages={
-      'device-hang':'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ '+stamp,
-      'no-contact':noContactMessage(date),
-      'link-up':'ขอแจ้งครับ Link up กลับมา '+stamp,
-      'shutdown-10':'รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) รบกวนแจ้งเมื่อเปิดระบบอีกครั้ง '+stamp,
-      'ten-complete':'ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลยครับ '+stamp,
-      'link-normal-check':'ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข '+stamp,
-      'link-normal-fix':'แก้ไขโดย : วงจรกลับมาปกติก่อนดำเนินการแก้ไข '+stamp,
-      'power-check':'ตรวจสอบพบ Log reboot คาดว่าไฟฟ้าดับ '+stamp,
-      'power-fix':'แก้ไขโดย : การไฟฟ้าจ่ายกระแสไฟกลับมาใช้งานได้ปกติ '+stamp
-    };return messages[key]||''}
-    async function copyOperationMessage(key,button){const text=operationText(key);if(!text)return;try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}if(button){const old=button.textContent;button.textContent='COPIED';button.disabled=true;setTimeout(()=>{button.textContent=old;button.disabled=false},900)}}
+/* unified-operations-consistency-v1:start */
+    function operationParts(key,date=new Date()){
+      const now=formatOperationsNow(date),stamp='วันที่ '+now.date+' เวลา '+now.time+' น.';
+      const messages={
+        'device-hang':{body:'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ',stamp},
+        'no-contact':{body:noContactMessage(date),stamp:''},
+        'link-up':{body:'ขอแจ้งครับ Link up กลับมา',stamp},
+        'shutdown-10':{body:'รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง',stamp:''},
+        'ten-complete':{body:'ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลย',stamp:''},
+        'link-normal-check':{body:'ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข',stamp},
+        'link-normal-fix':{body:'แก้ไขโดย : วงจรกลับมาปกติก่อนดำเนินการแก้ไข',stamp},
+        'power-check':{body:'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ คาดว่าไฟฟ้าดับ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ',stamp},
+        'power-fix':{body:'แก้ไขโดย : การไฟฟ้าจ่ายกระแสไฟกลับมาใช้งานได้ปกติ',stamp}
+      };
+      return messages[key]||{body:'',stamp:''}
+    }
+    function operationText(key,date=new Date()){const message=operationParts(key,date);return [message.body,message.stamp].filter(Boolean).join(' ')}
+    function renderOperationMessages(date=new Date()){
+      document.querySelectorAll('[data-operation-key]').forEach(button=>{
+        const card=button.closest('.ops-card'),message=operationParts(button.dataset.operationKey,date),desc=card?.querySelector('.ops-desc'),stamp=card?.querySelector('.ops-stamp');
+        if(desc)desc.textContent=message.body;
+        if(stamp)stamp.textContent=message.stamp;
+      })
+    }
+    async function copyOperationMessage(key,button){
+      const card=button?.closest?.('.ops-card'),desc=card?.querySelector('.ops-desc')?.textContent?.trim()||'',stamp=card?.querySelector('.ops-stamp')?.textContent?.trim()||'';
+      const text=[desc,stamp].filter(Boolean).join(' ')||operationText(key);
+      if(!text)return;
+      try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
+      if(button){const old=button.textContent;button.textContent='COPIED';button.disabled=true;setTimeout(()=>{button.textContent=old;button.disabled=false},900)}
+    }
+    /* unified-operations-consistency-v1:end */
     function applyMissionTheme(theme){document.body.dataset.theme=theme==='cyber'?'cyber':'gold'}
     applyMissionTheme(localStorage.getItem('missionTheme')||'gold');
     window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='dhcp-theme')applyMissionTheme(event.data.theme)});
     window.addEventListener('storage',event=>{if(event.key==='missionTheme')applyMissionTheme(event.newValue||'gold')});
-    renderOperationsNow();setInterval(renderOperationsNow,1000);
+    renderOperationsNow();renderOperationMessages();setInterval(()=>{renderOperationsNow();renderOperationMessages()},1000);
     window.parent?.postMessage({type:'operations-ready'},location.origin);
   </script>
 </body>
