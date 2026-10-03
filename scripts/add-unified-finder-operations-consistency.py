@@ -4,10 +4,22 @@ import re
 path = Path('operations-messages.html')
 text = path.read_text(encoding='utf-8')
 
-# Remove our previous runtime block before recreating it. Other generators own
-# Business Hours and the visual layer; this layer owns only message parity.
+# Business Hours is owned by its own generator, but repeated main-generation
+# runs may temporarily move it inside our runtime block. Extract it first and
+# always place it immediately before this consistency layer.
+business_pattern = re.compile(
+    r'[ \t]*/\* business-hours-v1:start \*/.*?/\* business-hours-v1:end \*/',
+    flags=re.S,
+)
+business_match = business_pattern.search(text)
+if not business_match:
+    raise SystemExit('Business Hours v1 block not found before consistency generation')
+business_block = business_match.group(0).strip()
+text = business_pattern.sub('', text, count=1)
+
+# Remove our previous runtime block before recreating it.
 text = re.sub(
-    r'\n[ \t]*/\* unified-operations-consistency-v1:start \*/.*?/\* unified-operations-consistency-v1:end \*/[ \t]*\n?',
+    r'\n?[ \t]*/\* unified-operations-consistency-v1:start \*/.*?/\* unified-operations-consistency-v1:end \*/[ \t]*\n?',
     '\n', text, count=1, flags=re.S,
 )
 
@@ -20,7 +32,7 @@ text = re.sub(
 # Put the key on the COPY button, preserving the existing card tag so older
 # layout/Business Hours regressions continue to target the same DOM structure.
 def add_key(match):
-    attrs = re.sub(r'\s+data-operation-key="[^"]*"', '', match.group(1) or '')
+    attrs = re.sub(r'\s+data-operation-key="[^"]*"', '', match.group(1) or '').rstrip()
     key = match.group(2)
     return f'<button class="ops-copy"{attrs} data-operation-key="{key}" onclick="copyOperationMessage(\'{key}\',this)">'
 
@@ -100,12 +112,15 @@ runtime = r'''
       if(button){const old=button.textContent;button.textContent='COPIED';button.disabled=true;setTimeout(()=>{button.textContent=old;button.disabled=false},900)}
     }
     /* unified-operations-consistency-v1:end */
-'''.rstrip()
+'''.strip()
 
 anchor = '    function applyMissionTheme(theme)'
 if anchor not in text:
     raise SystemExit('Operations theme function anchor not found')
-text = text.replace(anchor, runtime + '\n' + anchor, 1)
+# Normalize blank lines around the runtime boundary so repeated runs are byte-identical.
+text = re.sub(r'\n{3,}(?=\s*function applyMissionTheme\(theme\))', '\n', text, count=1)
+replacement = '    ' + business_block.replace('\n', '\n    ') + '\n' + runtime + '\n' + anchor
+text = text.replace(anchor, replacement, 1)
 
 canonical_init = "    renderOperationsNow();renderOperationMessages();setInterval(()=>{renderOperationsNow();renderOperationMessages()},1000);"
 if canonical_init not in text:
