@@ -23,7 +23,14 @@
     let html=await new Response(stream).text();
 
     const bridgeStyle=`<style id="missionVoipTheme">
-      html,body{min-height:100%!important;height:auto!important;overflow-y:auto!important}
+      /* responsive-fit-v1 */
+      html,body{min-height:100%!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;max-width:100%!important}
+      body{width:100%!important;max-width:100%!important}
+      *,*::before,*::after{box-sizing:border-box}
+      img,svg,canvas,video,table{max-width:100%!important}
+      input,select,textarea,button{max-width:100%!important}
+      pre{max-width:100%;overflow:auto}
+      @media(max-width:767px){body{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}}
       body[data-theme="gold"]{--bg:#010204;--panel:#070a0f;--panel2:#0a0e15;--line:rgba(245,197,66,.20);--text:#fff;--muted:#89909b;--cyan:#f5c542;--yellow:#ffe38a;--green:#22c55e;--shadow:0 20px 55px rgba(0,0,0,.46);--accentRgb:245,197,66}
       body[data-theme="cyber"]{--bg:#020716;--panel:#071427;--panel2:#091b32;--line:rgba(34,211,238,.20);--text:#f8fbff;--muted:#91a6c7;--cyan:#22d3ee;--yellow:#8cecff;--green:#2dd4bf;--shadow:0 20px 55px rgba(0,4,16,.5);--accentRgb:34,211,238}
     </style>`;
