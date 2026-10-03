@@ -80,7 +80,7 @@
     rootEl.className='tor-upgrade';
     rootEl.innerHTML=`
       <div class="tor-upgrade-head">
-        <div><span class="tor-kicker">TOR SYSTEM FINDER · INCIDENT WORKFLOW</span><h2>Analyze Monitor Error + Find System Owner</h2><p>ข้อมูลเดียวกับ Finder ด้านบน · วาง Error → Analyze → เลือกระบบ → Owner + Copy + Mail</p></div>
+        <div><span class="tor-kicker">TOR SYSTEM FINDER · SOURCE LOOKUP</span><h2>Find TOR System + Find System Owner</h2><p>ค้นจากฐาน TOR เดิม · ใช้ URL / IP / ชื่อระบบเพื่อหาระบบที่ตรงกัน → เลือก Record → Owner / Email / Phone / Copy</p></div>
         <span class="tor-threshold">MATCH ≥ 80%</span>
       </div>
       <div class="tor-input-panel">
