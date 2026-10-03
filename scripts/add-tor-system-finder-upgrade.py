@@ -125,10 +125,22 @@ if anchor not in text:
 
 block = r'''    /* tor-system-finder-upgrade-v1:start */
     const torUpgradeBridge=`
-  // Runtime bridge for TOR SYSTEM FINDER Upgrade. It deliberately closes over
-  // currentRawRecords so bundled, restored-import and newly imported data all
-  // remain the single canonical source used by the analyzer.
-  window.__torSystemFinderGetRecords=()=>currentRawRecords.map(record=>({...record}));
+  // Runtime bridge for TOR SYSTEM FINDER Upgrade. The top Finder searches
+  // currentRecords first and BUNDLED_TOR.fallback second. Expose that same
+  // canonical searchable pool to the lower Analyzer so both halves of the
+  // page operate as one system. Imported databases intentionally have no
+  // bundled fallback, matching the existing Finder behavior.
+  window.__torSystemFinderGetRecords=()=>{
+    const fallbackRaw=currentMeta?.mode==='Bundled'&&Array.isArray(BUNDLED_TOR.fallback)?BUNDLED_TOR.fallback:[];
+    const combined=[...currentRawRecords,...fallbackRaw];
+    const seen=new Set();
+    return combined.filter(record=>{
+      const key=[record?.id,record?.systemName,record?.ip,record?.url,record?.contactRaw].map(value=>String(value??'')).join('|');
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    }).map(record=>({...record}));
+  };
 `;
     const torUpgradeRuntimeAnchor="  loadImportedDb();\n  updateDbStatus();";
     if(!html.includes(torUpgradeRuntimeAnchor))throw new Error('TOR runtime data anchor not found');
@@ -142,4 +154,4 @@ block = r'''    /* tor-system-finder-upgrade-v1:start */
 
 text = text.replace(anchor, anchor + block, 1)
 path.write_text(text, encoding='utf-8')
-print('TOR System Finder Upgrade v1 bridge + analyzer assets applied')
+print('TOR System Finder Upgrade v1 unified searchable bridge + analyzer assets applied')

@@ -23,6 +23,7 @@ on:
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
       - 'scripts/add-operations-visual-refresh.py'
+      - 'scripts/add-unified-finder-operations-consistency.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
@@ -41,6 +42,7 @@ on:
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
+      - 'scripts/test-unified-finder-operations-consistency.js'
 
 permissions:
   contents: write
@@ -116,6 +118,9 @@ jobs:
       - name: Apply Operations Visual Refresh v2
         run: python scripts/add-operations-visual-refresh.py
 
+      - name: Apply Unified Finder + Operations Consistency v1
+        run: python scripts/add-unified-finder-operations-consistency.py
+
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
@@ -158,11 +163,14 @@ jobs:
       - name: Verify Operations Visual Refresh v2
         run: node scripts/test-operations-visual-refresh.js
 
+      - name: Verify Unified Finder + Operations Consistency v1
+        run: node scripts/test-unified-finder-operations-consistency.js
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html system-owner-finder.html voip-finder.html operations-messages.html tor-system-finder-core.js tor-system-finder-upgrade.js tor-system-finder-upgrade.css
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: apply TOR System Finder Upgrade v1'
+          git commit -m 'ui: apply Unified Finder + Operations Consistency v1'
           git push origin HEAD:main
