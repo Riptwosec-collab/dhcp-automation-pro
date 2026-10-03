@@ -17,6 +17,21 @@
     const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
     let html=await new Response(stream).text();
+    /* tor-system-finder-upgrade-v1:start */
+    const torUpgradeBridge=`
+  // Runtime bridge for TOR SYSTEM FINDER Upgrade. It deliberately closes over
+  // currentRawRecords so bundled, restored-import and newly imported data all
+  // remain the single canonical source used by the analyzer.
+  window.__torSystemFinderGetRecords=()=>currentRawRecords.map(record=>({...record}));
+`;
+    const torUpgradeRuntimeAnchor="  loadImportedDb();\n  updateDbStatus();";
+    if(!html.includes(torUpgradeRuntimeAnchor))throw new Error('TOR runtime data anchor not found');
+    html=html.replace(torUpgradeRuntimeAnchor,torUpgradeBridge+torUpgradeRuntimeAnchor);
+    const torUpgradeStyle='<link rel="stylesheet" href="tor-system-finder-upgrade.css">';
+    const torUpgradeScripts='<script src="tor-system-finder-core.js"><\/script><script src="tor-system-finder-upgrade.js"><\/script>';
+    if(!html.includes('</head>')||!html.includes('</body>'))throw new Error('TOR Finder document anchors not found');
+    html=html.replace('</head>',torUpgradeStyle+'</head>').replace('</body>',torUpgradeScripts+'</body>');
+    /* tor-system-finder-upgrade-v1:end */
     const quickCopyStyle=`<style id="ownerQuickCopyStyle">
       /* responsive-fit-v1 */
       html,body{width:100%;max-width:100%;overflow-x:hidden}
