@@ -347,6 +347,37 @@
       .map(({_index,...candidate})=>candidate);
   }
 
+  function buildOperationalBlocks(incident){
+    const monitor=String(incident?.monitor||'').trim();
+    const url=String(incident?.url||'').trim();
+    const urlNormal=url?`ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`:'';
+    const urlAbnormal=url?`ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`:'';
+    return {
+      combinedResolution:monitor&&urlNormal?`Monitor ${monitor}\nแก้ไขโดย : ${urlNormal}`:monitor?`Monitor ${monitor}`:'',
+      urlNormal,
+      urlAbnormal,
+      ticketAction:'กดตั๊กเพิ่มไม่ได้',
+      mailCompletion:'ดำเนินการส่ง Mail แจ้งผู้ดูแลระบบเรียบร้อยแล้ว',
+    };
+  }
+
+  function buildMailDraft(incident,selectedRecord){
+    void selectedRecord;
+    const lines=['เรียน ผู้ดูแลระบบ',''];
+    const monitor=String(incident?.monitor||'').trim();
+    const url=String(incident?.url||'').trim();
+    const target=String(incident?.ip||incident?.host||'').trim();
+    const error=String(incident?.error||'').trim();
+    const time=String(incident?.time||'').trim();
+    if(monitor)lines.push(`Monitor ${monitor}`,'');
+    if(url)lines.push(`Url: ${url}`);
+    if(target&&error)lines.push(`hosted on ${target} of ${error}`);
+    else if(error)lines.push(error);
+    if(time)lines.push(`เวลา : ${time}`);
+    lines.push('','ติดต่อเจ้าหน้าที่ RDNOC','เบอร์ 02-272-8891 - 3','Line ID: @RDNOC','ขอบคุณครับ/ขอบคุณค่ะ');
+    return lines.join('\n');
+  }
+
   return {
     parseIncident,
     normalizeSystemName,
@@ -356,5 +387,7 @@
     resolveOwners,
     scoreCandidate,
     findCandidates,
+    buildOperationalBlocks,
+    buildMailDraft,
   };
 });
