@@ -18,6 +18,7 @@ on:
       - 'scripts/add-system-owner-finder.py'
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
+      - 'scripts/add-operations-visual-refresh.py'
       - 'scripts/fit-uih-viewport.py'
       - 'scripts/add-thai-down-since.py'
       - 'scripts/fullscreen-bilingual-uih.py'
@@ -30,6 +31,7 @@ on:
       - 'scripts/test-system-owner-finder.py'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
+      - 'scripts/test-operations-visual-refresh.js'
 
 permissions:
   contents: write
@@ -99,6 +101,9 @@ jobs:
       - name: Apply Business Hours v1
         run: python scripts/add-business-hours.py
 
+      - name: Apply Operations Visual Refresh v2
+        run: python scripts/add-operations-visual-refresh.py
+
       - name: Verify traffic log and UIh integration
         run: python scripts/test-traffic-log-layout.py
 
@@ -123,11 +128,14 @@ jobs:
       - name: Verify Business Hours v1
         run: node scripts/test-business-hours.js
 
+      - name: Verify Operations Visual Refresh v2
+        run: node scripts/test-operations-visual-refresh.js
+
       - name: Commit generated page changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html uih.html system-owner-finder.html voip-finder.html operations-messages.html
           git diff --cached --quiet && exit 0
-          git commit -m 'ui: apply Business Hours v1'
+          git commit -m 'ui: apply Operations Visual Refresh v2'
           git push origin HEAD:main
