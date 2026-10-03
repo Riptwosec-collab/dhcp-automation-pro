@@ -158,22 +158,7 @@
     .system-owner-finder-frame{display:block;width:100%;height:min(72vh,760px);min-height:560px;border:0;background:#060a0f}
     @media(max-width:900px){.system-owner-finder-frame{height:70vh;min-height:520px}.system-owner-finder-head{align-items:flex-start}.system-owner-finder-title span{display:none}}
     @media(max-width:640px){.system-owner-finder-trigger{width:100%;justify-content:center}.system-owner-finder-frame{height:74vh;min-height:500px}}
-  /* topbar-owner-voip-v2 */
-    #view-system-owner,#view-voip{min-height:0;overflow:hidden}
-    .tool-frame-shell{display:flex;flex-direction:column;width:100%;height:100%;min-height:0;overflow:hidden;padding:0;background:rgba(0,0,0,.08)}
-    .tool-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(var(--accentRgb),.13);background:linear-gradient(90deg,rgba(var(--accentRgb),.075),transparent 62%)}
-    .tool-frame-title{display:flex;align-items:center;gap:9px;min-width:0}.tool-frame-title i{color:var(--accent);filter:drop-shadow(0 0 7px rgba(var(--accentRgb),.3))}.tool-frame-title strong{display:block;color:#fff;font-size:11px;letter-spacing:.08em}.tool-frame-title span{display:block;margin-top:2px;color:var(--muted);font-size:9px}
-    .tool-frame{display:block;width:100%;height:100%;min-height:650px;border:0;background:#060a0f;flex:1 1 auto}
-    .owner-copy-dock{padding:12px 13px;border-bottom:1px solid rgba(var(--accentRgb),.13);background:rgba(var(--accentRgb),.028)}
-    .owner-copy-row{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(4,minmax(112px,.6fr));gap:8px;align-items:stretch}
-    .owner-contact-input{min-height:42px!important;height:42px!important;resize:none!important;padding:10px 12px!important;font:500 11px/1.45 'JetBrains Mono',monospace}
-    .owner-copy-card{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:7px 9px;border:1px solid rgba(var(--accentRgb),.16);border-radius:9px;background:rgba(255,255,255,.025);cursor:pointer;transition:.2s;text-align:left}
-    .owner-copy-card:hover{border-color:rgba(var(--accentRgb),.48);background:rgba(var(--accentRgb),.08);transform:translateY(-1px)}
-    .owner-copy-card small{color:var(--muted);font:800 8px/1 'JetBrains Mono',monospace;letter-spacing:.08em;margin-bottom:5px}.owner-copy-card strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent);font-size:11px}
-    .owner-copy-hint{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.45}.owner-copy-hint b{color:var(--accent)}
-    @media(max-width:1100px){.owner-copy-row{grid-template-columns:1fr 1fr 1fr}.owner-contact-input{grid-column:1/-1}.tool-frame{min-height:720px}}
-    @media(max-width:700px){#view-system-owner,#view-voip{overflow:visible}.tool-frame-shell{height:auto;min-height:860px}.owner-copy-row{grid-template-columns:1fr 1fr}.owner-contact-input{grid-column:1/-1}.tool-frame{min-height:720px}.tool-frame-title span{display:none}}
-  /* utility-tools-dock-v2 */
+  /* utility-tools-dock-v3 */
     .utility-tools-dock{position:relative;z-index:70;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;height:100%}
     .utility-tools-toggle{position:relative;width:40px;height:40px;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid rgba(var(--accentRgb),.34);background:linear-gradient(145deg,rgba(var(--accentRgb),.12),rgba(2,6,12,.80));color:var(--accent);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 22px rgba(0,0,0,.28),0 0 18px rgba(var(--accentRgb),.10);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
     .utility-tools-toggle::before{content:"";position:absolute;inset:5px;border:1px solid rgba(var(--accentRgb),.14);border-radius:8px;pointer-events:none}
@@ -210,10 +195,11 @@
         <div id="utilityToolsDock" class="utility-tools-dock" data-open="false">
           <button id="utilityToolsToggle" type="button" class="utility-tools-toggle" onclick="toggleUtilityTools(event)" aria-label="Utility tools" title="Utility tools" aria-expanded="false" aria-controls="utilityToolsMenu"><i data-lucide="sparkles"></i></button>
           <div id="utilityToolsMenu" class="utility-tools-menu" role="group" aria-label="Utility tools" hidden>
-            <a href="system-owner-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-system-owner" class="utility-tools-item" title="Open System Owner Finder in new tab"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OPEN ↗</span></a>
-            <a href="voip-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-voip" class="utility-tools-item" title="Open VOIP Finder in new tab"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">OPEN ↗</span></a>
+            <a href="system-owner-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-system-owner" class="utility-tools-item" data-standalone-tool="system-owner" title="Open System Owner Finder in a new page"><i data-lucide="user-search"></i><span>FIND SYSTEM OWNER</span><span class="utility-tools-meta">OPEN ↗</span></a>
+            <a href="voip-finder.html" target="_blank" rel="noopener noreferrer" onclick="setUtilityToolsOpen(false)" id="tab-voip" class="utility-tools-item" data-standalone-tool="voip" title="Open VOIP Finder in a new page"><i data-lucide="phone-call"></i><span>VOIP Finder</span><span class="utility-tools-meta">OPEN ↗</span></a>
           </div>
         </div>
+
         <div class="brand-block" aria-label="DHCP Mission Control">
           <div class="brand-mark"><i data-lucide="orbit" class="w-5 h-5"></i><span class="brand-dot"></span></div>
           <div class="brand-copy"><div class="brand-kicker"><span class="brand-status"></span>IP AUTOMATION SUITE</div><div class="brand-title">DHCP <span>MISSION CONTROL</span></div></div>
@@ -316,34 +302,6 @@
               <iframe id="uihFrame" src="uih.html" title="Generate Log UIh" loading="eager" onload="syncUIhTheme(document.body.dataset.theme || 'gold')"></iframe>
             </div>
           </section>
-
-          <section id="view-system-owner" class="view-panel hidden h-full min-h-0 flex-col animate-enter">
-            <div class="tool-frame-shell glass-panel rounded-2xl accent-border">
-              <div class="tool-frame-head">
-                <div class="tool-frame-title"><i data-lucide="users-round" class="w-4 h-4"></i><div><strong>SYSTEM OWNER FINDER</strong><span>TOR mapping · contact routing · local browser processing</span></div></div>
-              </div>
-              <div class="owner-copy-dock">
-                <div class="owner-copy-row">
-                  <textarea id="ownerContactInput" class="cyber-input owner-contact-input" placeholder="วาง Contact Routing เพื่อแยกคำนำหน้า / ชื่อ / โทร / Email แล้ว Copy แยกได้" oninput="renderOwnerContactQuickCopy()"></textarea>
-                  <button type="button" class="owner-copy-card" data-owner-copy="prefix" onclick="copyOwnerPart('prefix')"><small>PREFIX</small><strong id="ownerPrefixValue">-</strong></button>
-                  <button type="button" class="owner-copy-card" data-owner-copy="name" onclick="copyOwnerPart('name')"><small>NAME</small><strong id="ownerNameValue">-</strong></button>
-                  <button type="button" class="owner-copy-card" data-owner-copy="phone" onclick="copyOwnerPart('phone')"><small>PHONE</small><strong id="ownerPhoneValue">-</strong></button>
-                  <button type="button" class="owner-copy-card" data-owner-copy="email" onclick="copyOwnerPart('email')"><small>EMAIL</small><strong id="ownerEmailValue">-</strong></button>
-                </div>
-                <div class="owner-copy-hint">แยกคำนำหน้า <b>นาย / นาง / นางสาว / คุณ / น.ส.</b> ออกจากชื่ออัตโนมัติ · กดแต่ละช่องเพื่อ Copy ค่าเฉพาะส่วนนั้น</div>
-              </div>
-              <iframe id="systemOwnerFinderFrame" class="tool-frame" src="system-owner-finder.html" title="System Owner Finder" loading="eager" onload="syncSystemOwnerFinderTheme(document.body.dataset.theme || 'gold')"></iframe>
-            </div>
-          </section>
-
-          <section id="view-voip" class="view-panel hidden h-full min-h-0 flex-col animate-enter">
-            <div class="tool-frame-shell glass-panel rounded-2xl accent-border">
-              <div class="tool-frame-head">
-                <div class="tool-frame-title"><i data-lucide="phone-call" class="w-4 h-4"></i><div><strong>VOIP FINDER</strong><span>หัวข้อใหญ่ · พื้นที่ / หน่วยงาน · หัวข้อ · VOIP</span></div></div>
-              </div>
-              <iframe id="voipFinderFrame" class="tool-frame" src="voip-finder.html" title="VOIP Finder" loading="lazy" onload="syncVoipFinderTheme(document.body.dataset.theme || 'gold')"></iframe>
-            </div>
-          </section>
         </div>
       </main>
     </div>
@@ -364,7 +322,7 @@
   function syncUIhTheme(theme){const frame=document.getElementById('uihFrame');if(frame&&frame.contentWindow)frame.contentWindow.postMessage({type:'mission-theme',theme},window.location.origin)}
   window.addEventListener('message',event=>{if(event.origin!==window.location.origin)return;const data=event.data||{};if(data.type==='uih-ready')syncUIhTheme(document.body.dataset.theme||'gold')});
   function setTheme(theme){document.body.dataset.theme=theme;localStorage.setItem('missionTheme',theme);document.getElementById('themeGold').classList.toggle('active',theme==='gold');document.getElementById('themeCyber').classList.toggle('active',theme==='cyber');syncUIhTheme(theme);syncSystemOwnerFinderTheme(theme);syncVoipFinderTheme(theme);lucide.createIcons()}
-  function switchTab(tab){['dhcp','subnet','log','uih','system-owner','voip'].forEach(t=>{const view=document.getElementById(`view-${t}`),btn=document.getElementById(`tab-${t}`);view.classList.add('hidden');view.classList.remove('flex','animate-enter');btn.classList.remove('active','accent-text');btn.style.borderColor='transparent';btn.style.color='var(--muted)'});const v=document.getElementById(`view-${tab}`),b=document.getElementById(`tab-${tab}`);v.classList.remove('hidden');v.classList.add('flex','animate-enter');b.classList.add('active','accent-text');b.style.borderColor='var(--accent)';b.style.color='var(--accent)'}
+  function switchTab(tab){['dhcp','subnet','log','uih'].forEach(t=>{const view=document.getElementById(`view-${t}`),btn=document.getElementById(`tab-${t}`);view.classList.add('hidden');view.classList.remove('flex','animate-enter');btn.classList.remove('active','accent-text');btn.style.borderColor='transparent';btn.style.color='var(--muted)'});const v=document.getElementById(`view-${tab}`),b=document.getElementById(`tab-${tab}`);v.classList.remove('hidden');v.classList.add('flex','animate-enter');b.classList.add('active','accent-text');b.style.borderColor='var(--accent)';b.style.color='var(--accent)'}
   function openModal(){document.getElementById('calcModal').classList.add('active');handleCalculation()}function closeModal(){document.getElementById('calcModal').classList.remove('active')}
   function triggerFlash(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('flash-update');void el.offsetWidth;el.classList.add('flash-update')}
   function getClientIdentifier(mac){const clean=mac.replace(/[^a-fA-F0-9]/g,'').toLowerCase();if(clean.length!==12)return mac;const cid='01'+clean;return `${cid.slice(0,4)}.${cid.slice(4,8)}.${cid.slice(8,12)}.${cid.slice(12,14)}`}
@@ -419,7 +377,8 @@ function parseOwnerContact(raw){const original=String(raw||'').replace(/\s+/g,' 
   function syncSystemOwnerFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('systemOwnerFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
   function syncVoipFinderTheme(theme=document.body.dataset.theme||'gold'){const frame=document.getElementById('voipFinderFrame');if(frame?.contentWindow)try{frame.contentWindow.postMessage({type:'dhcp-theme',theme},location.origin)}catch{}}
   window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const type=event.data?.type;if(type==='system-owner-ready')syncSystemOwnerFinderTheme();if(type==='voip-ready')syncVoipFinderTheme()})
-function positionUtilityToolsMenu(){const toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!toggle||!menu||menu.hidden)return;const r=toggle.getBoundingClientRect(),gap=8;if(window.innerWidth<=760){menu.style.left='10px';menu.style.right='10px';menu.style.top=`${Math.max(10,r.bottom+gap)}px`;menu.style.width='auto';return}menu.style.left='auto';menu.style.right=`${Math.max(10,window.innerWidth-r.right)}px`;menu.style.top=`${Math.max(10,r.bottom+gap)}px`;menu.style.width='max-content'}
+
+  function positionUtilityToolsMenu(){const toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!toggle||!menu||menu.hidden)return;const r=toggle.getBoundingClientRect(),gap=8;if(window.innerWidth<=760){menu.style.left='10px';menu.style.right='10px';menu.style.top=`${Math.max(10,r.bottom+gap)}px`;menu.style.width='auto';return}menu.style.left='auto';menu.style.right=`${Math.max(10,window.innerWidth-r.right)}px`;menu.style.top=`${Math.max(10,r.bottom+gap)}px`;menu.style.width='max-content'}
   function setUtilityToolsOpen(open){const dock=document.getElementById('utilityToolsDock'),toggle=document.getElementById('utilityToolsToggle'),menu=document.getElementById('utilityToolsMenu');if(!dock||!toggle||!menu)return;const show=Boolean(open);dock.dataset.open=show?'true':'false';toggle.setAttribute('aria-expanded',show?'true':'false');menu.hidden=!show;if(show)requestAnimationFrame(()=>{positionUtilityToolsMenu();lucide.createIcons()})}
   function toggleUtilityTools(event){event?.preventDefault?.();event?.stopPropagation?.();const dock=document.getElementById('utilityToolsDock');setUtilityToolsOpen(dock?.dataset.open!=='true')}
   function closeUtilityToolsOnOutside(event){const dock=document.getElementById('utilityToolsDock');if(dock?.dataset.open==='true'&&!dock.contains(event.target))setUtilityToolsOpen(false)}
