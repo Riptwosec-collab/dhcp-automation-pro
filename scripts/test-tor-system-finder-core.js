@@ -68,6 +68,75 @@ function testAllowsMissingOptionalFields() {
   assert.equal(result.systemName, 'ระบบทดสอบ');
 }
 
+function record(id, systemName, {ips=[], hosts=[], domains=[], urls=[]}={}) {
+  return {id, systemName, ips, hosts, domains, urls, owners:[], raw:{}};
+}
+
+function testExactIpIsOneHundredPercent() {
+  const incident = core.parseIncident('Monitor Anything\nhosted on 10.20.17.71 of down');
+  const candidate = core.scoreCandidate(incident, record('a', 'Different Name', {ips:['10.20.17.71']}));
+  assert.equal(candidate.score, 100);
+  assert.equal(candidate.matchMode, 'ip-exact');
+  assert.ok(candidate.evidence.some(item=>item.field==='IP' && item.matched && item.contribution===100));
+}
+
+function testMultipleExactIpRecordsAreAllReturned() {
+  const incident = core.parseIncident('Monitor Anything\nhosted on 10.20.17.71 of down');
+  const records = [
+    record('a','A',{ips:['10.20.17.71']}),
+    record('b','B',{ips:['10.20.17.71']}),
+    record('c','C',{hosts:['intrapp2.rd.go.th'],domains:['rd.go.th']}),
+  ];
+  assert.deepEqual(core.findCandidates(incident, records).map(x=>x.record.id), ['a','b']);
+}
+
+function testExactHostUsesSixtyPlusNameForty() {
+  const incident = {ip:'',host:'intrapp2.rd.go.th',domain:'rd.go.th',systemName:'one two three four'};
+  assert.equal(core.systemNameSimilarity(incident.systemName, 'one two three five'), 76);
+  const candidate = core.scoreCandidate(incident, record('host','one two three five',{hosts:['intrapp2.rd.go.th'],domains:['rd.go.th']}));
+  assert.equal(candidate.score, 90);
+  assert.equal(candidate.matchMode, 'host-name');
+  assert.ok(candidate.evidence.some(item=>item.field==='Host' && item.contribution===60));
+  assert.ok(candidate.evidence.some(item=>item.field==='System Name' && item.contribution===30));
+}
+
+function testDomainUsesThirtyPlusNameSeventyAndKeepsExactlyEighty() {
+  const incident = {ip:'',host:'other.rd.go.th',domain:'rd.go.th',systemName:'one two three four'};
+  assert.equal(core.systemNameSimilarity(incident.systemName, 'one two three six'), 72);
+  const candidate = core.scoreCandidate(incident, record('domain','one two three six',{hosts:['another.rd.go.th'],domains:['rd.go.th']}));
+  assert.equal(candidate.score, 80);
+  assert.equal(candidate.matchMode, 'domain-name');
+  assert.deepEqual(core.findCandidates(incident,[candidate.record]).map(x=>x.score),[80]);
+}
+
+function testWeakGenericDomainCandidateIsExcluded() {
+  const incident = {ip:'',host:'other.rd.go.th',domain:'rd.go.th',systemName:'tax timestamp service'};
+  const weak = record('weak','unrelated payroll portal',{domains:['rd.go.th']});
+  assert.deepEqual(core.findCandidates(incident,[weak]),[]);
+}
+
+function testCandidatesSortDescendingAndPreserveTies() {
+  const incident = {ip:'',host:'svc.rd.go.th',domain:'rd.go.th',systemName:'one two three four'};
+  const records = [
+    record('domain80','one two three six',{domains:['rd.go.th']}),
+    record('host90a','one two three five',{hosts:['svc.rd.go.th'],domains:['rd.go.th']}),
+    record('host90b','one two three five',{hosts:['svc.rd.go.th'],domains:['rd.go.th']}),
+  ];
+  const candidates = core.findCandidates(incident,records);
+  assert.deepEqual(candidates.map(x=>x.record.id),['host90a','host90b','domain80']);
+  assert.deepEqual(candidates.map(x=>x.score),[90,90,80]);
+}
+
+function testEvidenceShowsIncidentTorAndContribution() {
+  const incident = {ip:'',host:'intrapp2.rd.go.th',domain:'rd.go.th',systemName:'one two three four'};
+  const candidate = core.scoreCandidate(incident,record('a','one two three five',{hosts:['intrapp2.rd.go.th']}));
+  const hostEvidence=candidate.evidence.find(item=>item.field==='Host');
+  assert.equal(hostEvidence.incidentValue,'intrapp2.rd.go.th');
+  assert.equal(hostEvidence.torValue,'intrapp2.rd.go.th');
+  assert.equal(hostEvidence.matched,true);
+  assert.equal(hostEvidence.contribution,60);
+}
+
 const tests = [
   testExtractsSampleIncidentFields,
   testAcceptsEscapedUrlAndUrlLabelVariants,
@@ -75,7 +144,14 @@ const tests = [
   testDerivesHostAndDomainFromUrl,
   testExtractsHostedOnIpAndError,
   testAllowsMissingOptionalFields,
+  testExactIpIsOneHundredPercent,
+  testMultipleExactIpRecordsAreAllReturned,
+  testExactHostUsesSixtyPlusNameForty,
+  testDomainUsesThirtyPlusNameSeventyAndKeepsExactlyEighty,
+  testWeakGenericDomainCandidateIsExcluded,
+  testCandidatesSortDescendingAndPreserveTies,
+  testEvidenceShowsIncidentTorAndContribution,
 ];
 
 for (const test of tests) test();
-console.log(`TOR System Finder core parser tests: ${tests.length}/${tests.length} PASS`);
+console.log(`TOR System Finder core tests: ${tests.length}/${tests.length} PASS`);
