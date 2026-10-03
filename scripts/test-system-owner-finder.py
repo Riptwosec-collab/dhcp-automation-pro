@@ -12,12 +12,21 @@ loader = finder_path.read_text(encoding='utf-8')
 voip_loader = voip_path.read_text(encoding='utf-8')
 
 required_index = [
+    'id="utilityToolsDock"',
+    'id="utilityToolsToggle"',
+    'id="utilityToolsMenu"',
     'id="tab-system-owner"',
     'FIND SYSTEM OWNER',
-    "onclick=\"switchTab('system-owner')\"",
+    'href="system-owner-finder.html"',
+    'target="_blank"',
+    'rel="noopener noreferrer"',
     'id="tab-voip"',
     'VOIP Finder',
-    "onclick=\"switchTab('voip')\"",
+    'href="voip-finder.html"',
+    'function positionUtilityToolsMenu(',
+    'function setUtilityToolsOpen(',
+    'function toggleUtilityTools(',
+    'function closeUtilityToolsOnOutside(',
     'id="view-system-owner"',
     'id="systemOwnerFinderFrame"',
     'src="system-owner-finder.html"',
@@ -34,26 +43,29 @@ required_index = [
     'นางสาว|น\\.ส\\.|น\\.ส|นาย|นาง|คุณ',
 ]
 for needle in required_index:
-    assert needle in index, f'missing direct System Owner / VOIP integration: {needle}'
+    assert needle in index, f'missing hidden Utility Dock integration: {needle}'
 
-for needle in ['system-owner-finder.html', 'voip-finder.html', "switchTab('system-owner')", "switchTab('voip')"]:
-    assert needle in generator, f'generator must preserve direct themed topbar integration: {needle}'
+for needle in ['utilityToolsDock', 'positionUtilityToolsMenu', 'system-owner-finder.html', 'voip-finder.html']:
+    assert needle in generator, f'generator must preserve hidden Utility Dock integration: {needle}'
 
-assert 'id="utilityToolsDock"' not in index, 'hidden utility dock must be removed'
-assert 'id="utilityToolsToggle"' not in index, 'hidden utility toggle must be removed'
-assert 'id="utilityToolsMenu"' not in index, 'hidden utility menu must be removed'
-assert 'href="system-owner-finder.html" target="_blank"' not in index, 'System Owner must open inside the themed workspace, not a new tab'
-assert 'href="voip-finder.html" target="_blank"' not in index, 'VOIP Finder must open inside the themed workspace, not a new tab'
+assert 'onclick="switchTab(\'system-owner\')" id="tab-system-owner"' not in index, 'System Owner must not remain a direct topbar tab'
+assert 'onclick="switchTab(\'voip\')" id="tab-voip"' not in index, 'VOIP Finder must not remain a direct topbar tab'
+assert 'href="system-owner-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'System Owner must open in a secure new tab'
+assert 'href="voip-finder.html" target="_blank" rel="noopener noreferrer"' in index, 'VOIP Finder must open in a secure new tab'
 assert 'id="btnSystemOwnerFinder"' not in index, 'old inline System Owner Finder button must stay removed from Generate Log traffic'
 assert 'id="systemOwnerFinderPanel"' not in index, 'old inline System Owner Finder panel must stay removed from Generate Log traffic'
 
 uih_pos = index.find('id="tab-uih"')
-owner_pos = index.find('id="tab-system-owner"')
-voip_pos = index.find('id="tab-voip"')
 nav_end = index.find('</nav>', uih_pos)
-assert 0 <= uih_pos < owner_pos < voip_pos < nav_end, 'System Owner and VOIP Finder must be direct topbar tabs immediately after Generate Log UIh'
+dock_pos = index.find('id="utilityToolsDock"')
+brand_pos = index.find('class="brand-block"', dock_pos)
+assert 0 <= uih_pos < nav_end < dock_pos < brand_pos, 'Utility Dock must sit after the main navigation and before the DHCP brand block'
 
-assert 'id="ownerContactInput"' in index, 'owner contact parser input must remain visible in the themed owner view'
+assert '.utility-tools-menu{position:fixed;' in index, 'Utility menu must escape topbar overflow using fixed positioning'
+assert 'positionUtilityToolsMenu();' in index, 'Utility menu must anchor to the visible toggle when opened'
+assert "window.addEventListener('resize'" in index and 'positionUtilityToolsMenu()' in index, 'Utility menu must reposition on viewport changes'
+
+assert 'id="ownerContactInput"' in index, 'owner contact parser input must remain available in the legacy themed owner view'
 assert 'id="ownerPrefixValue"' in index, 'prefix quick-copy card must remain available'
 assert 'id="ownerNameValue"' in index, 'name quick-copy card must remain available'
 assert 'id="ownerPhoneValue"' in index, 'phone quick-copy card must remain available'
@@ -101,4 +113,4 @@ for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นท
 for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
     assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
-print('direct themed System Owner + VOIP topbar integration: OK')
+print('hidden Utility Dock + standalone System Owner / VOIP integration: OK')
