@@ -32,8 +32,8 @@ is_safe_to_skip() {
     # so skip this source commit and let the generated-output commit deploy once.
     system-owner-finder.html|voip-finder.html|local-ip-reputation.js|api/ip-reputation.js) return 0 ;;
     assets/system-owner-finder-payload-*.txt|assets/voip-finder-payload-*.txt) return 0 ;;
-    scripts/patch-traffic-log.py|scripts/add-traffic-ip-reputation.py|scripts/add-system-owner-finder.py|scripts/fit-uih-viewport.py|scripts/add-thai-down-since.py|scripts/fullscreen-bilingual-uih.py|scripts/add-downsince-language-toggle.py) return 0 ;;
-    scripts/test-traffic-log-layout.py|scripts/test-ip-reputation.py|scripts/test-system-owner-finder.py|scripts/test-downsince-bilingual.js|scripts/test-ip-reputation-api.js|scripts/test-local-ip-reputation.js) return 0 ;;
+    scripts/patch-traffic-log.py|scripts/add-traffic-ip-reputation.py|scripts/add-system-owner-finder.py|scripts/add-responsive-fit.py|scripts/add-business-hours.py|scripts/add-operations-visual-refresh.py|scripts/fit-uih-viewport.py|scripts/add-thai-down-since.py|scripts/fullscreen-bilingual-uih.py|scripts/add-downsince-language-toggle.py) return 0 ;;
+    scripts/test-traffic-log-layout.py|scripts/test-ip-reputation.py|scripts/test-system-owner-finder.py|scripts/test-responsive-fit.py|scripts/test-business-hours.js|scripts/test-operations-visual-refresh.js|scripts/test-downsince-bilingual.js|scripts/test-ip-reputation-api.js|scripts/test-local-ip-reputation.js) return 0 ;;
     *) return 1 ;;
   esac
 }
