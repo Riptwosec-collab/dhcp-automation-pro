@@ -9,17 +9,23 @@ generator_path = root / 'scripts' / 'add-tor-system-finder-upgrade.py'
 core_path = root / 'tor-system-finder-core.js'
 ui_path = root / 'tor-system-finder-upgrade.js'
 css_path = root / 'tor-system-finder-upgrade.css'
+pr_workflow_path = root / '.github' / 'workflows' / 'test-traffic-log-layout.yml'
+main_workflow_path = root / '.github' / 'workflows' / 'resize-dhcp-fields.yml'
 
 assert loader_path.exists(), 'system-owner-finder.html must exist'
 assert core_path.exists(), 'tor-system-finder-core.js must exist'
 assert generator_path.exists(), 'scripts/add-tor-system-finder-upgrade.py must exist'
 assert ui_path.exists(), 'tor-system-finder-upgrade.js must exist'
 assert css_path.exists(), 'tor-system-finder-upgrade.css must exist'
+assert pr_workflow_path.exists(), 'PR workflow must exist'
+assert main_workflow_path.exists(), 'main generation workflow must exist'
 
 loader = loader_path.read_text(encoding='utf-8')
 generator = generator_path.read_text(encoding='utf-8')
 ui = ui_path.read_text(encoding='utf-8')
 css = css_path.read_text(encoding='utf-8')
+pr_workflow = pr_workflow_path.read_text(encoding='utf-8')
+main_workflow = main_workflow_path.read_text(encoding='utf-8')
 
 payload_paths = [root / 'assets' / f'system-owner-finder-payload-{i:02d}.txt' for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -71,7 +77,6 @@ assert 'findCandidates(' in ui, 'analyzer must use deterministic core candidate 
 assert '__torSystemFinderGetRecords' in ui, 'analyzer must use the canonical runtime record bridge'
 assert 'resolveOwners(' in ui, 'selection must resolve owners from selected TOR record'
 
-# Selected system must unlock individually copyable owner contacts + independent operation/mail blocks.
 for needle in [
     'COPY NAME',
     'COPY PHONE',
@@ -84,15 +89,32 @@ for needle in [
     'copyTorValue',
 ]:
     assert needle in ui, f'missing selected-system copy/output behavior: {needle}'
-assert 'To:' not in ui, 'Analyzer UI must not auto-create a mail To field'
+assert 'To:' not in ui, 'Analyzer UI must not auto-create a mail recipient field'
 assert 'sendMail' not in ui and 'mailto:' not in ui, 'Analyzer must not send mail'
 
 assert 'text-overflow:ellipsis' not in css and '-webkit-line-clamp' not in css, 'analyzer output must never truncate copy text'
 assert '@media' in css, 'analyzer must include responsive layout rules'
+
+workflow_needles = [
+    'tor-system-finder-core.js',
+    'tor-system-finder-upgrade.js',
+    'tor-system-finder-upgrade.css',
+    'scripts/add-tor-system-finder-upgrade.py',
+    'scripts/test-tor-system-finder-core.js',
+    'scripts/test-tor-system-finder-owner-core.js',
+    'scripts/test-tor-system-finder-ui-state.js',
+    'scripts/test-tor-system-finder-upgrade.py',
+]
+for workflow_name, workflow in [('PR', pr_workflow), ('main generation', main_workflow)]:
+    for needle in workflow_needles:
+        assert needle in workflow, f'{workflow_name} workflow missing TOR upgrade path/step: {needle}'
+    assert 'python scripts/add-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must apply the TOR upgrade generator'
+    assert 'node scripts/test-tor-system-finder-core.js' in workflow, f'{workflow_name} workflow must verify TOR core behavior'
+    assert 'python scripts/test-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must verify TOR integration'
 
 before = loader_path.read_bytes()
 subprocess.run(['python', str(generator_path)], cwd=root, check=True)
 after = loader_path.read_bytes()
 assert before == after, 'TOR System Finder upgrade generator must be idempotent on repeated runs'
 
-print('TOR System Finder bridge + analyzer + copy-output integration contract: OK')
+print('TOR System Finder bridge + analyzer + copy-output + workflows: OK')
