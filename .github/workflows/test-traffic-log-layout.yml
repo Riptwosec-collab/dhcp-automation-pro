@@ -30,6 +30,7 @@ on:
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
       - 'scripts/test-responsive-fit.py'
+      - 'scripts/test-business-hours.js'
 
 jobs:
   test-layout:
@@ -96,3 +97,5 @@ jobs:
         run: python scripts/test-system-owner-finder.py
       - name: Verify adaptive responsive fit
         run: python scripts/test-responsive-fit.py
+      - name: Verify Business Hours v1
+        run: node scripts/test-business-hours.js
