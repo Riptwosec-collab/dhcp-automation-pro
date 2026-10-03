@@ -11,6 +11,7 @@ on:
       - 'index.html'
       - 'uih.html'
       - 'system-owner-finder.html'
+      - 'tor-system-finder-core.js'
       - 'assets/system-owner-finder-payload-*.txt'
       - 'voip-finder.html'
       - 'assets/voip-finder-payload-*.txt'
@@ -33,6 +34,7 @@ on:
       - 'scripts/test-ip-reputation-api.js'
       - 'scripts/test-local-ip-reputation.js'
       - 'scripts/test-system-owner-finder.py'
+      - 'scripts/test-tor-system-finder-core.js'
       - 'scripts/test-responsive-fit.py'
       - 'scripts/test-business-hours.js'
       - 'scripts/test-operations-visual-refresh.js'
@@ -104,6 +106,8 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner and VOIP integration
         run: python scripts/test-system-owner-finder.py
+      - name: Verify TOR System Finder core parser
+        run: node scripts/test-tor-system-finder-core.js
       - name: Verify adaptive responsive fit
         run: python scripts/test-responsive-fit.py
       - name: Verify Business Hours v1
