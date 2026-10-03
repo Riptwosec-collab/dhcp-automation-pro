@@ -78,8 +78,17 @@
     const normalized=normalizeUrlEscapes(raw).replace(/\r\n?/g,'\n');
     const lines=normalized.split('\n').map(line=>line.trim()).filter(Boolean);
 
-    const monitorLine=lines.find(line=>/^monitor\b/i.test(line))||'';
-    const monitor=monitorLine.replace(/^monitor\s*[:\-]?\s*/i,'').replace(/\s+/g,' ').trim();
+    const monitorStart=lines.findIndex(line=>/^monitor\b/i.test(line));
+    const monitorMarker=/^(?:url\s*:|hosted\s+on\b|(?:เวลา|time)\s*:)/i;
+    const monitorLines=[];
+    if(monitorStart>=0){
+      for(let i=monitorStart;i<lines.length;i++){
+        const line=lines[i];
+        if(i>monitorStart&&monitorMarker.test(line))break;
+        monitorLines.push(i===monitorStart?line.replace(/^monitor\s*[:\-]?\s*/i,''):line);
+      }
+    }
+    const monitor=monitorLines.join(' ').replace(/\s+/g,' ').trim();
 
     const urlLabelMatch=normalized.match(/(?:^|\n)\s*(?:url)\s*:\s*(https?:\/\/[^\s]+)/i);
     const genericUrlMatch=normalized.match(/https?:\/\/[^\s]+/i);
@@ -193,6 +202,7 @@
       if(ownerName){
         const owner={
           id:`${recordId??'record'}:owner:${owners.length+1}`,
+          kind:'owner',
           prefix:ownerName.prefix,
           name:ownerName.name,
           phones:[],
@@ -202,12 +212,15 @@
         addContacts(owner,phones,emails);
         owners.push(owner);
       }else if(phones.length||emails.length){
-        if(owners.length){
-          addContacts(owners[owners.length-1],phones,emails);
-        }else{
-          orphanPhones.push(...phones);
-          orphanEmails.push(...emails);
-        }
+        owners.push({
+          id:`${recordId??'record'}:contact:${owners.length+1}`,
+          kind:'unassigned',
+          prefix:'',
+          name:'',
+          phones:unique(phones),
+          emails:unique(emails),
+          raw:chunk,
+        });
       }
     }
 
@@ -217,6 +230,7 @@
       if(phones.length||emails.length){
         owners.push({
           id:`${recordId??'record'}:contact:1`,
+          kind:'unassigned',
           prefix:'',
           name:'',
           phones,
@@ -275,6 +289,7 @@
     const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||'',record?.id);
     return owners.map((owner,index)=>({
       id:owner.id||`${record?.id??'record'}:owner:${index+1}`,
+      kind:owner.kind||(cleanSpaces(owner.name||'')?'owner':'unassigned'),
       prefix:cleanSpaces(owner.prefix||''),
       name:cleanSpaces(owner.name||''),
       phones:unique(normalizedList(owner.phones,normalizePhone)),
