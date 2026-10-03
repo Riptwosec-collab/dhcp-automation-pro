@@ -28,6 +28,7 @@ on:
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
       - 'scripts/add-operations-visual-refresh.py'
+      - 'scripts/inspect-tor-payload.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
@@ -106,6 +107,8 @@ jobs:
         run: node scripts/test-ip-reputation-api.js
       - name: Verify System Owner and VOIP integration
         run: python scripts/test-system-owner-finder.py
+      - name: Inspect canonical TOR payload
+        run: python scripts/inspect-tor-payload.py
       - name: Verify TOR System Finder core parser
         run: node scripts/test-tor-system-finder-core.js
       - name: Verify adaptive responsive fit
