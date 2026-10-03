@@ -4,9 +4,6 @@ import re
 path = Path('system-owner-finder.html')
 text = path.read_text(encoding='utf-8')
 
-START = '    /* tor-system-finder-upgrade-v1:start */'
-END = '    /* tor-system-finder-upgrade-v1:end */'
-
 # Remove only our prior loader block so repeated runs are byte-for-byte idempotent.
 text = re.sub(
     r'\n[ \t]*/\* tor-system-finder-upgrade-v1:start \*/.*?/\* tor-system-finder-upgrade-v1:end \*/[ \t]*\n?',
@@ -30,9 +27,13 @@ block = r'''    /* tor-system-finder-upgrade-v1:start */
     const torUpgradeRuntimeAnchor="  loadImportedDb();\n  updateDbStatus();";
     if(!html.includes(torUpgradeRuntimeAnchor))throw new Error('TOR runtime data anchor not found');
     html=html.replace(torUpgradeRuntimeAnchor,torUpgradeBridge+torUpgradeRuntimeAnchor);
+    const torUpgradeStyle='<link rel="stylesheet" href="tor-system-finder-upgrade.css">';
+    const torUpgradeScripts='<script src="tor-system-finder-core.js"><\/script><script src="tor-system-finder-upgrade.js"><\/script>';
+    if(!html.includes('</head>')||!html.includes('</body>'))throw new Error('TOR Finder document anchors not found');
+    html=html.replace('</head>',torUpgradeStyle+'</head>').replace('</body>',torUpgradeScripts+'</body>');
     /* tor-system-finder-upgrade-v1:end */
 '''
 
 text = text.replace(anchor, anchor + block, 1)
 path.write_text(text, encoding='utf-8')
-print('TOR System Finder Upgrade v1 runtime bridge applied')
+print('TOR System Finder Upgrade v1 bridge + analyzer assets applied')
