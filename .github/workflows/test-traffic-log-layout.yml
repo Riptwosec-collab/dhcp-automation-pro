@@ -80,6 +80,8 @@ jobs:
           else
             python scripts/add-downsince-language-toggle.py
           fi
+      - name: Apply Responsive Fit v1
+        run: python scripts/add-responsive-fit.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
       - name: Verify bilingual Down Since behavior
