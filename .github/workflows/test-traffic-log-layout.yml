@@ -26,6 +26,7 @@ on:
       - 'scripts/add-system-owner-finder.py'
       - 'scripts/add-responsive-fit.py'
       - 'scripts/add-business-hours.py'
+      - 'scripts/add-operations-visual-refresh.py'
       - 'scripts/test-traffic-log-layout.py'
       - 'scripts/test-downsince-bilingual.js'
       - 'scripts/test-ip-reputation.py'
@@ -89,6 +90,8 @@ jobs:
         run: python scripts/add-responsive-fit.py
       - name: Apply Business Hours v1
         run: python scripts/add-business-hours.py
+      - name: Apply Operations Visual Refresh v2
+        run: python scripts/add-operations-visual-refresh.py
       - name: Verify traffic log and UIh layout
         run: python scripts/test-traffic-log-layout.py
       - name: Verify bilingual Down Since behavior
