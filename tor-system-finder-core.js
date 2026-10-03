@@ -114,10 +114,89 @@
     };
   }
 
+  function normalizedList(values,transform){
+    const list=Array.isArray(values)?values:values?[values]:[];
+    const output=[];
+    const seen=new Set();
+    for(const value of list){
+      const normalized=(transform?transform(value):cleanSpaces(value));
+      if(!normalized||seen.has(normalized))continue;
+      seen.add(normalized);
+      output.push(normalized);
+    }
+    return output;
+  }
+
+  function evidence(field,incidentValue,torValue,matched,contribution,note){
+    return {field,incidentValue:String(incidentValue||''),torValue:String(torValue||''),matched:Boolean(matched),contribution:Number(contribution||0),note:String(note||'')};
+  }
+
+  function scoreCandidate(incident,record){
+    const ips=normalizedList(record?.ips);
+    const hosts=normalizedList(record?.hosts,value=>String(value||'').toLowerCase().trim());
+    const domains=normalizedList(record?.domains,value=>String(value||'').toLowerCase().trim());
+    const incidentIp=String(incident?.ip||'').trim();
+    const incidentHost=String(incident?.host||'').toLowerCase().trim();
+    const incidentDomain=String(incident?.domain||deriveDomain(incidentHost)||'').toLowerCase().trim();
+    const systemName=String(record?.systemName||'');
+    const nameSimilarity=systemNameSimilarity(incident?.systemName||'',systemName);
+
+    const exactIp=Boolean(incidentIp&&ips.includes(incidentIp));
+    const exactHost=Boolean(incidentHost&&hosts.includes(incidentHost));
+    const exactDomain=Boolean(incidentDomain&&domains.includes(incidentDomain));
+    const resultEvidence=[];
+
+    resultEvidence.push(evidence('IP',incidentIp,exactIp?incidentIp:ips.join(', '),exactIp,exactIp?100:0,exactIp?'EXACT IP':'NOT EXACT'));
+
+    if(exactIp){
+      resultEvidence.push(evidence('Host',incidentHost,hosts.join(', '),exactHost,0,exactHost?'EXACT HOST':'NOT USED'));
+      resultEvidence.push(evidence('System Name',incident?.systemName||'',systemName,nameSimilarity===100,0,`Similarity ${nameSimilarity}% · not used because IP is exact`));
+      return {record,score:100,matchMode:'ip-exact',evidence:resultEvidence};
+    }
+
+    if(exactHost){
+      const nameContribution=Math.round(nameSimilarity*0.40);
+      resultEvidence.push(evidence('Host',incidentHost,incidentHost,true,60,'EXACT HOST +60'));
+      resultEvidence.push(evidence('System Name',incident?.systemName||'',systemName,nameSimilarity===100,nameContribution,`Similarity ${nameSimilarity}% -> +${nameContribution}/40`));
+      return {record,score:Math.min(100,60+nameContribution),matchMode:'host-name',evidence:resultEvidence};
+    }
+
+    if(exactDomain){
+      const nameContribution=Math.round(nameSimilarity*0.70);
+      resultEvidence.push(evidence('Host',incidentHost,hosts.join(', '),false,0,'HOST NOT EXACT'));
+      resultEvidence.push(evidence('Domain',incidentDomain,incidentDomain,true,30,'DOMAIN MATCH +30'));
+      resultEvidence.push(evidence('System Name',incident?.systemName||'',systemName,nameSimilarity===100,nameContribution,`Similarity ${nameSimilarity}% -> +${nameContribution}/70`));
+      return {record,score:Math.min(100,30+nameContribution),matchMode:'domain-name',evidence:resultEvidence};
+    }
+
+    resultEvidence.push(evidence('Host',incidentHost,hosts.join(', '),false,0,'HOST NOT EXACT'));
+    resultEvidence.push(evidence('Domain',incidentDomain,domains.join(', '),false,0,'DOMAIN NOT MATCHED'));
+    resultEvidence.push(evidence('System Name',incident?.systemName||'',systemName,nameSimilarity===100,0,`Similarity ${nameSimilarity}% · no Host/Domain base score`));
+    return {record,score:0,matchMode:'none',evidence:resultEvidence};
+  }
+
+  function findCandidates(incident,records){
+    const list=Array.isArray(records)?records:[];
+    const exact=[];
+    for(let index=0;index<list.length;index++){
+      const candidate=scoreCandidate(incident,list[index]);
+      if(candidate.matchMode==='ip-exact')exact.push({...candidate,_index:index});
+    }
+    if(exact.length)return exact.map(({_index,...candidate})=>candidate);
+
+    return list
+      .map((record,index)=>({...scoreCandidate(incident,record),_index:index}))
+      .filter(candidate=>candidate.score>=80)
+      .sort((a,b)=>b.score-a.score||a._index-b._index)
+      .map(({_index,...candidate})=>candidate);
+  }
+
   return {
     parseIncident,
     normalizeSystemName,
     systemNameSimilarity,
     deriveDomain,
+    scoreCandidate,
+    findCandidates,
   };
 });
