@@ -27,26 +27,35 @@ required_index = [
     'function setUtilityToolsOpen(',
     'function toggleUtilityTools(',
     'function closeUtilityToolsOnOutside(',
-    'id="view-system-owner"',
-    'id="systemOwnerFinderFrame"',
-    'src="system-owner-finder.html"',
-    'id="view-voip"',
-    'id="voipFinderFrame"',
-    'src="voip-finder.html"',
-    'function syncSystemOwnerFinderTheme(',
-    'function syncVoipFinderTheme(',
-    'function parseOwnerContact(',
-    'data-owner-copy="prefix"',
-    'data-owner-copy="name"',
-    'data-owner-copy="phone"',
-    'data-owner-copy="email"',
-    'นางสาว|น\\.ส\\.|น\\.ส|นาย|นาง|คุณ',
 ]
 for needle in required_index:
-    assert needle in index, f'missing hidden Utility Dock integration: {needle}'
+    assert needle in index, f'missing standalone Utility Dock integration: {needle}'
 
 for needle in ['utilityToolsDock', 'positionUtilityToolsMenu', 'system-owner-finder.html', 'voip-finder.html']:
-    assert needle in generator, f'generator must preserve hidden Utility Dock integration: {needle}'
+    assert needle in generator, f'generator must preserve standalone Utility Dock integration: {needle}'
+
+# Finder tools must no longer be embedded as hidden workspace views/iframes.
+for needle in [
+    'id="view-system-owner"',
+    'id="systemOwnerFinderFrame"',
+    'id="view-voip"',
+    'id="voipFinderFrame"',
+    "switchTab('system-owner')",
+    "switchTab('voip')",
+]:
+    assert needle not in index, f'finder must be standalone instead of embedded in main workspace: {needle}'
+
+# Generator may reference the old IDs only as cleanup targets; it must never contain the legacy builder block.
+for needle in [
+    "views = r'''",
+    'Add full themed legacy views',
+    '.tool-frame-shell{display:flex',
+    '<iframe id="systemOwnerFinderFrame" class="tool-frame"',
+    '<iframe id="voipFinderFrame" class="tool-frame"',
+]:
+    assert needle not in generator, f'generator must not build embedded finder views: {needle}'
+assert "text = re.sub(r'\\n\\s*<section id=\"view-system-owner\".*?</section>'" in generator, 'generator must remove legacy System Owner view'
+assert "text = re.sub(r'\\n\\s*<section id=\"view-voip\".*?</section>'" in generator, 'generator must remove legacy VOIP view'
 
 assert 'onclick="switchTab(\'system-owner\')" id="tab-system-owner"' not in index, 'System Owner must not remain a direct topbar tab'
 assert 'onclick="switchTab(\'voip\')" id="tab-voip"' not in index, 'VOIP Finder must not remain a direct topbar tab'
@@ -64,13 +73,6 @@ assert 0 <= uih_pos < nav_end < dock_pos < brand_pos, 'Utility Dock must sit aft
 assert '.utility-tools-menu{position:fixed;' in index, 'Utility menu must escape topbar overflow using fixed positioning'
 assert 'positionUtilityToolsMenu();' in index, 'Utility menu must anchor to the visible toggle when opened'
 assert "window.addEventListener('resize'" in index and 'positionUtilityToolsMenu()' in index, 'Utility menu must reposition on viewport changes'
-
-assert 'id="ownerContactInput"' in index, 'owner contact parser input must remain available in the legacy themed owner view'
-assert 'id="ownerPrefixValue"' in index, 'prefix quick-copy card must remain available'
-assert 'id="ownerNameValue"' in index, 'name quick-copy card must remain available'
-assert 'id="ownerPhoneValue"' in index, 'phone quick-copy card must remain available'
-assert 'id="ownerEmailValue"' in index, 'email quick-copy card must remain available'
-assert "const prefixMatch=text.match(/^(นางสาว|น\\.ส\\.|น\\.ส|นาย|นาง|คุณ)\\s*/);" in index, 'Thai title prefixes must be separated from the name'
 
 payload_paths = [Path(f'assets/system-owner-finder-payload-{i:02d}.txt') for i in range(1, 8)]
 for payload_path in payload_paths:
@@ -113,4 +115,31 @@ for needle in ['VOIP Finder', 'หัวข้อใหญ่', 'พื้นท
 for needle in ['data-theme="gold"', 'dhcp-theme', "DecompressionStream('gzip')", "type:'voip-ready'"]:
     assert needle in voip_loader, f'missing VOIP Finder loader/theme behavior: {needle}'
 
-print('hidden Utility Dock + standalone System Owner / VOIP integration: OK')
+# Operations Messages must live on the standalone VOIP page and use live client time.
+required_operations = [
+    'operations-messages-v1',
+    'id="operationsMessages"',
+    'Alerts & Incidents',
+    'Standard Operations',
+    'Device Hang',
+    'ไม่สามารถติดต่อเจ้าหน้าที่ได้',
+    'วงจรกลับมาปกติ',
+    'ปิดระบบ 10 นาที',
+    'ครบ 10 นาที',
+    'ไฟฟ้าดับ / Log reboot - ตรวจสอบ',
+    'ไฟฟ้าดับ - แก้ไข',
+    'function formatOperationsNow(',
+    'function renderOperationsNow(',
+    'function operationText(',
+    'function copyOperationMessage(',
+    'new Date()',
+    'data-op-time',
+]
+for needle in required_operations:
+    assert needle in voip_loader, f'missing standalone VOIP operations feature: {needle}'
+
+# Avoid shipping the screenshot sample timestamps as fixed runtime values.
+for stale_time in ['20.49', '08.30', '20.59']:
+    assert stale_time not in voip_loader, f'operations timestamps must be generated at runtime, not hard-coded: {stale_time}'
+
+print('standalone Finder pages + themed live-time Operations Messages: OK')

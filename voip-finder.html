@@ -21,12 +21,81 @@
     const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
     let html=await new Response(stream).text();
+
     const bridgeStyle=`<style id="missionVoipTheme">
-      body[data-theme="gold"]{--bg:#010204;--panel:#070a0f;--panel2:#0a0e15;--line:rgba(245,197,66,.20);--text:#fff;--muted:#89909b;--cyan:#f5c542;--yellow:#ffe38a;--green:#22c55e;--shadow:0 20px 55px rgba(0,0,0,.46)}
-      body[data-theme="cyber"]{--bg:#020716;--panel:#071427;--panel2:#091b32;--line:rgba(34,211,238,.20);--text:#f8fbff;--muted:#91a6c7;--cyan:#22d3ee;--yellow:#8cecff;--green:#2dd4bf;--shadow:0 20px 55px rgba(0,4,16,.5)}
+      html,body{min-height:100%!important;height:auto!important;overflow-y:auto!important}
+      body[data-theme="gold"]{--bg:#010204;--panel:#070a0f;--panel2:#0a0e15;--line:rgba(245,197,66,.20);--text:#fff;--muted:#89909b;--cyan:#f5c542;--yellow:#ffe38a;--green:#22c55e;--shadow:0 20px 55px rgba(0,0,0,.46);--accentRgb:245,197,66}
+      body[data-theme="cyber"]{--bg:#020716;--panel:#071427;--panel2:#091b32;--line:rgba(34,211,238,.20);--text:#f8fbff;--muted:#91a6c7;--cyan:#22d3ee;--yellow:#8cecff;--green:#2dd4bf;--shadow:0 20px 55px rgba(0,4,16,.5);--accentRgb:34,211,238}
     </style>`;
-    const bridgeScript=`<script id="missionVoipBridge">window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='dhcp-theme'){document.body.dataset.theme=event.data.theme==='cyber'?'cyber':'gold'}});window.parent?.postMessage({type:'voip-ready'},location.origin);<\/script>`;
-    html=html.replace(/<body([^>]*)>/i,'<body$1 data-theme="gold">').replace('</head>',bridgeStyle+'</head>').replace('</body>',bridgeScript+'</body>');
+
+    const operationsStyle=`<style id="operations-messages-v1">
+      .ops-shell{--opsAlert:251,113,133;max-width:1640px;margin:28px auto 44px;padding:0 16px;color:var(--text,#fff);font-family:Inter,'Sarabun',system-ui,sans-serif}
+      .ops-topline{display:flex;align-items:end;justify-content:space-between;gap:14px;padding:0 2px 10px;border-bottom:1px solid rgba(var(--accentRgb),.14)}
+      .ops-title-wrap small{display:block;color:var(--muted,#89909b);font:800 9px/1.2 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase}.ops-title-wrap h2{margin:4px 0 0;font-size:16px;letter-spacing:.02em}.ops-live{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(var(--accentRgb),.26);border-radius:999px;background:rgba(var(--accentRgb),.07);color:var(--cyan);font:800 10px/1 'JetBrains Mono',monospace;white-space:nowrap}.ops-live::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+      .ops-group{margin-top:14px;overflow:hidden;border-radius:18px;border:1px solid rgba(var(--accentRgb),.22);background:linear-gradient(145deg,rgba(7,10,15,.93),rgba(3,6,10,.96));box-shadow:0 18px 48px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.025)}
+      .ops-group.alerts{border-color:rgba(var(--opsAlert),.40);background:linear-gradient(135deg,rgba(var(--opsAlert),.075),rgba(4,7,11,.96) 42%)}
+      .ops-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(var(--accentRgb),.14);background:linear-gradient(90deg,rgba(var(--accentRgb),.075),transparent 62%)}.ops-group.alerts .ops-group-head{border-bottom-color:rgba(var(--opsAlert),.22);background:linear-gradient(90deg,rgba(var(--opsAlert),.09),transparent 64%)}
+      .ops-group-title{display:flex;align-items:center;gap:11px}.ops-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;border:1px solid rgba(var(--accentRgb),.32);background:rgba(var(--accentRgb),.10);color:var(--cyan);font-weight:900}.ops-group.alerts .ops-icon{border-color:rgba(var(--opsAlert),.40);background:rgba(var(--opsAlert),.11);color:#fda4af}.ops-kicker{font:900 8px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--cyan);text-transform:uppercase}.ops-group.alerts .ops-kicker{color:#fb7185}.ops-name{margin-top:4px;font-size:14px;font-weight:900}.ops-count{padding:5px 8px;border-radius:999px;border:1px solid rgba(var(--accentRgb),.26);background:rgba(var(--accentRgb),.06);color:var(--cyan);font:800 9px/1 'JetBrains Mono',monospace}.ops-group.alerts .ops-count{color:#fda4af;border-color:rgba(var(--opsAlert),.34);background:rgba(var(--opsAlert),.08)}
+      .ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px}.ops-group.alerts .ops-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .ops-card{position:relative;min-width:0;padding:14px;border:1px solid rgba(var(--accentRgb),.17);border-radius:13px;background:linear-gradient(145deg,rgba(var(--accentRgb),.045),rgba(3,8,13,.82));transition:.2s ease}.ops-card:hover{transform:translateY(-1px);border-color:rgba(var(--accentRgb),.40);box-shadow:0 10px 24px rgba(0,0,0,.26),0 0 18px rgba(var(--accentRgb),.07)}.ops-group.alerts .ops-card{border-color:rgba(var(--opsAlert),.18);background:linear-gradient(145deg,rgba(var(--opsAlert),.045),rgba(3,8,13,.82))}.ops-group.alerts .ops-card:hover{border-color:rgba(var(--opsAlert),.40);box-shadow:0 10px 24px rgba(0,0,0,.26),0 0 18px rgba(var(--opsAlert),.06)}
+      .ops-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.ops-card-title{font-size:12px;font-weight:900;color:#fff}.ops-card-title::before{content:'';display:inline-block;width:3px;height:12px;margin-right:7px;border-radius:999px;background:var(--cyan);box-shadow:0 0 8px rgba(var(--accentRgb),.36);vertical-align:-1px}.ops-group.alerts .ops-card-title::before{background:#fb7185;box-shadow:0 0 8px rgba(var(--opsAlert),.35)}
+      .ops-copy{flex:0 0 auto;min-height:30px;padding:0 10px;border-radius:8px;border:1px solid rgba(var(--accentRgb),.34);background:rgba(var(--accentRgb),.07);color:var(--cyan);font:900 9px/1 'JetBrains Mono',monospace;cursor:pointer;transition:.18s ease}.ops-copy:hover{background:rgba(var(--accentRgb),.15);border-color:rgba(var(--accentRgb),.62);box-shadow:0 0 14px rgba(var(--accentRgb),.12)}.ops-group.alerts .ops-copy{border-color:rgba(var(--opsAlert),.30);background:rgba(var(--opsAlert),.07);color:#fda4af}.ops-group.alerts .ops-copy:hover{background:rgba(var(--opsAlert),.13);border-color:rgba(var(--opsAlert),.55)}
+      .ops-desc{margin:7px 0 10px;color:var(--muted,#89909b);font-size:10px;line-height:1.55}.ops-stamp{display:flex;align-items:center;gap:8px;color:var(--yellow);font:800 9px/1 'JetBrains Mono',monospace}.ops-stamp span:first-child{color:var(--muted,#89909b)}
+      @media(max-width:1050px){.ops-group.alerts .ops-grid{grid-template-columns:1fr 1fr}}
+      @media(max-width:720px){.ops-shell{padding:0 10px}.ops-topline{align-items:flex-start;flex-direction:column}.ops-grid,.ops-group.alerts .ops-grid{grid-template-columns:1fr}.ops-card{padding:13px}}
+      @media(prefers-reduced-motion:reduce){.ops-card,.ops-copy{transition:none!important}}
+    </style>`;
+
+    const operationsMarkup=`
+      <section id="operationsMessages" class="ops-shell" aria-label="Operations Messages">
+        <div class="ops-topline"><div class="ops-title-wrap"><small>OPERATIONS MESSAGES · FAST · CLEAR · TOGETHER</small><h2>Operations Messages</h2></div><div class="ops-live"><span>LIVE</span><span data-op-date>--/--/----</span><span data-op-time>--.--</span></div></div>
+
+        <div class="ops-group alerts">
+          <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">△</div><div><div class="ops-kicker">ALERTS</div><div class="ops-name">Alerts & Incidents</div></div></div><div class="ops-count">3 ITEMS</div></div>
+          <div class="ops-grid">
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">Device Hang</div><button class="ops-copy" type="button" onclick="copyOperationMessage('device-hang',this)">COPY</button></div><p class="ops-desc">ตรวจสอบ Switch และ Router พบ Log reboot และอุปกรณ์กลับมาใช้งานได้ปกติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไม่สามารถติดต่อเจ้าหน้าที่ได้</div><button class="ops-copy" type="button" onclick="copyOperationMessage('no-contact',this)">COPY</button></div><p class="ops-desc">ใช้สำหรับแจ้งกรณีติดต่อเจ้าหน้าที่ประจำสำนักงานไม่ได้และรอตรวจสอบในเวลาทำการ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-up',this)">COPY</button></div><p class="ops-desc">Link Up · เวลาสร้างข้อความจะใช้เวลาปัจจุบันอัตโนมัติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+          </div>
+        </div>
+
+        <div class="ops-group standard">
+          <div class="ops-group-head"><div class="ops-group-title"><div class="ops-icon">≡</div><div><div class="ops-kicker">OPERATIONS</div><div class="ops-name">Standard Operations</div></div></div><div class="ops-count">6 ITEMS</div></div>
+          <div class="ops-grid">
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ปิดระบบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('shutdown-10',this)">COPY</button></div><p class="ops-desc">รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) และรอแจ้งเปิดระบบอีกครั้ง</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ครบ 10 นาที</div><button class="ops-copy" type="button" onclick="copyOperationMessage('ten-complete',this)">COPY</button></div><p class="ops-desc">แจ้งครบ 10 นาที เปิดอุปกรณ์ขึ้นมาแล้วสามารถแจ้งกลับได้เลย</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">วงจรกลับมาปกติ - แก้ไข</div><button class="ops-copy" type="button" onclick="copyOperationMessage('link-normal-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">ข้อความแก้ไขสำหรับวงจรที่กลับมาปกติแล้ว</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ / Log reboot - ตรวจสอบ</div><button class="ops-copy" type="button" onclick="copyOperationMessage('power-check',this)">COPY ตรวจสอบ</button></div><p class="ops-desc">ตรวจสอบพบ Log reboot คาดว่าไฟฟ้าดับ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+            <article class="ops-card"><div class="ops-card-head"><div class="ops-card-title">ไฟฟ้าดับ - แก้ไข</div><button class="ops-copy" type="button" onclick="copyOperationMessage('power-fix',this)">COPY แก้ไข</button></div><p class="ops-desc">การไฟฟ้าจ่ายกระแสไฟกลับมาและอุปกรณ์ใช้งานได้ปกติ</p><div class="ops-stamp"><span data-op-date>--/--/----</span><strong data-op-time>--.--</strong></div></article>
+          </div>
+        </div>
+      </section>`;
+
+    const operationsScript=`<script id="operationsMessagesScript">(()=>{
+      function formatOperationsNow(date=new Date()){const pad=n=>String(n).padStart(2,'0');return{date:pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+String(date.getFullYear()+543),time:pad(date.getHours())+'.'+pad(date.getMinutes())}}
+      function renderOperationsNow(){const now=formatOperationsNow();document.querySelectorAll('[data-op-date]').forEach(el=>el.textContent=now.date);document.querySelectorAll('[data-op-time]').forEach(el=>el.textContent=now.time)}
+      function operationText(key){const now=formatOperationsNow(),stamp='วันที่ '+now.date+' เวลา '+now.time+' น.';const messages={
+        'device-hang':'ตรวจสอบ Switch และ Router พบ log reboot อุปกรณ์ ปัจจุบันอุปกรณ์กลับมาใช้งานได้ปกติ '+stamp,
+        'no-contact':'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+stamp,
+        'link-up':'ขอแจ้งครับ Link up กลับมา '+stamp,
+        'shutdown-10':'รับทราบปิดระบบ 10 นาที (ตู้ Rack / เครื่องสำรองไฟ) รบกวนแจ้งเมื่อเปิดระบบอีกครั้ง '+stamp,
+        'ten-complete':'ครบ 10 นาที สามารถเปิดอุปกรณ์ขึ้นมาแล้วแจ้งกลับได้เลยครับ '+stamp,
+        'link-normal-check':'ตรวจสอบพบวงจรกลับมาปกติก่อนดำเนินการแก้ไข '+stamp,
+        'link-normal-fix':'แก้ไขโดย : วงจรกลับมาปกติก่อนดำเนินการแก้ไข '+stamp,
+        'power-check':'ตรวจสอบพบ Log reboot คาดว่าไฟฟ้าดับ '+stamp,
+        'power-fix':'แก้ไขโดย : การไฟฟ้าจ่ายกระแสไฟกลับมาใช้งานได้ปกติ '+stamp
+      };return messages[key]||''}
+      async function copyOperationMessage(key,button){const text=operationText(key);if(!text)return;try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}if(button){const old=button.textContent;button.textContent='COPIED';button.disabled=true;setTimeout(()=>{button.textContent=old;button.disabled=false},900)}}
+      window.formatOperationsNow=formatOperationsNow;window.renderOperationsNow=renderOperationsNow;window.operationText=operationText;window.copyOperationMessage=copyOperationMessage;
+      renderOperationsNow();setInterval(renderOperationsNow,1000);
+    })();<\/script>`;
+
+    const bridgeScript=`<script id="missionVoipBridge">(()=>{const applyTheme=theme=>{document.body.dataset.theme=theme==='cyber'?'cyber':'gold'};applyTheme(localStorage.getItem('missionTheme')||'gold');window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.data?.type==='dhcp-theme')applyTheme(event.data.theme)});window.addEventListener('storage',event=>{if(event.key==='missionTheme')applyTheme(event.newValue||'gold')});window.parent?.postMessage({type:'voip-ready'},location.origin)})();<\/script>`;
+
+    html=html.replace(/<body([^>]*)>/i,'<body$1 data-theme="gold">')
+      .replace('</head>',bridgeStyle+operationsStyle+'</head>')
+      .replace('</body>',operationsMarkup+operationsScript+bridgeScript+'</body>');
     document.open();document.write(html);document.close();
   }catch(error){
     document.body.innerHTML='<div class="boot">VOIP FINDER COULD NOT START</div>';
