@@ -17,6 +17,58 @@
     return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   }
 
+  function encodeCopyValue(value){
+    return encodeURIComponent(String(value??''));
+  }
+
+  function decodeCopyValue(value){
+    try{return decodeURIComponent(String(value||''));}catch(_error){return String(value||'');}
+  }
+
+  function copyButton(label,value,className='tor-copy-button'){
+    if(!String(value??'').length)return '';
+    return `<button type="button" class="${className}" data-copy-value="${escapeHtml(encodeCopyValue(value))}">${escapeHtml(label)}</button>`;
+  }
+
+  async function copyTorValue(text,button){
+    const value=String(text??'');
+    if(!value)return false;
+    const original=button?.textContent||'';
+    try{
+      if(!root.navigator?.clipboard?.writeText)throw new Error('Clipboard API unavailable');
+      await root.navigator.clipboard.writeText(value);
+      if(button){
+        button.textContent='COPIED';
+        button.dataset.copyState='ok';
+        root.setTimeout(()=>{button.textContent=original;delete button.dataset.copyState;},1100);
+      }
+      return true;
+    }catch(error){
+      if(button){
+        button.textContent='COPY FAILED';
+        button.dataset.copyState='error';
+        root.setTimeout(()=>{button.textContent=original;delete button.dataset.copyState;},1500);
+      }
+      console.error(error);
+      return false;
+    }
+  }
+
+  function ownerDisplayName(owner){
+    return [owner?.prefix,owner?.name].filter(Boolean).join(' ').trim()||'Contact';
+  }
+
+  function ownerContactText(owner){
+    const lines=[ownerDisplayName(owner)];
+    for(const phone of owner?.phones||[])lines.push(`เบอร์: ${phone}`);
+    for(const email of owner?.emails||[])lines.push(`Email: ${email}`);
+    return lines.join('\n');
+  }
+
+  function allContactsText(owners){
+    return (owners||[]).map(ownerContactText).filter(Boolean).join('\n\n');
+  }
+
   function init(){
     if(typeof document==='undefined')return;
     if(document.getElementById('torIncidentAnalyzer'))return;
@@ -59,9 +111,7 @@
     let state=createState();
 
     function resetDownstream(){
-      for(const element of [extracted,candidatesEl,selectedEl,ownersEl,copyEl,mailEl]){
-        element.hidden=true;
-      }
+      for(const element of [extracted,candidatesEl,selectedEl,ownersEl,copyEl,mailEl])element.hidden=true;
       extracted.querySelector('.tor-field-grid').innerHTML='';
       candidatesEl.querySelector('.tor-candidate-list').innerHTML='';
       selectedEl.innerHTML=''; ownersEl.innerHTML=''; copyEl.innerHTML=''; mailEl.innerHTML='';
@@ -90,12 +140,41 @@
       list.innerHTML=state.candidates.map((candidate,index)=>`<article class="tor-candidate" data-score="${candidate.score}"><div class="tor-candidate-top"><div><span>CANDIDATE ${index+1}</span><h3>${escapeHtml(candidate.record.systemName||'-')}</h3></div><div class="tor-score">MATCH <strong>${candidate.score}%</strong><small>${escapeHtml(candidate.matchMode)}</small></div></div><div class="tor-evidence-grid">${evidenceMarkup(candidate.evidence)}</div><button type="button" class="tor-select" data-candidate-index="${index}">SELECT THIS SYSTEM</button></article>`).join('');
     }
 
+    function ownerMarkup(owner,index){
+      const displayName=ownerDisplayName(owner);
+      const phones=(owner.phones||[]).map(phone=>`<div class="tor-contact-row"><div><span>PHONE</span><code>${escapeHtml(phone)}</code></div>${copyButton('COPY PHONE',phone)}</div>`).join('');
+      const emails=(owner.emails||[]).map(email=>`<div class="tor-contact-row"><div><span>EMAIL</span><code>${escapeHtml(email)}</code></div>${copyButton('COPY EMAIL',email)}</div>`).join('');
+      return `<article class="tor-owner"><div class="tor-owner-head"><div><span>OWNER ${index+1}</span><h3>${escapeHtml(displayName)}</h3></div>${copyButton('COPY NAME',displayName)}</div><div class="tor-owner-contact-list">${phones||'<div class="tor-contact-empty">PHONE · -</div>'}${emails||'<div class="tor-contact-empty">EMAIL · -</div>'}</div></article>`;
+    }
+
+    function renderOperationalBlocks(){
+      const blocks=core.buildOperationalBlocks(state.incident);
+      const items=[
+        ['MONITOR + RESOLUTION',blocks.combinedResolution,'COPY MONITOR + RESOLUTION'],
+        ['URL NORMAL',blocks.urlNormal,'COPY URL NORMAL'],
+        ['URL ABNORMAL',blocks.urlAbnormal,'COPY URL ABNORMAL'],
+        ['TICKET ACTION',blocks.ticketAction,'COPY TICKET ACTION'],
+        ['MAIL COMPLETION',blocks.mailCompletion,'COPY MAIL COMPLETION'],
+      ];
+      copyEl.hidden=false;
+      copyEl.innerHTML=`<div class="tor-stage-title"><strong>OPERATION COPY BLOCKS</strong><span>Copy แยกได้ทีละชุด · ข้อความแสดงเต็ม</span></div><div class="tor-copy-grid">${items.map(([label,value,buttonLabel])=>`<article class="tor-copy-card ${value?'':'is-disabled'}"><div class="tor-copy-card-head"><strong>${escapeHtml(label)}</strong>${copyButton(buttonLabel,value)}</div><pre class="tor-copy-text">${escapeHtml(value||'ไม่มี URL สำหรับสร้างข้อความชุดนี้')}</pre></article>`).join('')}</div>`;
+    }
+
+    function renderMailDraft(){
+      const draft=core.buildMailDraft(state.incident,state.selectedRecord);
+      mailEl.hidden=false;
+      mailEl.innerHTML=`<div class="tor-stage-title"><strong>MAIL DRAFT</strong><span>ข้อความพร้อม Copy · ผู้ดูแล/Email แยกอยู่ด้านบน</span></div><article class="tor-mail-card"><div class="tor-copy-card-head"><strong>MAIL BODY</strong>${copyButton('COPY MAIL',draft)}</div><pre class="tor-mail-text">${escapeHtml(draft)}</pre></article>`;
+    }
+
     function renderSelection(candidate){
       selectedEl.hidden=false;
       selectedEl.innerHTML=`<div class="tor-selected"><span>SELECTED SYSTEM</span><strong>${escapeHtml(candidate.record.systemName||'-')}</strong><b>MATCH ${candidate.score}%</b></div>`;
       ownersEl.hidden=false;
       const owners=state.owners;
-      ownersEl.innerHTML=`<div class="tor-stage-title"><strong>MATCHED SYSTEM OWNERS</strong><span>${owners.length} owner(s) จาก TOR record ที่เลือก</span></div>${owners.length?`<div class="tor-owner-grid">${owners.map((owner,index)=>`<article class="tor-owner"><span>OWNER ${index+1}</span><h3>${escapeHtml([owner.prefix,owner.name].filter(Boolean).join(' ')||'Contact')}</h3><div><b>PHONE</b> ${escapeHtml(owner.phones.join(' · ')||'-')}</div><div><b>EMAIL</b> ${escapeHtml(owner.emails.join(' · ')||'-')}</div></article>`).join('')}</div>`:'<div class="tor-no-match">NO OWNER CONTACT FOUND</div>'}`;
+      const allContacts=allContactsText(owners);
+      ownersEl.innerHTML=`<div class="tor-stage-title"><strong>MATCHED SYSTEM OWNERS</strong><span>${owners.length} owner(s) จาก TOR record ที่เลือก</span></div>${owners.length?`<div class="tor-owner-actions">${copyButton('COPY ALL CONTACTS',allContacts,'tor-copy-button tor-copy-all')}</div><div class="tor-owner-grid">${owners.map(ownerMarkup).join('')}</div>`:'<div class="tor-no-match">NO OWNER CONTACT FOUND</div>'}`;
+      renderOperationalBlocks();
+      renderMailDraft();
     }
 
     function analyzeError(){
@@ -126,14 +205,19 @@
       status.textContent=input.value.trim()?'CHANGED · PRESS ANALYZE ERROR':'WAITING FOR ERROR';
     });
     analyze.addEventListener('click',analyzeError);
-    candidatesEl.addEventListener('click',event=>{
+    rootEl.addEventListener('click',event=>{
+      const copy=event.target.closest('[data-copy-value]');
+      if(copy){
+        copyTorValue(decodeCopyValue(copy.dataset.copyValue),copy);
+        return;
+      }
       const button=event.target.closest('[data-candidate-index]');
       if(!button)return;
       const candidate=state.candidates[Number(button.dataset.candidateIndex)];
       if(!candidate)return;
       state={...state,phase:'ready',selectedRecord:candidate.record,owners:core.resolveOwners(candidate.record)};
       renderSelection(candidate);
-      status.textContent='SYSTEM SELECTED · OWNER DATA READY';
+      status.textContent='SYSTEM SELECTED · OWNER + COPY OUTPUTS READY';
     });
   }
 
@@ -141,5 +225,5 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
   }
 
-  return {createState,invalidateState,init};
+  return {createState,invalidateState,copyTorValue,init};
 });
