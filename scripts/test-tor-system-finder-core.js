@@ -137,6 +137,30 @@ function testEvidenceShowsIncidentTorAndContribution() {
   assert.equal(hostEvidence.contribution,60);
 }
 
+function testBuildsIndependentOperationalCopyBlocks() {
+  const incident=core.parseIncident(sample);
+  const blocks=core.buildOperationalBlocks(incident);
+  const url='https://intrapp2.rd.go.th/signed_intra/login/login.php';
+  assert.equal(blocks.urlNormal,`ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
+  assert.equal(blocks.urlAbnormal,`ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`);
+  assert.equal(blocks.combinedResolution,`Monitor ${incident.monitor}\nแก้ไขโดย : ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
+  assert.equal(blocks.ticketAction,'กดตั๊กเพิ่มไม่ได้');
+  assert.equal(blocks.mailCompletion,'ดำเนินการส่ง Mail แจ้งผู้ดูแลระบบเรียบร้อยแล้ว');
+}
+
+function testBuildsFixedMailDraftWithoutRecipients() {
+  const incident=core.parseIncident(sample);
+  const draft=core.buildMailDraft(incident,{id:99,systemName:'ระบบ Time Stamp'});
+  assert.ok(draft.startsWith('เรียน ผู้ดูแลระบบ\n\n'));
+  assert.ok(draft.includes(`Monitor ${incident.monitor}`));
+  assert.ok(draft.includes(`Url: ${incident.url}`));
+  assert.ok(draft.includes(`hosted on ${incident.ip} of ${incident.error}`));
+  assert.ok(draft.includes(`เวลา : ${incident.time}`));
+  assert.ok(draft.endsWith('ติดต่อเจ้าหน้าที่ RDNOC\nเบอร์ 02-272-8891 - 3\nLine ID: @RDNOC\nขอบคุณครับ/ขอบคุณค่ะ'));
+  assert.ok(!/(^|\n)To\s*:/i.test(draft));
+  assert.ok(!draft.includes('@rd.go.th'));
+}
+
 const tests = [
   testExtractsSampleIncidentFields,
   testAcceptsEscapedUrlAndUrlLabelVariants,
@@ -151,6 +175,8 @@ const tests = [
   testWeakGenericDomainCandidateIsExcluded,
   testCandidatesSortDescendingAndPreserveTies,
   testEvidenceShowsIncidentTorAndContribution,
+  testBuildsIndependentOperationalCopyBlocks,
+  testBuildsFixedMailDraftWithoutRecipients,
 ];
 
 for (const test of tests) test();
