@@ -25,17 +25,18 @@ function testTablePasteDropsWrapperHeaders(){
   assert.ok(!draft.includes('Request Detail'));
 }
 
-function testUrlStatusControlsResolutionCopy(){
-  assert.equal(typeof upgrade.buildUrlStatusView, 'function', 'v1.1 must expose pure URL status selection');
+function testUrlStatusDoesNotChangeResolutionCopy(){
+  assert.equal(typeof upgrade.buildUrlStatusView, 'function', 'v1.1.1 must expose pure URL status selection');
   const incident = core.parseIncident(`Monitor ระบบงานบัญชีอิเล็กทรอนิกส์ AccNew Online ไม่สามารถเรียกใช้งานได้\n\n${cleanIncident}`);
   const blocks = core.buildOperationalBlocks(incident);
   const normal = upgrade.buildUrlStatusView(blocks, 'normal');
   const abnormal = upgrade.buildUrlStatusView(blocks, 'abnormal');
+  const fixedResolution = `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlNormal}`;
 
   assert.equal(normal.urlStatus, blocks.urlNormal);
   assert.equal(abnormal.urlStatus, blocks.urlAbnormal);
-  assert.equal(normal.combinedResolution, `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlNormal}`);
-  assert.equal(abnormal.combinedResolution, `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlAbnormal}`);
+  assert.equal(normal.combinedResolution, fixedResolution);
+  assert.equal(abnormal.combinedResolution, fixedResolution, 'URL status dropdown must not change MONITOR + RESOLUTION');
 }
 
 function testUiUsesOneUrlDropdownAndFourCopyCards(){
@@ -46,12 +47,11 @@ function testUiUsesOneUrlDropdownAndFourCopyCards(){
     'URL ปกติ',
     'URL ไม่ปกติ',
     "event.target.closest('#torUrlStatus')",
-    "renderOperationalBlocks(currentIncident,event.target.value)",
     'URL STATUS',
     'MONITOR ORIGINAL',
     'MONITOR + RESOLUTION',
     'MAIL COMPLETION',
-  ]) assert.ok(ui.includes(needle), `missing v1.1 UI contract: ${needle}`);
+  ]) assert.ok(ui.includes(needle), `missing v1.1.1 UI contract: ${needle}`);
 
   for(const forbidden of ['TICKET ACTION','COPY TICKET ACTION']){
     assert.ok(!ui.includes(forbidden), `removed v1.1 UI must not contain: ${forbidden}`);
@@ -60,8 +60,8 @@ function testUiUsesOneUrlDropdownAndFourCopyCards(){
 
 const tests = [
   testTablePasteDropsWrapperHeaders,
-  testUrlStatusControlsResolutionCopy,
+  testUrlStatusDoesNotChangeResolutionCopy,
   testUiUsesOneUrlDropdownAndFourCopyCards,
 ];
 for(const test of tests) test();
-console.log(`TOR Copy Block v1.1 tests: ${tests.length}/${tests.length} PASS`);
+console.log(`TOR Copy Block v1.1.1 tests: ${tests.length}/${tests.length} PASS`);
