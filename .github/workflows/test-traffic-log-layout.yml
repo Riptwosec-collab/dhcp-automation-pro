@@ -53,8 +53,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify Business Hours generator idempotence early
-        run: node scripts/test-business-hours.js
       - name: Apply traffic log layout patch in test workspace when missing
         run: |
           if grep -q 'traffic-log-layout-v3' index.html && grep -q 'id="view-uih"' index.html; then
