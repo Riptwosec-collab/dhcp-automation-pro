@@ -7,6 +7,21 @@ const childProcess = require('child_process');
 
 const html = fs.readFileSync('operations-messages.html', 'utf8');
 
+function firstDiffContext(a, b) {
+  const max = Math.max(a.length, b.length);
+  let index = 0;
+  while (index < max && a[index] === b[index]) index += 1;
+  const start = Math.max(0, index - 120);
+  const end = index + 120;
+  return {
+    index,
+    onceLength: a.length,
+    twiceLength: b.length,
+    once: JSON.stringify(a.slice(start, end)),
+    twice: JSON.stringify(b.slice(start, end)),
+  };
+}
+
 // Regression: the materialized Operations page already contains the unified
 // operationParts runtime. Business Hours must still be safe to regenerate and
 // must be byte-stable on a second run.
@@ -32,6 +47,7 @@ try {
   const once = fs.readFileSync(tempHtml, 'utf8');
   runGenerator();
   const twice = fs.readFileSync(tempHtml, 'utf8');
+  if (twice !== once) console.error('BUSINESS_HOURS_IDEMPOTENCE_DIFF', firstDiffContext(once, twice));
   assert.strictEqual(twice, once, 'Business Hours generator must be idempotent after unified Operations generation');
 } finally {
   fs.rmSync(tempDir, {recursive: true, force: true});
