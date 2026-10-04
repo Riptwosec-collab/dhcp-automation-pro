@@ -7,8 +7,7 @@ text = path.read_text(encoding='utf-8')
 start_marker = '/* business-hours-v1:start */'
 end_marker = '/* business-hours-v1:end */'
 
-# Keep this generator idempotent by replacing any previous Business Hours block
-# without consuming indentation from the function/layer that follows it.
+# Keep this generator idempotent by replacing any previous Business Hours block.
 text = re.sub(
     r'\n[ \t]*/\* business-hours-v1:start \*/.*?/\* business-hours-v1:end \*/[ \t]*\n?',
     '\n',
@@ -48,13 +47,16 @@ business_logic = r'''
 
 # The Operations consistency layer owns operationParts/operationText after it has
 # been generated. Keep Business Hours immediately before that layer when present;
-# otherwise fall back to the legacy operationText anchor.
+# otherwise fall back to the legacy operationText anchor. Canonicalize the
+# whitespace at the boundary so repeated generation cannot add blank lines.
 unified_anchor = '/* unified-operations-consistency-v1:start */'
 legacy_anchor = '    function operationText(key,date=new Date())' if '    function operationText(key,date=new Date())' in text else '    function operationText(key)'
 if unified_anchor in text:
-    text = text.replace(unified_anchor, business_logic + '\n' + unified_anchor, 1)
+    prefix, suffix = text.split(unified_anchor, 1)
+    text = prefix.rstrip() + '\n\n' + business_logic + '\n' + unified_anchor + suffix
 elif legacy_anchor in text:
-    text = text.replace(legacy_anchor, business_logic + '\n' + legacy_anchor, 1)
+    prefix, suffix = text.split(legacy_anchor, 1)
+    text = prefix.rstrip() + '\n\n' + business_logic + '\n' + legacy_anchor + suffix
 else:
     raise SystemExit('operationText/unified Operations anchor not found')
 
