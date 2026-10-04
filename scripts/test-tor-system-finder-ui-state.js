@@ -34,10 +34,27 @@ function testCopyFunctionIsExportedForBrowserController() {
   assert.equal(typeof ui.copyTorValue, 'function');
 }
 
+function testUrlStatusDropdownDoesNotChangeCombinedResolution() {
+  assert.equal(typeof ui.buildUrlStatusView, 'function');
+  const blocks = {
+    monitorOriginal: 'Monitor ระบบทดสอบ ไม่สามารถเรียกใช้งานได้',
+    urlNormal: 'ตรวจสอบสามารถใช้งาน Url: https://example.rd.go.th/ ได้ปกติ',
+    urlAbnormal: 'ตรวจสอบไม่สามารถใช้งาน Url: https://example.rd.go.th/ ได้ปกติ',
+  };
+  const normal = ui.buildUrlStatusView(blocks, 'normal');
+  const abnormal = ui.buildUrlStatusView(blocks, 'abnormal');
+  const fixed = `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlNormal}`;
+  assert.equal(normal.urlStatus, blocks.urlNormal);
+  assert.equal(abnormal.urlStatus, blocks.urlAbnormal);
+  assert.equal(normal.combinedResolution, fixed);
+  assert.equal(abnormal.combinedResolution, fixed, 'dropdown must affect URL STATUS only');
+}
+
 const tests = [
   testCreateStateStartsLocked,
   testEditingRawTextInvalidatesPreviousAnalysisAndSelection,
   testCopyFunctionIsExportedForBrowserController,
+  testUrlStatusDropdownDoesNotChangeCombinedResolution,
 ];
 for (const test of tests) test();
 console.log(`TOR System Finder UI state tests: ${tests.length}/${tests.length} PASS`);
