@@ -49,6 +49,35 @@
     }
   }
 
+  function cleanIncidentInput(rawText){
+    const raw=String(rawText??'').replace(/\r\n?/g,'\n').replace(/<br\s*\/?\s*>/gi,'\n');
+    const unwrap=line=>{
+      let value=String(line??'').trim();
+      if(!value)return '';
+      if(/^\|?[\s:|-]+\|?$/.test(value)&&value.includes('-'))return '';
+      if(value.startsWith('|'))value=value.slice(1).trim();
+      if(value.endsWith('|'))value=value.slice(0,-1).trim();
+      value=value.replace(/^\s*\t+|\t+\s*$/g,'').trim();
+      return value;
+    };
+    const isWrapper=value=>/^(?:subject|request\s+detail)$/i.test(String(value||'').trim());
+    const lines=raw.split('\n').map(unwrap).filter(value=>value&&!isWrapper(value));
+    const marker=/^(?:monitor\b|url\s*:|hosted\s+on\b|(?:เวลา|time)\s*:)/i;
+    const start=lines.findIndex(line=>marker.test(line));
+    return (start>=0?lines.slice(start):lines).join('\n').trim();
+  }
+
+  function buildUrlStatusView(blocks,status='normal'){
+    const selected=status==='abnormal'?'abnormal':'normal';
+    const urlStatus=selected==='abnormal'?String(blocks?.urlAbnormal||''):String(blocks?.urlNormal||'');
+    const monitorOriginal=String(blocks?.monitorOriginal||'');
+    return {
+      status:selected,
+      urlStatus,
+      combinedResolution:monitorOriginal&&urlStatus?`${monitorOriginal}\nแก้ไขโดย : ${urlStatus}`:monitorOriginal,
+    };
+  }
+
   function ownerDisplayName(owner){
     return String(owner?.name||'').trim();
   }
@@ -110,8 +139,10 @@
     const ownersEl=document.getElementById('torOwners');
     const copyEl=document.getElementById('torCopyBlocks');
     const mailEl=document.getElementById('torMailDraft');
+    let currentIncident=null;
 
     function hideEnhancements(){
+      currentIncident=null;
       rootEl.hidden=true;
       ownersEl.hidden=true;
       copyEl.hidden=true;
@@ -128,18 +159,19 @@
       ownersEl.innerHTML=`<div class="tor-stage-title"><strong>SYSTEM OWNERS</strong><span>${owners.length} owner/contact card(s) · Copy แยกทีละค่า</span></div>${owners.length?`<div class="tor-owner-grid">${owners.map(ownerMarkup).join('')}</div>`:'<div class="tor-no-match">NO OWNER CONTACT FOUND<small>ไม่พบข้อมูล Owner/Phone/Email ที่แยกได้จาก TOR record นี้</small></div>'}`;
     }
 
-    function renderOperationalBlocks(incident){
+    function renderOperationalBlocks(incident,status='normal'){
+      currentIncident=incident;
       const blocks=core.buildOperationalBlocks(incident);
-      const items=[
-        ['MONITOR ORIGINAL',blocks.monitorOriginal,'COPY MONITOR'],
-        ['URL NORMAL',blocks.urlNormal,'COPY URL NORMAL'],
-        ['URL ABNORMAL',blocks.urlAbnormal,'COPY URL ABNORMAL'],
-        ['MONITOR + RESOLUTION',blocks.combinedResolution,'COPY MONITOR + RESOLUTION'],
-        ['TICKET ACTION',blocks.ticketAction,'COPY TICKET ACTION'],
-        ['MAIL COMPLETION',blocks.mailCompletion,'COPY MAIL COMPLETION'],
+      const view=buildUrlStatusView(blocks,status);
+      const statusSelect=`<select id="torUrlStatus" aria-label="URL status"><option value="normal"${view.status==='normal'?' selected':''}>URL ปกติ</option><option value="abnormal"${view.status==='abnormal'?' selected':''}>URL ไม่ปกติ</option></select>`;
+      const cards=[
+        `<article class="tor-copy-card ${blocks.monitorOriginal?'':'is-disabled'}"><div class="tor-copy-card-head"><strong>MONITOR ORIGINAL</strong>${copyButton('COPY MONITOR',blocks.monitorOriginal)}</div><pre class="tor-copy-text">${escapeHtml(blocks.monitorOriginal||'ไม่มีข้อมูลสำหรับสร้างข้อความชุดนี้')}</pre></article>`,
+        `<article class="tor-copy-card ${view.urlStatus?'':'is-disabled'}"><div class="tor-copy-card-head"><strong>URL STATUS</strong><div>${statusSelect}${copyButton('COPY URL STATUS',view.urlStatus)}</div></div><pre class="tor-copy-text">${escapeHtml(view.urlStatus||'ไม่มีข้อมูลสำหรับสร้างข้อความชุดนี้')}</pre></article>`,
+        `<article class="tor-copy-card ${view.combinedResolution?'':'is-disabled'}"><div class="tor-copy-card-head"><strong>MONITOR + RESOLUTION</strong>${copyButton('COPY MONITOR + RESOLUTION',view.combinedResolution)}</div><pre class="tor-copy-text">${escapeHtml(view.combinedResolution||'ไม่มีข้อมูลสำหรับสร้างข้อความชุดนี้')}</pre></article>`,
+        `<article class="tor-copy-card"><div class="tor-copy-card-head"><strong>MAIL COMPLETION</strong>${copyButton('COPY MAIL COMPLETION',blocks.mailCompletion)}</div><pre class="tor-copy-text">${escapeHtml(blocks.mailCompletion)}</pre></article>`,
       ];
       copyEl.hidden=false;
-      copyEl.innerHTML=`<div class="tor-stage-title"><strong>OPERATION COPY BLOCKS</strong><span>6 ชุด · Copy แยกได้ทีละชุด</span></div><div class="tor-copy-grid">${items.map(([label,value,buttonLabel])=>`<article class="tor-copy-card ${value?'':'is-disabled'}"><div class="tor-copy-card-head"><strong>${escapeHtml(label)}</strong>${copyButton(buttonLabel,value)}</div><pre class="tor-copy-text">${escapeHtml(value||'ไม่มีข้อมูลสำหรับสร้างข้อความชุดนี้')}</pre></article>`).join('')}</div>`;
+      copyEl.innerHTML=`<div class="tor-stage-title"><strong>OPERATION COPY BLOCKS</strong><span>4 ชุด · URL ปกติ/ไม่ปกติเลือกจาก Dropdown เดียว</span></div><div class="tor-copy-grid">${cards.join('')}</div>`;
     }
 
     function renderMailDraft(incident){
@@ -154,9 +186,10 @@
       if(!matchCard||!match?.scored?.record){hideEnhancements();return;}
       const raw=input.value.trim();
       if(!raw){hideEnhancements();return;}
-      const incident=core.parseIncident(raw);
+      const cleaned=cleanIncidentInput(raw);
+      const incident=core.parseIncident(cleaned);
       renderOwners(match.scored.record);
-      renderOperationalBlocks(incident);
+      renderOperationalBlocks(incident,'normal');
       renderMailDraft(incident);
       rootEl.hidden=false;
     }
@@ -177,6 +210,11 @@
       if(!document.getElementById('autoAnalyze')?.checked)hideEnhancements();
     });
 
+    rootEl.addEventListener('change',event=>{
+      const selector=event.target.closest('#torUrlStatus');
+      if(selector&&currentIncident)renderOperationalBlocks(currentIncident,event.target.value);
+    });
+
     rootEl.addEventListener('click',event=>{
       const copy=event.target.closest('[data-copy-value]');
       if(copy)copyTorValue(decodeCopyValue(copy.dataset.copyValue),copy);
@@ -190,5 +228,5 @@
     else init();
   }
 
-  return {createState,invalidateState,copyTorValue,removeLegacyIncidentWaitingPanel,init};
+  return {createState,invalidateState,copyTorValue,cleanIncidentInput,buildUrlStatusView,removeLegacyIncidentWaitingPanel,init};
 });
