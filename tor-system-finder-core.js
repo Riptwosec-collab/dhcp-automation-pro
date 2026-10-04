@@ -204,28 +204,132 @@
   function parseOwners(contactRaw,recordId){
     const raw=String(contactRaw||'').trim();
     if(!raw)return [];
-    const emailRe=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-    const phoneRe=/(?<!\d)(?:\+66[\s-]?|0)\d(?:[\s-]?\d){7,10}(?!\d)/g;
-    const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
-    const owners=[];
-    let currentOwner=null;
 
-    function addContacts(owner,phones,emails){
-      owner.phones=unique([...(owner.phones||[]),...phones]);
-      owner.emails=unique([...(owner.emails||[]),...emails]);
+    const emailSource='[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}';
+    const phoneSource='(?<!\\d)(?:\\+66[\\s-]?|0)\\d(?:[\\s-]?\\d){7,10}(?!\\d)|(?<!\\d)\\d{4}(?!\\d)';
+    const titleOwnerRe=/((?:(?:นางสาว|น\.?ส\.?|นาย|นาง|คุณ|อาจารย์)\s*|(?:ดร|ผศ|รศ|ศ)(?:\.\s*|\s+))+)([ก-๙A-Za-z.'-]+)\s+([ก-๙A-Za-z.'-]+)/gi;
+
+    function tokenMatches(text,source,flags,kind,transform){
+      const regexp=new RegExp(source,flags);
+      const found=[];
+      for(const match of text.matchAll(regexp)){
+        const value=transform?transform(match[0]):match[0];
+        if(value)found.push({kind,start:match.index,end:match.index+match[0].length,value});
+      }
+      return found;
     }
 
+    function ownerMarks(){
+      const found=[];
+      for(const match of raw.matchAll(titleOwnerRe)){
+        found.push({
+          start:match.index,
+          end:match.index+match[0].length,
+          prefix:cleanSpaces(match[1]),
+          name:`${match[2]} ${match[3]}`.trim(),
+        });
+      }
+      return found;
+    }
+
+    function addContact(target,contact){
+      const field=contact.kind==='phone'?'phones':'emails';
+      target[field]=unique([...(target[field]||[]),contact.value]);
+    }
+
+    const contacts=[
+      ...tokenMatches(raw,emailSource,'gi','email',value=>value.trim()),
+      ...tokenMatches(raw,phoneSource,'g','phone',normalizePhone),
+    ].sort((a,b)=>a.start-b.start);
+    const marks=ownerMarks();
+    const owners=[];
+    const unassigned={
+      id:`${recordId??'record'}:contact:1`,
+      kind:'unassigned',
+      prefix:'',
+      name:'',
+      phones:[],
+      emails:[],
+      raw,
+    };
+
+    if(marks.length){
+      for(let index=0;index<marks.length;index++){
+        const mark=marks[index];
+        owners.push({
+          id:`${recordId??'record'}:owner:${index+1}`,
+          kind:'owner',
+          prefix:mark.prefix,
+          name:mark.name,
+          phones:[],
+          emails:[],
+          raw:raw.slice(mark.start,marks[index+1]?.start??raw.length).trim(),
+        });
+      }
+
+      for(const contact of contacts){
+        let ownerIndex=-1;
+        for(let index=0;index<marks.length;index++){
+          const current=marks[index];
+          const next=marks[index+1];
+          if(contact.start>=current.end&&(!next||contact.start<next.start)){
+            ownerIndex=index;
+            break;
+          }
+        }
+        if(ownerIndex>=0)addContact(owners[ownerIndex],contact);
+        else addContact(unassigned,contact);
+      }
+
+      // Some TOR cells list several owner names first, then list all phones/emails
+      // in parallel. Distribute only when the cardinality makes the mapping safe.
+      for(const field of ['phones','emails']){
+        if(owners.length<=1)continue;
+        const earlierHaveValues=owners.slice(0,-1).some(owner=>owner[field].length);
+        const trailingValues=[...owners[owners.length-1][field]];
+        if(earlierHaveValues||!trailingValues.length)continue;
+        if(trailingValues.length===owners.length){
+          owners.forEach((owner,index)=>{owner[field]=[trailingValues[index]];});
+        }else{
+          owners[owners.length-1][field]=[];
+          unassigned[field]=unique([...unassigned[field],...trailingValues]);
+        }
+      }
+
+      if(unassigned.phones.length||unassigned.emails.length)owners.push(unassigned);
+      return owners.map(owner=>({
+        ...owner,
+        phones:unique(owner.phones),
+        emails:unique(owner.emails),
+      }));
+    }
+
+    // Fallback for TOR rows without explicit Thai titles. Keep sequential contact
+    // chunks on the preceding named owner; otherwise retain them as a Contact card.
+    const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
+    let currentOwner=null;
     for(const chunk of chunks){
-      const emails=extractAll(chunk,emailRe,value=>value.trim());
-      const phones=extractAll(chunk,phoneRe,normalizePhone);
+      const chunkContacts=[
+        ...tokenMatches(chunk,emailSource,'gi','email',value=>value.trim()),
+        ...tokenMatches(chunk,phoneSource,'g','phone',normalizePhone),
+      ];
       const stripped=chunk
-        .replace(emailRe,' ')
-        .replace(phoneRe,' ')
+        .replace(new RegExp(emailSource,'gi'),' ')
+        .replace(new RegExp(phoneSource,'g'),' ')
         .replace(/\s+/g,' ')
         .trim();
-      const ownerName=splitOwnerName(stripped);
+
+      let ownerName=null;
+      const words=stripped.split(/\s+/).filter(Boolean);
+      if(/^กลุ่ม/.test(words[0]||'')&&words.length>=3&&/[ก-๙]/.test(words[words.length-1])){
+        ownerName={prefix:'',name:words.slice(-2).join(' ')};
+      }else{
+        ownerName=splitOwnerName(stripped);
+        if(ownerName&&!ownerName.prefix&&!/[ก-๙]/.test(ownerName.name))ownerName=null;
+      }
+
       if(ownerName){
-        const owner={
+        currentOwner={
           id:`${recordId??'record'}:owner:${owners.length+1}`,
           kind:'owner',
           prefix:ownerName.prefix,
@@ -234,44 +338,19 @@
           emails:[],
           raw:chunk,
         };
-        addContacts(owner,phones,emails);
-        owners.push(owner);
-        currentOwner=owner;
-      }else if(phones.length||emails.length){
+        chunkContacts.forEach(contact=>addContact(currentOwner,contact));
+        owners.push(currentOwner);
+      }else if(chunkContacts.length){
         if(currentOwner){
-          addContacts(currentOwner,phones,emails);
+          chunkContacts.forEach(contact=>addContact(currentOwner,contact));
           currentOwner.raw=[currentOwner.raw,chunk].filter(Boolean).join(', ');
         }else{
-          owners.push({
-            id:`${recordId??'record'}:contact:${owners.length+1}`,
-            kind:'unassigned',
-            prefix:'',
-            name:'',
-            phones:unique(phones),
-            emails:unique(emails),
-            raw:chunk,
-          });
+          chunkContacts.forEach(contact=>addContact(unassigned,contact));
         }
       }
     }
 
-    if(!owners.length){
-      const phones=unique(extractAll(raw,phoneRe,normalizePhone));
-      const emails=unique(extractAll(raw,emailRe,value=>value.trim()));
-      if(phones.length||emails.length){
-        owners.push({
-          id:`${recordId??'record'}:contact:1`,
-          kind:'unassigned',
-          prefix:'',
-          name:'',
-          phones,
-          emails,
-          raw,
-        });
-      }
-      return owners;
-    }
-
+    if(unassigned.phones.length||unassigned.emails.length)owners.push(unassigned);
     return owners.map(owner=>({
       ...owner,
       phones:unique(owner.phones),
