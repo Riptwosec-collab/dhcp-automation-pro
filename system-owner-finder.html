@@ -19,11 +19,9 @@
     let html=await new Response(stream).text();
     /* tor-system-finder-upgrade-v1:start */
     const torUpgradeBridge=`
-  // Runtime bridge for TOR SYSTEM FINDER Upgrade. The top Finder searches
-  // currentRecords first and BUNDLED_TOR.fallback second. Expose that same
-  // canonical searchable pool to the lower Analyzer so both halves of the
-  // page operate as one system. Imported databases intentionally have no
-  // bundled fallback, matching the existing Finder behavior.
+  // TOR SYSTEM FINDER v1 enhancements use the original Finder as the only
+  // matching engine. These bridges expose the live source records and the
+  // exact record selected/rendered by the existing Analyze System flow.
   window.__torSystemFinderGetRecords=()=>{
     const fallbackRaw=currentMeta?.mode==='Bundled'&&Array.isArray(BUNDLED_TOR.fallback)?BUNDLED_TOR.fallback:[];
     const combined=[...currentRawRecords,...fallbackRaw];
@@ -35,10 +33,25 @@
       return true;
     }).map(record=>({...record}));
   };
+  window.__torSystemFinderLastMatch=null;
+  window.__torSystemFinderGetLastMatch=()=>window.__torSystemFinderLastMatch;
 `;
     const torUpgradeRuntimeAnchor="  loadImportedDb();\n  updateDbStatus();";
     if(!html.includes(torUpgradeRuntimeAnchor))throw new Error('TOR runtime data anchor not found');
     html=html.replace(torUpgradeRuntimeAnchor,torUpgradeBridge+torUpgradeRuntimeAnchor);
+
+    const torMatchAnchor="  function renderMatch(scored, fallback = false) {\n    const r = scored.record;";
+    if(!html.includes(torMatchAnchor))throw new Error('TOR renderMatch anchor not found');
+    html=html.replace(torMatchAnchor,"  function renderMatch(scored, fallback = false) {\n    window.__torSystemFinderLastMatch={scored,fallback};\n    const r = scored.record;");
+
+    const torCandidatesAnchor="  function renderCandidates(result) {\n    els.result.innerHTML =";
+    if(!html.includes(torCandidatesAnchor))throw new Error('TOR renderCandidates anchor not found');
+    html=html.replace(torCandidatesAnchor,"  function renderCandidates(result) {\n    window.__torSystemFinderLastMatch=null;\n    els.result.innerHTML =");
+
+    const torNoneAnchor="  function renderNone() {\n    els.result.innerHTML =";
+    if(!html.includes(torNoneAnchor))throw new Error('TOR renderNone anchor not found');
+    html=html.replace(torNoneAnchor,"  function renderNone() {\n    window.__torSystemFinderLastMatch=null;\n    els.result.innerHTML =");
+
     const torUpgradeStyle='<link rel="stylesheet" href="tor-system-finder-upgrade.css">';
     const torUpgradeScripts='<script src="tor-system-finder-core.js"><\/script><script src="tor-system-finder-upgrade.js"><\/script>';
     if(!html.includes('</head>')||!html.includes('</body>'))throw new Error('TOR Finder document anchors not found');
