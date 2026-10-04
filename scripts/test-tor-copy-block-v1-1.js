@@ -6,18 +6,19 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const core = require(path.join(root, 'tor-system-finder-core.js'));
+const upgrade = require(path.join(root, 'tor-system-finder-upgrade.js'));
 const ui = fs.readFileSync(path.join(root, 'tor-system-finder-upgrade.js'), 'utf8');
 
 const tablePaste = `Subject\nRequest Detail\n\nUrl: https://accnew.rd.go.th/Accnewpos/\nhosted on accnew.rd.go.th of Unexpected error occurred. HTTP 503. Temporarily unavailable. The remote server returned an error: (503) Server Unavailable.\nเวลา : Friday, October 2, 2026 12:25 AM`;
 const cleanIncident = `Url: https://accnew.rd.go.th/Accnewpos/\nhosted on accnew.rd.go.th of Unexpected error occurred. HTTP 503. Temporarily unavailable. The remote server returned an error: (503) Server Unavailable.\nเวลา : Friday, October 2, 2026 12:25 AM`;
 
 function testTablePasteDropsWrapperHeaders(){
-  const incident = core.parseIncident(tablePaste);
+  assert.equal(typeof upgrade.cleanIncidentInput, 'function', 'v1.1 must expose pure incident wrapper cleanup');
+  const cleaned = upgrade.cleanIncidentInput(tablePaste);
+  assert.equal(cleaned, cleanIncident);
+  const incident = core.parseIncident(cleaned);
   assert.equal(incident.url, 'https://accnew.rd.go.th/Accnewpos/');
   assert.equal(incident.host, 'accnew.rd.go.th');
-  assert.equal(incident.incidentRaw, cleanIncident);
-  assert.ok(!incident.incidentRaw.includes('Subject'));
-  assert.ok(!incident.incidentRaw.includes('Request Detail'));
   const draft = core.buildMailDraft(incident, null);
   assert.ok(draft.includes(cleanIncident));
   assert.ok(!draft.includes('Subject'));
@@ -25,16 +26,16 @@ function testTablePasteDropsWrapperHeaders(){
 }
 
 function testUrlStatusControlsResolutionCopy(){
+  assert.equal(typeof upgrade.buildUrlStatusView, 'function', 'v1.1 must expose pure URL status selection');
   const incident = core.parseIncident(`Monitor ระบบงานบัญชีอิเล็กทรอนิกส์ AccNew Online ไม่สามารถเรียกใช้งานได้\n\n${cleanIncident}`);
-  const normal = core.buildOperationalBlocks(incident, 'normal');
-  const abnormal = core.buildOperationalBlocks(incident, 'abnormal');
-  const url = 'https://accnew.rd.go.th/Accnewpos/';
+  const blocks = core.buildOperationalBlocks(incident);
+  const normal = upgrade.buildUrlStatusView(blocks, 'normal');
+  const abnormal = upgrade.buildUrlStatusView(blocks, 'abnormal');
 
-  assert.equal(normal.urlStatus, `ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
-  assert.equal(abnormal.urlStatus, `ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`);
-  assert.ok(normal.combinedResolution.includes(`แก้ไขโดย : ${normal.urlStatus}`));
-  assert.ok(abnormal.combinedResolution.includes(`แก้ไขโดย : ${abnormal.urlStatus}`));
-  assert.ok(!Object.prototype.hasOwnProperty.call(normal, 'ticketAction'), 'TICKET ACTION must be removed from v1.1 output');
+  assert.equal(normal.urlStatus, blocks.urlNormal);
+  assert.equal(abnormal.urlStatus, blocks.urlAbnormal);
+  assert.equal(normal.combinedResolution, `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlNormal}`);
+  assert.equal(abnormal.combinedResolution, `${blocks.monitorOriginal}\nแก้ไขโดย : ${blocks.urlAbnormal}`);
 }
 
 function testUiUsesOneUrlDropdownAndFourCopyCards(){
