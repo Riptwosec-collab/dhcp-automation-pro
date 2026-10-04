@@ -81,6 +81,7 @@ for forbidden in [
 for needle in ['COPY NAME', 'COPY PHONE', 'COPY EMAIL', 'tor-owner-grid', 'resolveOwners(']:
     assert needle in ui, f'missing owner-card behavior: {needle}'
 assert '[owner?.prefix,owner?.name]' not in ui, 'display/copy name must not prepend the TOR title'
+assert '.owner-split-copy{display:none!important}' in css, 'legacy combined PREFIX/NAME/PHONE/EMAIL quick-copy panel must be hidden in v1'
 
 # Exactly the six requested operational copy blocks plus one mail draft.
 for needle in [
