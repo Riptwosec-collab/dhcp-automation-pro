@@ -61,11 +61,35 @@
     return `<article class="tor-owner"><div class="tor-owner-head"><div><span>${displayName?'OWNER':'CONTACT'} ${index+1}</span><h3>${escapeHtml(title)}</h3></div>${displayName?copyButton('COPY NAME',displayName):''}</div><div class="tor-owner-contact-list">${phones||'<div class="tor-contact-empty">PHONE · -</div>'}${emails||'<div class="tor-contact-empty">EMAIL · -</div>'}</div></article>`;
   }
 
+  function removeLegacyIncidentWaitingPanel(){
+    if(typeof document==='undefined')return null;
+    const result=document.getElementById('resultArea');
+    if(!result)return null;
+    const sync=()=>{
+      const idle=[...result.querySelectorAll('.idle-visual')].find(node=>node.textContent.includes('WAITING FOR INCIDENT DATA'));
+      if(idle){
+        idle.remove();
+        result.classList.add('tor-legacy-idle-hidden');
+        result.setAttribute('aria-hidden','true');
+        return;
+      }
+      const hasContent=Boolean(result.children.length||result.textContent.trim());
+      result.classList.toggle('tor-legacy-idle-hidden',!hasContent);
+      if(hasContent)result.removeAttribute('aria-hidden');else result.setAttribute('aria-hidden','true');
+    };
+    const observer=new MutationObserver(sync);
+    observer.observe(result,{childList:true,subtree:true});
+    sync();
+    return observer;
+  }
+
   function init(){
     if(typeof document==='undefined')return;
     if(document.getElementById('torFinderEnhancements'))return;
     const core=root.TorSystemFinderCore;
     if(!core||typeof root.__torSystemFinderGetLastMatch!=='function')return;
+
+    removeLegacyIncidentWaitingPanel();
 
     const input=document.getElementById('incidentInput');
     const analyze=document.getElementById('analyzeBtn');
@@ -166,5 +190,5 @@
     else init();
   }
 
-  return {createState,invalidateState,copyTorValue,init};
+  return {createState,invalidateState,copyTorValue,removeLegacyIncidentWaitingPanel,init};
 });
