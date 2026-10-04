@@ -102,12 +102,15 @@ function testKeepsEveryContactWhileGroupingSequentialChunks() {
 }
 
 const tests = [
-  testNormalizesCanonicalTorRecord,
-  testReturnsEveryOwnerAndMapsParallelContacts,
-  testSequentialContactChunksStayWithPrecedingOwner,
-  testStripsCommonNameTitlesFromCopyName,
-  testDeduplicatesInsideOwnerButKeepsDistinctOwners,
-  testKeepsEveryContactWhileGroupingSequentialChunks,
+  ['normalize-record', testNormalizesCanonicalTorRecord],
+  ['parallel-owners', testReturnsEveryOwnerAndMapsParallelContacts],
+  ['sequential-contacts', testSequentialContactChunksStayWithPrecedingOwner],
+  ['strip-titles', testStripsCommonNameTitlesFromCopyName],
+  ['dedupe-contacts', testDeduplicatesInsideOwnerButKeepsDistinctOwners],
+  ['group-contact-chunks', testKeepsEveryContactWhileGroupingSequentialChunks],
 ];
-for (const test of tests) test();
-console.log(`TOR System Finder owner/core tests: ${tests.length}/${tests.length} PASS`);
+const requested=process.argv[2];
+const selected=requested?tests.filter(([name])=>name===requested):tests;
+assert.ok(selected.length,`unknown TOR owner test: ${requested}`);
+for (const [,test] of selected) test();
+console.log(`TOR System Finder owner/core tests: ${selected.length}/${selected.length} PASS${requested?` (${requested})`:''}`);
