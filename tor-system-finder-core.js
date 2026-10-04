@@ -192,7 +192,7 @@
       .replace(/^(?:โทร|โทรศัพท์|เบอร์|phone|email|e-mail)\s*[:\-]?\s*/i,'')
       .trim();
     if(!text)return null;
-    const prefixMatch=text.match(/^(?:(?:นางสาว|น\.ส\.?|นาย|นาง|คุณ|ดร\.?|ผศ\.?|รศ\.?|ศ\.?|อาจารย์)\s*)+/i);
+    const prefixMatch=text.match(/^(?:(?:นางสาว|น\.ส\.?|นาย|นาง|คุณ|อาจารย์)\s*|(?:ดร|ผศ|รศ|ศ)(?:\.\s*|\s+))+/i);
     const prefix=prefixMatch?prefixMatch[0].trim():'';
     if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();
     const words=text.split(/\s+/).filter(Boolean);
