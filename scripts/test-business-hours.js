@@ -1,8 +1,41 @@
 const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
+const os = require('os');
+const path = require('path');
+const childProcess = require('child_process');
 
 const html = fs.readFileSync('operations-messages.html', 'utf8');
+
+// Regression: the materialized Operations page already contains the unified
+// operationParts runtime. Business Hours must still be safe to regenerate and
+// must be byte-stable on a second run.
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'business-hours-v1-'));
+try {
+  const tempHtml = path.join(tempDir, 'operations-messages.html');
+  fs.writeFileSync(tempHtml, html, 'utf8');
+  const generator = path.resolve('scripts/add-business-hours.py');
+  const runGenerator = () => childProcess.execFileSync('python', [generator], {
+    cwd: tempDir,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  let firstError = null;
+  try {
+    runGenerator();
+  } catch (error) {
+    firstError = String(error.stderr || error.message || error);
+  }
+  assert.strictEqual(firstError, null, `Business Hours generator must reapply to unified Operations runtime: ${firstError || ''}`);
+
+  const once = fs.readFileSync(tempHtml, 'utf8');
+  runGenerator();
+  const twice = fs.readFileSync(tempHtml, 'utf8');
+  assert.strictEqual(twice, once, 'Business Hours generator must be idempotent after unified Operations generation');
+} finally {
+  fs.rmSync(tempDir, {recursive: true, force: true});
+}
 
 const startMarker = '/* business-hours-v1:start */';
 const endMarker = '/* business-hours-v1:end */';
@@ -56,4 +89,4 @@ assert(!cardMatch[0].includes('data-op-date'), 'no-contact card must not show a 
 assert(!cardMatch[0].includes('data-op-time'), 'no-contact card must not show a time stamp');
 assert(!cardMatch[0].includes('ops-stamp'), 'no-contact card must not show the stamp row');
 
-console.log('Business Hours v1 behavior verified');
+console.log('Business Hours v1 behavior + generator idempotence verified');
