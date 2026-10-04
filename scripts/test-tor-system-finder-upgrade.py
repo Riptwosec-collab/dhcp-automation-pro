@@ -12,13 +12,8 @@ css_path = root / 'tor-system-finder-upgrade.css'
 pr_workflow_path = root / '.github' / 'workflows' / 'test-traffic-log-layout.yml'
 main_workflow_path = root / '.github' / 'workflows' / 'resize-dhcp-fields.yml'
 
-assert loader_path.exists(), 'system-owner-finder.html must exist'
-assert core_path.exists(), 'tor-system-finder-core.js must exist'
-assert generator_path.exists(), 'scripts/add-tor-system-finder-upgrade.py must exist'
-assert ui_path.exists(), 'tor-system-finder-upgrade.js must exist'
-assert css_path.exists(), 'tor-system-finder-upgrade.css must exist'
-assert pr_workflow_path.exists(), 'PR workflow must exist'
-assert main_workflow_path.exists(), 'main generation workflow must exist'
+for required in [loader_path, generator_path, core_path, ui_path, css_path, pr_workflow_path, main_workflow_path]:
+    assert required.exists(), f'missing required path: {required}'
 
 loader = loader_path.read_text(encoding='utf-8')
 generator = generator_path.read_text(encoding='utf-8')
@@ -38,62 +33,76 @@ finder = gzip.decompress(base64.b64decode(payload_b64)).decode('utf-8')
 for needle in [
     'const BUNDLED_TOR=',
     'let currentRawRecords = BUNDLED_TOR.primary;',
-    'currentRawRecords = saved.records;',
-    'currentRawRecords = payload.records;',
-    'currentRawRecords = BUNDLED_TOR.primary;',
     'async function parseTorXlsx(',
+    'id="incidentInput"',
+    'id="analyzeBtn"',
+    '>Analyze System</button>',
+    'function analyzeText(',
+    "els.analyze.addEventListener('click', () => analyzeText())",
 ]:
-    assert needle in finder, f'canonical Finder source contract changed: {needle}'
+    assert needle in finder, f'canonical Finder flow changed unexpectedly: {needle}'
 
 assert 'tor-system-finder-upgrade-v1:start' in loader, 'upgrade version marker missing from generated loader'
 assert loader.count('tor-system-finder-upgrade-v1:start') == 1, 'upgrade start marker must be injected exactly once'
 assert loader.count('tor-system-finder-upgrade-v1:end') == 1, 'upgrade end marker must be injected exactly once'
 assert 'window.__torSystemFinderGetRecords' in loader, 'runtime TOR record bridge missing'
+assert 'window.__torSystemFinderLastMatch' in loader, 'original Finder match bridge missing'
+assert 'window.__torSystemFinderGetLastMatch' in loader, 'last-match accessor missing'
 assert 'currentRawRecords' in loader, 'bridge must expose the runtime currentRawRecords source'
 assert 'BUNDLED_TOR.primary' not in generator, 'upgrade generator must not hard-code a second bundled TOR database'
-assert 'contactRaw' not in generator or 'currentRawRecords' in generator, 'owner data must come from canonical runtime records'
 assert "DecompressionStream('gzip')" in loader, 'existing compressed payload loader must remain intact'
 
 for asset in ['tor-system-finder-core.js', 'tor-system-finder-upgrade.js', 'tor-system-finder-upgrade.css']:
     assert loader.count(asset) == 1, f'{asset} must be injected exactly once by the loader'
-assert "rootEl.id='torIncidentAnalyzer'" in ui or 'id="torIncidentAnalyzer"' in ui, 'analyzer root id must be created exactly in the existing Finder page'
+
+# v1 must enhance the original Finder output; it must not add a second analyzer/input/button.
 for needle in [
-    'id="torAnalyzeError"',
-    'ANALYZE ERROR',
-    'id="torExtractedFields"',
-    'id="torCandidates"',
-    'id="torSelectedSystem"',
-    'id="torOwners"',
-    'id="torCopyBlocks"',
-    'id="torMailDraft"',
-    'SELECT THIS SYSTEM',
-    'NO RELIABLE TOR MATCH >= 80%',
+    "document.getElementById('incidentInput')",
+    "document.getElementById('analyzeBtn')",
+    "document.getElementById('resultArea')",
+    "document.getElementById('candidateArea')",
+    "rootEl.id='torFinderEnhancements'",
+    '__torSystemFinderGetLastMatch',
+    'MutationObserver',
 ]:
-    assert needle in ui, f'missing analyzer UI contract: {needle}'
+    assert needle in ui, f'missing same-Finder integration contract: {needle}'
+for forbidden in [
+    'torIncidentAnalyzer',
+    'torIncidentInput',
+    'torAnalyzeError',
+    'ANALYZE ERROR',
+    'SELECT THIS SYSTEM',
+    'Find TOR System + Find System Owner',
+    'findCandidates(',
+]:
+    assert forbidden not in ui, f'v1 must not create a second analysis workflow: {forbidden}'
 
-assert "addEventListener('click'" in ui and 'torAnalyzeError' in ui, 'analysis must be initiated by ANALYZE ERROR click'
-assert "addEventListener('paste'" not in ui, 'paste must not trigger analysis automatically'
-assert 'findCandidates(' in ui, 'analyzer must use deterministic core candidate matching'
-assert '__torSystemFinderGetRecords' in ui, 'analyzer must use the canonical runtime record bridge'
-assert 'resolveOwners(' in ui, 'selection must resolve owners from selected TOR record'
+# Owner cards: one person per card, copy name without title, each phone/email independently.
+for needle in ['COPY NAME', 'COPY PHONE', 'COPY EMAIL', 'tor-owner-grid', 'resolveOwners(']:
+    assert needle in ui, f'missing owner-card behavior: {needle}'
+assert '[owner?.prefix,owner?.name]' not in ui, 'display/copy name must not prepend the TOR title'
+assert '.owner-split-copy{display:none!important}' in css, 'legacy combined PREFIX/NAME/PHONE/EMAIL quick-copy panel must be hidden in v1'
 
+# Exactly the six requested operational copy blocks plus one mail draft.
 for needle in [
-    'COPY NAME',
-    'COPY PHONE',
-    'COPY EMAIL',
-    'COPY ALL CONTACTS',
+    'MONITOR ORIGINAL',
+    'URL NORMAL',
+    'URL ABNORMAL',
+    'MONITOR + RESOLUTION',
+    'TICKET ACTION',
+    'MAIL COMPLETION',
     'COPY MAIL',
     'buildOperationalBlocks(',
     'buildMailDraft(',
     'data-copy-value',
     'copyTorValue',
 ]:
-    assert needle in ui, f'missing selected-system copy/output behavior: {needle}'
-assert 'To:' not in ui, 'Analyzer UI must not auto-create a mail recipient field'
-assert 'sendMail' not in ui and 'mailto:' not in ui, 'Analyzer must not send mail'
+    assert needle in ui, f'missing copy/mail behavior: {needle}'
+assert 'To:' not in ui, 'Finder enhancement must not auto-create a mail recipient field'
+assert 'sendMail' not in ui and 'mailto:' not in ui, 'Finder enhancement must not send mail'
 
-assert 'text-overflow:ellipsis' not in css and '-webkit-line-clamp' not in css, 'analyzer output must never truncate copy text'
-assert '@media' in css, 'analyzer must include responsive layout rules'
+assert 'text-overflow:ellipsis' not in css or '.tor-' not in css.split('text-overflow:ellipsis')[0][-80:], 'enhancement output must not truncate copy text'
+assert '@media' in css, 'enhancement must include responsive layout rules'
 
 workflow_needles = [
     'tor-system-finder-core.js',
@@ -110,13 +119,19 @@ for workflow_name, workflow in [('PR', pr_workflow), ('main generation', main_wo
     for needle in workflow_needles:
         assert needle in workflow, f'{workflow_name} workflow missing TOR upgrade path/step: {needle}'
     assert 'python scripts/add-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must apply the TOR upgrade generator'
-    assert 'node scripts/test-tor-system-finder-core.js' in workflow, f'{workflow_name} workflow must verify TOR core behavior'
-    assert 'node scripts/test-tor-system-finder-review-regressions.js' in workflow, f'{workflow_name} workflow must verify TOR review regressions'
-    assert 'python scripts/test-tor-system-finder-upgrade.py' in workflow, f'{workflow_name} workflow must verify TOR integration'
 
 before = loader_path.read_bytes()
 subprocess.run(['python', str(generator_path)], cwd=root, check=True)
 after = loader_path.read_bytes()
 assert before == after, 'TOR System Finder upgrade generator must be idempotent on repeated runs'
 
-print('TOR System Finder bridge + analyzer + copy-output + workflows: OK')
+# Run behavioral contracts here too because this integration test executes before unrelated generators in PR CI.
+for test_file in [
+    'scripts/test-tor-system-finder-core.js',
+    'scripts/test-tor-system-finder-owner-core.js',
+    'scripts/test-tor-system-finder-ui-state.js',
+    'scripts/test-tor-system-finder-review-regressions.js',
+]:
+    subprocess.run(['node', test_file], cwd=root, check=True)
+
+print('TOR System Finder integrated Analyze System v1 contract: OK')

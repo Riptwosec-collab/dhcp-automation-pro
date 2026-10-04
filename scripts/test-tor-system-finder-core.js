@@ -13,6 +13,10 @@ const sample = `Monitor ระบบการจัดทำใบกำกั�
 Url: https://intrapp2.rd.go.th/signed_intra/login/login.php
 hosted on 10.20.17.71 of Network connection failed. Unable to connect to the remote server
 เวลา : Wednesday, September 30, 2026 10:05 PM`;
+const sampleMonitor = 'Monitor ระบบการจัดทำใบกำกับภาษี โดยการประทับรับรองเวลา (Time Stamp) ไม่สามารถเรียกใช้งานได้';
+const sampleIncidentBody = `Url: https://intrapp2.rd.go.th/signed_intra/login/login.php
+hosted on 10.20.17.71 of Network connection failed. Unable to connect to the remote server
+เวลา : Wednesday, September 30, 2026 10:05 PM`;
 
 function testExtractsSampleIncidentFields() {
   const result = core.parseIncident(sample);
@@ -23,6 +27,8 @@ function testExtractsSampleIncidentFields() {
   assert.equal(result.error, 'Network connection failed. Unable to connect to the remote server');
   assert.equal(result.time, 'Wednesday, September 30, 2026 10:05 PM');
   assert.ok(result.monitor.includes('Time Stamp'));
+  assert.equal(result.monitorRaw, sampleMonitor);
+  assert.equal(result.incidentRaw, sampleIncidentBody);
   assert.ok(!result.systemName.startsWith('Monitor '));
   assert.ok(!result.systemName.includes('ไม่สามารถเรียกใช้งานได้'));
   assert.ok(result.systemName.includes('Time Stamp'));
@@ -137,28 +143,33 @@ function testEvidenceShowsIncidentTorAndContribution() {
   assert.equal(hostEvidence.contribution,60);
 }
 
-function testBuildsIndependentOperationalCopyBlocks() {
+function testBuildsSixIndependentOperationalCopyBlocks() {
   const incident=core.parseIncident(sample);
   const blocks=core.buildOperationalBlocks(incident);
   const url='https://intrapp2.rd.go.th/signed_intra/login/login.php';
+  assert.equal(blocks.monitorOriginal,sampleMonitor);
   assert.equal(blocks.urlNormal,`ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
   assert.equal(blocks.urlAbnormal,`ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`);
-  assert.equal(blocks.combinedResolution,`Monitor ${incident.monitor}\nแก้ไขโดย : ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
+  assert.equal(blocks.combinedResolution,`${sampleMonitor}\nแก้ไขโดย : ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`);
   assert.equal(blocks.ticketAction,'กดตั๊กเพิ่มไม่ได้');
   assert.equal(blocks.mailCompletion,'ดำเนินการส่ง Mail แจ้งผู้ดูแลระบบเรียบร้อยแล้ว');
 }
 
-function testBuildsFixedMailDraftWithoutRecipients() {
+function testBuildsFixedMailDraftUsingOriginalIncidentText() {
   const incident=core.parseIncident(sample);
   const draft=core.buildMailDraft(incident,{id:99,systemName:'ระบบ Time Stamp'});
-  assert.ok(draft.startsWith('เรียน ผู้ดูแลระบบ\n\n'));
-  assert.ok(draft.includes(`Monitor ${incident.monitor}`));
-  assert.ok(draft.includes(`Url: ${incident.url}`));
-  assert.ok(draft.includes(`hosted on ${incident.ip} of ${incident.error}`));
-  assert.ok(draft.includes(`เวลา : ${incident.time}`));
-  assert.ok(draft.endsWith('ติดต่อเจ้าหน้าที่ RDNOC\nเบอร์ 02-272-8891 - 3\nLine ID: @RDNOC\nขอบคุณครับ/ขอบคุณค่ะ'));
+  const expected=`เรียน ผู้ดูแลระบบ\n\n${sampleMonitor}\n\n${sampleIncidentBody}\n\nติดต่อเจ้าหน้าที่ RDNOC\nเบอร์ 02-272-8891 - 3\nLine ID: @RDNOC\nขอบคุณครับ/ขอบคุณค่ะ`;
+  assert.equal(draft,expected);
   assert.ok(!/(^|\n)To\s*:/i.test(draft));
   assert.ok(!draft.includes('@rd.go.th'));
+}
+
+function testMailDraftDoesNotInventOrReformatIncidentLines() {
+  const raw=`Monitor ระบบทดสอบ ไม่สามารถเรียกใช้งานได้\n\nUrl: https://example.rd.go.th/a\nhosted on 10.1.2.3 of Custom failure  --  keep spacing\nRef: CASE-42 / operator note`;
+  const incident=core.parseIncident(raw);
+  const draft=core.buildMailDraft(incident,null);
+  assert.ok(draft.includes('hosted on 10.1.2.3 of Custom failure  --  keep spacing\nRef: CASE-42 / operator note'));
+  assert.ok(!draft.includes('\nerror:'));
 }
 
 const tests = [
@@ -175,8 +186,9 @@ const tests = [
   testWeakGenericDomainCandidateIsExcluded,
   testCandidatesSortDescendingAndPreserveTies,
   testEvidenceShowsIncidentTorAndContribution,
-  testBuildsIndependentOperationalCopyBlocks,
-  testBuildsFixedMailDraftWithoutRecipients,
+  testBuildsSixIndependentOperationalCopyBlocks,
+  testBuildsFixedMailDraftUsingOriginalIncidentText,
+  testMailDraftDoesNotInventOrReformatIncidentLines,
 ];
 
 for (const test of tests) test();

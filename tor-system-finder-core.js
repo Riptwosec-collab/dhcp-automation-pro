@@ -15,6 +15,29 @@
       .replace(/\\\//g,'/');
   }
 
+  function trimBlankEdges(lines){
+    const copy=[...lines];
+    while(copy.length&&!String(copy[0]).trim())copy.shift();
+    while(copy.length&&!String(copy[copy.length-1]).trim())copy.pop();
+    return copy;
+  }
+
+  function extractRawIncidentParts(rawText){
+    const raw=String(rawText||'').replace(/\r\n?/g,'\n');
+    const lines=raw.split('\n');
+    const monitorStart=lines.findIndex(line=>/^\s*monitor\b/i.test(line));
+    if(monitorStart<0){
+      return {monitorRaw:'',incidentRaw:trimBlankEdges(lines).join('\n')};
+    }
+    const marker=/^\s*(?:url\s*:|hosted\s+on\b|(?:เวลา|time)\s*:)/i;
+    let monitorEnd=monitorStart+1;
+    while(monitorEnd<lines.length&&!marker.test(lines[monitorEnd]))monitorEnd++;
+    const monitorRaw=trimBlankEdges(lines.slice(monitorStart,monitorEnd)).join('\n').trim();
+    const remaining=[...lines.slice(0,monitorStart),...lines.slice(monitorEnd)];
+    const incidentRaw=trimBlankEdges(remaining).join('\n');
+    return {monitorRaw,incidentRaw};
+  }
+
   function deriveDomain(host){
     const value=String(host||'').toLowerCase().replace(/^\.+|\.+$/g,'');
     if(!value)return '';
@@ -75,6 +98,7 @@
 
   function parseIncident(rawText){
     const raw=String(rawText||'');
+    const rawParts=extractRawIncidentParts(raw);
     const normalized=normalizeUrlEscapes(raw).replace(/\r\n?/g,'\n');
     const lines=normalized.split('\n').map(line=>line.trim()).filter(Boolean);
 
@@ -113,6 +137,8 @@
     return {
       raw,
       monitor,
+      monitorRaw:rawParts.monitorRaw,
+      incidentRaw:rawParts.incidentRaw,
       systemName:normalizeSystemName(monitor),
       url,
       host,
@@ -140,8 +166,8 @@
     const text=String(value||'');
     const matches=[];
     for(const match of text.matchAll(regexp)){
-      const raw=match[0];
-      const normalized=transform?transform(raw):raw;
+      const found=match[0];
+      const normalized=transform?transform(found):found;
       if(normalized)matches.push(normalized);
     }
     return matches;
@@ -166,8 +192,8 @@
       .replace(/^(?:โทร|โทรศัพท์|เบอร์|phone|email|e-mail)\s*[:\-]?\s*/i,'')
       .trim();
     if(!text)return null;
-    const prefixMatch=text.match(/^(นางสาว|น\.ส\.?|นาย|นาง|คุณ)\s*/i);
-    const prefix=prefixMatch?prefixMatch[1]:'';
+    const prefixMatch=text.match(/^(?:(?:นางสาว|น\.ส\.?|นาย|นาง|คุณ|อาจารย์)\s*|(?:ดร|ผศ|รศ|ศ)(?:\.\s*|\s+))+/i);
+    const prefix=prefixMatch?prefixMatch[0].trim():'';
     if(prefixMatch)text=text.slice(prefixMatch[0].length).trim();
     const words=text.split(/\s+/).filter(Boolean);
     if(words.length<2)return null;
@@ -178,29 +204,132 @@
   function parseOwners(contactRaw,recordId){
     const raw=String(contactRaw||'').trim();
     if(!raw)return [];
-    const emailRe=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-    const phoneRe=/(?<!\d)(?:\+66[\s-]?|0)\d(?:[\s-]?\d){7,10}(?!\d)/g;
-    const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
-    const owners=[];
-    const orphanPhones=[];
-    const orphanEmails=[];
 
-    function addContacts(owner,phones,emails){
-      owner.phones=unique([...(owner.phones||[]),...phones]);
-      owner.emails=unique([...(owner.emails||[]),...emails]);
+    const emailSource='[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}';
+    const phoneSource='(?<!\\d)(?:\\+66[\\s-]?|0)\\d(?:[\\s-]?\\d){7,10}(?!\\d)|(?<!\\d)\\d{4}(?!\\d)';
+    const titleOwnerRe=/((?:(?:นางสาว|น\.?ส\.?|นาย|นาง|คุณ|อาจารย์)\s*|(?:ดร|ผศ|รศ|ศ)(?:\.\s*|\s+))+)([ก-๙A-Za-z.'-]+)\s+([ก-๙A-Za-z.'-]+)/gi;
+
+    function tokenMatches(text,source,flags,kind,transform){
+      const regexp=new RegExp(source,flags);
+      const found=[];
+      for(const match of text.matchAll(regexp)){
+        const value=transform?transform(match[0]):match[0];
+        if(value)found.push({kind,start:match.index,end:match.index+match[0].length,value});
+      }
+      return found;
     }
 
+    function ownerMarks(){
+      const found=[];
+      for(const match of raw.matchAll(titleOwnerRe)){
+        found.push({
+          start:match.index,
+          end:match.index+match[0].length,
+          prefix:cleanSpaces(match[1]),
+          name:`${match[2]} ${match[3]}`.trim(),
+        });
+      }
+      return found;
+    }
+
+    function addContact(target,contact){
+      const field=contact.kind==='phone'?'phones':'emails';
+      target[field]=unique([...(target[field]||[]),contact.value]);
+    }
+
+    const contacts=[
+      ...tokenMatches(raw,emailSource,'gi','email',value=>value.trim()),
+      ...tokenMatches(raw,phoneSource,'g','phone',normalizePhone),
+    ].sort((a,b)=>a.start-b.start);
+    const marks=ownerMarks();
+    const owners=[];
+    const unassigned={
+      id:`${recordId??'record'}:contact:1`,
+      kind:'unassigned',
+      prefix:'',
+      name:'',
+      phones:[],
+      emails:[],
+      raw,
+    };
+
+    if(marks.length){
+      for(let index=0;index<marks.length;index++){
+        const mark=marks[index];
+        owners.push({
+          id:`${recordId??'record'}:owner:${index+1}`,
+          kind:'owner',
+          prefix:mark.prefix,
+          name:mark.name,
+          phones:[],
+          emails:[],
+          raw:raw.slice(mark.start,marks[index+1]?.start??raw.length).trim(),
+        });
+      }
+
+      for(const contact of contacts){
+        let ownerIndex=-1;
+        for(let index=0;index<marks.length;index++){
+          const current=marks[index];
+          const next=marks[index+1];
+          if(contact.start>=current.end&&(!next||contact.start<next.start)){
+            ownerIndex=index;
+            break;
+          }
+        }
+        if(ownerIndex>=0)addContact(owners[ownerIndex],contact);
+        else addContact(unassigned,contact);
+      }
+
+      // Some TOR cells list several owner names first, then list all phones/emails
+      // in parallel. Distribute only when the cardinality makes the mapping safe.
+      for(const field of ['phones','emails']){
+        if(owners.length<=1)continue;
+        const earlierHaveValues=owners.slice(0,-1).some(owner=>owner[field].length);
+        const trailingValues=[...owners[owners.length-1][field]];
+        if(earlierHaveValues||!trailingValues.length)continue;
+        if(trailingValues.length===owners.length){
+          owners.forEach((owner,index)=>{owner[field]=[trailingValues[index]];});
+        }else{
+          owners[owners.length-1][field]=[];
+          unassigned[field]=unique([...unassigned[field],...trailingValues]);
+        }
+      }
+
+      if(unassigned.phones.length||unassigned.emails.length)owners.push(unassigned);
+      return owners.map(owner=>({
+        ...owner,
+        phones:unique(owner.phones),
+        emails:unique(owner.emails),
+      }));
+    }
+
+    // Fallback for TOR rows without explicit Thai titles. Keep sequential contact
+    // chunks on the preceding named owner; otherwise retain them as a Contact card.
+    const chunks=raw.split(/[;,\n]+/).map(cleanSpaces).filter(Boolean);
+    let currentOwner=null;
     for(const chunk of chunks){
-      const emails=extractAll(chunk,emailRe,value=>value.trim());
-      const phones=extractAll(chunk,phoneRe,normalizePhone);
+      const chunkContacts=[
+        ...tokenMatches(chunk,emailSource,'gi','email',value=>value.trim()),
+        ...tokenMatches(chunk,phoneSource,'g','phone',normalizePhone),
+      ];
       const stripped=chunk
-        .replace(emailRe,' ')
-        .replace(phoneRe,' ')
+        .replace(new RegExp(emailSource,'gi'),' ')
+        .replace(new RegExp(phoneSource,'g'),' ')
         .replace(/\s+/g,' ')
         .trim();
-      const ownerName=splitOwnerName(stripped);
+
+      let ownerName=null;
+      const words=stripped.split(/\s+/).filter(Boolean);
+      if(/^กลุ่ม/.test(words[0]||'')&&words.length>=3&&/[ก-๙]/.test(words[words.length-1])){
+        ownerName={prefix:'',name:words.slice(-2).join(' ')};
+      }else{
+        ownerName=splitOwnerName(stripped);
+        if(ownerName&&!ownerName.prefix&&!/[ก-๙]/.test(ownerName.name))ownerName=null;
+      }
+
       if(ownerName){
-        const owner={
+        currentOwner={
           id:`${recordId??'record'}:owner:${owners.length+1}`,
           kind:'owner',
           prefix:ownerName.prefix,
@@ -209,42 +338,19 @@
           emails:[],
           raw:chunk,
         };
-        addContacts(owner,phones,emails);
-        owners.push(owner);
-      }else if(phones.length||emails.length){
-        owners.push({
-          id:`${recordId??'record'}:contact:${owners.length+1}`,
-          kind:'unassigned',
-          prefix:'',
-          name:'',
-          phones:unique(phones),
-          emails:unique(emails),
-          raw:chunk,
-        });
+        chunkContacts.forEach(contact=>addContact(currentOwner,contact));
+        owners.push(currentOwner);
+      }else if(chunkContacts.length){
+        if(currentOwner){
+          chunkContacts.forEach(contact=>addContact(currentOwner,contact));
+          currentOwner.raw=[currentOwner.raw,chunk].filter(Boolean).join(', ');
+        }else{
+          chunkContacts.forEach(contact=>addContact(unassigned,contact));
+        }
       }
     }
 
-    if(!owners.length){
-      const phones=unique(extractAll(raw,phoneRe,normalizePhone));
-      const emails=unique(extractAll(raw,emailRe,value=>value.trim()));
-      if(phones.length||emails.length){
-        owners.push({
-          id:`${recordId??'record'}:contact:1`,
-          kind:'unassigned',
-          prefix:'',
-          name:'',
-          phones,
-          emails,
-          raw,
-        });
-      }
-      return owners;
-    }
-
-    if(orphanPhones.length||orphanEmails.length){
-      addContacts(owners[0],orphanPhones,orphanEmails);
-    }
-
+    if(unassigned.phones.length||unassigned.emails.length)owners.push(unassigned);
     return owners.map(owner=>({
       ...owner,
       phones:unique(owner.phones),
@@ -286,7 +392,7 @@
   }
 
   function resolveOwners(record){
-    const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||'',record?.id);
+    const owners=Array.isArray(record?.owners)?record.owners:parseOwners(record?.raw?.contactRaw||record?.contactRaw||'',record?.id);
     return owners.map((owner,index)=>({
       id:owner.id||`${record?.id??'record'}:owner:${index+1}`,
       kind:owner.kind||(cleanSpaces(owner.name||'')?'owner':'unassigned'),
@@ -294,7 +400,7 @@
       name:cleanSpaces(owner.name||''),
       phones:unique(normalizedList(owner.phones,normalizePhone)),
       emails:unique(normalizedList(owner.emails,value=>String(value||'').trim())),
-      raw:String(owner.raw||record?.raw?.contactRaw||''),
+      raw:String(owner.raw||record?.raw?.contactRaw||record?.contactRaw||''),
     }));
   }
 
@@ -364,11 +470,13 @@
 
   function buildOperationalBlocks(incident){
     const monitor=String(incident?.monitor||'').trim();
+    const monitorOriginal=String(incident?.monitorRaw||'').trim()||(monitor?`Monitor ${monitor}`:'');
     const url=String(incident?.url||'').trim();
     const urlNormal=url?`ตรวจสอบสามารถใช้งาน Url: ${url} ได้ปกติ`:'';
     const urlAbnormal=url?`ตรวจสอบไม่สามารถใช้งาน Url: ${url} ได้ปกติ`:'';
     return {
-      combinedResolution:monitor&&urlNormal?`Monitor ${monitor}\nแก้ไขโดย : ${urlNormal}`:monitor?`Monitor ${monitor}`:'',
+      monitorOriginal,
+      combinedResolution:monitorOriginal&&urlNormal?`${monitorOriginal}\nแก้ไขโดย : ${urlNormal}`:monitorOriginal,
       urlNormal,
       urlAbnormal,
       ticketAction:'กดตั๊กเพิ่มไม่ได้',
@@ -378,19 +486,13 @@
 
   function buildMailDraft(incident,selectedRecord){
     void selectedRecord;
-    const lines=['เรียน ผู้ดูแลระบบ',''];
-    const monitor=String(incident?.monitor||'').trim();
-    const url=String(incident?.url||'').trim();
-    const target=String(incident?.ip||incident?.host||'').trim();
-    const error=String(incident?.error||'').trim();
-    const time=String(incident?.time||'').trim();
-    if(monitor)lines.push(`Monitor ${monitor}`,'');
-    if(url)lines.push(`Url: ${url}`);
-    if(target&&error)lines.push(`hosted on ${target} of ${error}`);
-    else if(error)lines.push(error);
-    if(time)lines.push(`เวลา : ${time}`);
-    lines.push('','ติดต่อเจ้าหน้าที่ RDNOC','เบอร์ 02-272-8891 - 3','Line ID: @RDNOC','ขอบคุณครับ/ขอบคุณค่ะ');
-    return lines.join('\n');
+    const sections=['เรียน ผู้ดูแลระบบ'];
+    const monitorOriginal=String(incident?.monitorRaw||'').trim()||(incident?.monitor?`Monitor ${String(incident.monitor).trim()}`:'');
+    const incidentRaw=String(incident?.incidentRaw||'').trim();
+    if(monitorOriginal)sections.push(monitorOriginal);
+    if(incidentRaw)sections.push(incidentRaw);
+    sections.push('ติดต่อเจ้าหน้าที่ RDNOC\nเบอร์ 02-272-8891 - 3\nLine ID: @RDNOC\nขอบคุณครับ/ขอบคุณค่ะ');
+    return sections.join('\n\n');
   }
 
   return {

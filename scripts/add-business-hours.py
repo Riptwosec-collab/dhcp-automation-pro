@@ -7,8 +7,7 @@ text = path.read_text(encoding='utf-8')
 start_marker = '/* business-hours-v1:start */'
 end_marker = '/* business-hours-v1:end */'
 
-# Keep this generator idempotent by replacing any previous Business Hours block
-# without consuming indentation from the function that follows it.
+# Keep this generator idempotent by replacing any previous Business Hours block.
 text = re.sub(
     r'\n[ \t]*/\* business-hours-v1:start \*/.*?/\* business-hours-v1:end \*/[ \t]*\n?',
     '\n',
@@ -46,17 +45,34 @@ business_logic = r'''
     /* business-hours-v1:end */
 '''.rstrip()
 
-anchor = '    function operationText(key)'
-if anchor not in text and '    function operationText(key,date=new Date())' not in text:
-    raise SystemExit('operationText anchor not found')
-insert_anchor = '    function operationText(key,date=new Date())' if '    function operationText(key,date=new Date())' in text else anchor
-text = text.replace(insert_anchor, business_logic + '\n' + insert_anchor, 1)
+# The Operations consistency layer owns operationParts/operationText after it has
+# been generated. Keep Business Hours immediately before that layer when present;
+# otherwise fall back to the legacy operationText anchor. Canonicalize the
+# whitespace at the boundary so repeated generation cannot add blank lines.
+unified_anchor = '/* unified-operations-consistency-v1:start */'
+legacy_anchor = '    function operationText(key,date=new Date())' if '    function operationText(key,date=new Date())' in text else '    function operationText(key)'
+if unified_anchor in text:
+    prefix, suffix = text.split(unified_anchor, 1)
+    text = prefix.rstrip() + '\n\n' + business_logic + '\n' + unified_anchor + suffix
+elif legacy_anchor in text:
+    prefix, suffix = text.split(legacy_anchor, 1)
+    text = prefix.rstrip() + '\n\n' + business_logic + '\n' + legacy_anchor + suffix
+else:
+    raise SystemExit('operationText/unified Operations anchor not found')
 
-# Make operationText deterministic/testable and route only no-contact through Business Hours v1.
+# Make the legacy operationText deterministic/testable when that runtime shape is
+# still present. The unified runtime already carries date through operationParts.
 text = text.replace('function operationText(key){const now=formatOperationsNow(),', 'function operationText(key,date=new Date()){const now=formatOperationsNow(date),', 1)
-text = text.replace("'no-contact':'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+stamp,", "'no-contact':noContactMessage(date),", 1)
 
-if "'no-contact':noContactMessage(date)," not in text:
+legacy_mapping = "'no-contact':'ไม่สามารถติดต่อเจ้าหน้าที่ประจำสำนักงานได้ เนื่องจากเป็นเวลานอกทำการ รอตรวจสอบอีกครั้งในเวลาทำการ '+stamp,"
+legacy_upgraded_mapping = "'no-contact':noContactMessage(date),"
+unified_mapping = "'no-contact':{body:noContactMessage(date),stamp:''},"
+if legacy_mapping in text:
+    text = text.replace(legacy_mapping, legacy_upgraded_mapping, 1)
+elif legacy_upgraded_mapping in text or unified_mapping in text:
+    # Already routed through Business Hours by a previous generation layer.
+    pass
+else:
     raise SystemExit('no-contact message mapping was not upgraded')
 
 path.write_text(text, encoding='utf-8')

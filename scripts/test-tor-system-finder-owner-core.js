@@ -30,14 +30,37 @@ function testReturnsEveryOwnerAndMapsParallelContacts() {
   }]);
   const owners = core.resolveOwners(record);
   assert.equal(owners.length, 2);
-  assert.equal(owners[0].prefix, 'นาย');
   assert.equal(owners[0].name, 'สมชาย ใจดี');
   assert.deepEqual(owners[0].phones, ['0811111111']);
   assert.deepEqual(owners[0].emails, ['somchai@rd.go.th']);
-  assert.equal(owners[1].prefix, 'นางสาว');
   assert.equal(owners[1].name, 'สุดา ดีมาก');
   assert.deepEqual(owners[1].phones, ['0822222222']);
   assert.deepEqual(owners[1].emails, ['suda@rd.go.th']);
+}
+
+function testSequentialContactChunksStayWithPrecedingOwner() {
+  const [record] = core.normalizeTorRecords([{
+    id: 8,
+    systemName: 'Sequential',
+    contactRaw: 'นายอริยวิทย์ แท่นจันทร์ 089-7121534, tcl.it@rd.go.th, 081-1111111',
+  }]);
+  const owners = core.resolveOwners(record);
+  assert.equal(owners.length, 1, 'phone/email chunks after a named owner belong on that owner card until another name starts');
+  assert.equal(owners[0].name, 'อริยวิทย์ แท่นจันทร์');
+  assert.deepEqual(owners[0].phones, ['089-7121534', '081-1111111']);
+  assert.deepEqual(owners[0].emails, ['tcl.it@rd.go.th']);
+}
+
+function testStripsCommonNameTitlesFromCopyName() {
+  const [record] = core.normalizeTorRecords([{
+    id: 9,
+    systemName: 'Titles',
+    contactRaw: 'ดร. สมชาย ใจดี 0811111111 somchai@rd.go.th, รศ.ดร. สุดา ดีมาก 0822222222 suda@rd.go.th',
+  }]);
+  const owners = core.resolveOwners(record);
+  assert.equal(owners.length, 2);
+  assert.equal(owners[0].name, 'สมชาย ใจดี');
+  assert.equal(owners[1].name, 'สุดา ดีมาก');
 }
 
 function testDeduplicatesInsideOwnerButKeepsDistinctOwners() {
@@ -64,27 +87,90 @@ function testDeduplicatesInsideOwnerButKeepsDistinctOwners() {
   assert.deepEqual(two[1].phones, ['0811111111']);
 }
 
-function testKeepsAmbiguousContactsWithoutInventingAssociation() {
+function testKeepsEveryContactWhileGroupingSequentialChunks() {
   const [record] = core.normalizeTorRecords([{
     id: 3,
-    systemName: 'Ambiguous',
+    systemName: 'Sequential ambiguous',
     contactRaw: 'ศิรัณย์ ธรปติธนโรจน์, อดุลย์ พวกไธสง 0991239407, 0818677085 sirun.ta@rd.go.th',
   }]);
   const owners = core.resolveOwners(record);
-  assert.ok(owners.some(owner => owner.name === 'ศิรัณย์ ธรปติธนโรจน์'));
-  assert.ok(owners.some(owner => owner.name === 'อดุลย์ พวกไธสง'));
-  const allPhones = owners.flatMap(owner => owner.phones);
-  const allEmails = owners.flatMap(owner => owner.emails);
-  assert.ok(allPhones.includes('0991239407'));
-  assert.ok(allPhones.includes('0818677085'));
-  assert.ok(allEmails.includes('sirun.ta@rd.go.th'));
+  assert.equal(owners.length, 2);
+  assert.equal(owners[0].name, 'ศิรัณย์ ธรปติธนโรจน์');
+  assert.equal(owners[1].name, 'อดุลย์ พวกไธสง');
+  assert.deepEqual(owners[1].phones, ['0991239407', '0818677085']);
+  assert.deepEqual(owners[1].emails, ['sirun.ta@rd.go.th']);
+}
+
+function testSplitsMultipleTitledOwnersWithoutCommaBoundaries() {
+  const [record] = core.normalizeTorRecords([{
+    id: 10,
+    systemName: 'Real TOR pair',
+    contactRaw: 'นางสาวพัชรา ผดุงญาติ นายภูริทัต สนธิพงศ์ 085-2206148 062-234-6591 phatchara.pa@rd.go.th matee.so@rd.go.th',
+  }]);
+  const owners = core.resolveOwners(record);
+  assert.equal(owners.length, 2, 'two titled people in one TOR cell must become two owner cards');
+  assert.equal(owners[0].name, 'พัชรา ผดุงญาติ');
+  assert.equal(owners[1].name, 'ภูริทัต สนธิพงศ์');
+  assert.deepEqual(owners[0].phones, ['085-2206148']);
+  assert.deepEqual(owners[1].phones, ['062-234-6591']);
+  assert.deepEqual(owners[0].emails, ['phatchara.pa@rd.go.th']);
+  assert.deepEqual(owners[1].emails, ['matee.so@rd.go.th']);
+}
+
+function testMapsParallelPhonesAndKeepsSharedGroupEmailSeparate() {
+  const [record] = core.normalizeTorRecords([{
+    id: 11,
+    systemName: 'Real TOR trio',
+    contactRaw: 'กลุ่มพัฒนาระบบงานภาษีมูลค่าเพิ่มและภาษีธุรกิจเฉพาะ น.ส.สมใจ เสมอเหมือน นายกีรติ ลาภหงษ์ทอง นายวิญญู โกยกุล 081-732-3108 092-252-1647 098-698-9804 vat.it@rd.go.th',
+  }]);
+  const owners = core.resolveOwners(record);
+  const named = owners.filter(item=>item.kind==='owner');
+  const contacts = owners.filter(item=>item.kind==='unassigned');
+  assert.deepEqual(named.map(item=>item.name), ['สมใจ เสมอเหมือน','กีรติ ลาภหงษ์ทอง','วิญญู โกยกุล']);
+  assert.deepEqual(named.map(item=>item.phones), [['081-732-3108'],['092-252-1647'],['098-698-9804']]);
+  assert.ok(contacts.some(item=>item.emails.includes('vat.it@rd.go.th')), 'shared group email must stay separately copyable instead of being assigned to the last person');
+}
+
+function testCapturesFourDigitContactNumbers() {
+  const [record] = core.normalizeTorRecords([{
+    id: 12,
+    systemName: 'Extension only',
+    contactRaw: 'กลุ่มตรวจสอบภาษี 8301, 8854',
+  }]);
+  const contacts = core.resolveOwners(record);
+  assert.equal(contacts.length, 1);
+  assert.equal(contacts[0].kind, 'unassigned');
+  assert.deepEqual(contacts[0].phones, ['8301','8854']);
+}
+
+function testFindsUntitledThaiNameAfterGroupLabel() {
+  const [record] = core.normalizeTorRecords([{
+    id: 13,
+    systemName: 'Untitled name',
+    contactRaw: 'กลุ่มพัฒนานวัตกรรมบริการ เด่นชัย สายสุพัฒน์ผล 0841114746 denchai.sa@rd.go.th, innovation.it@rd.go.th',
+  }]);
+  const owners = core.resolveOwners(record);
+  const named = owners.find(item=>item.kind==='owner');
+  assert.ok(named, 'Thai name without a title must still be found after a group label');
+  assert.equal(named.name, 'เด่นชัย สายสุพัฒน์ผล');
+  assert.deepEqual(named.phones, ['0841114746']);
+  assert.deepEqual(named.emails, ['denchai.sa@rd.go.th','innovation.it@rd.go.th']);
 }
 
 const tests = [
-  testNormalizesCanonicalTorRecord,
-  testReturnsEveryOwnerAndMapsParallelContacts,
-  testDeduplicatesInsideOwnerButKeepsDistinctOwners,
-  testKeepsAmbiguousContactsWithoutInventingAssociation,
+  ['normalize-record', testNormalizesCanonicalTorRecord],
+  ['parallel-owners', testReturnsEveryOwnerAndMapsParallelContacts],
+  ['sequential-contacts', testSequentialContactChunksStayWithPrecedingOwner],
+  ['strip-titles', testStripsCommonNameTitlesFromCopyName],
+  ['dedupe-contacts', testDeduplicatesInsideOwnerButKeepsDistinctOwners],
+  ['group-contact-chunks', testKeepsEveryContactWhileGroupingSequentialChunks],
+  ['multi-owner-cell', testSplitsMultipleTitledOwnersWithoutCommaBoundaries],
+  ['parallel-multi-owner', testMapsParallelPhonesAndKeepsSharedGroupEmailSeparate],
+  ['four-digit-phones', testCapturesFourDigitContactNumbers],
+  ['untitled-group-name', testFindsUntitledThaiNameAfterGroupLabel],
 ];
-for (const test of tests) test();
-console.log(`TOR System Finder owner/core tests: ${tests.length}/${tests.length} PASS`);
+const requested=process.argv[2];
+const selected=requested?tests.filter(([name])=>name===requested):tests;
+assert.ok(selected.length,`unknown TOR owner test: ${requested}`);
+for (const [,test] of selected) test();
+console.log(`TOR System Finder owner/core tests: ${selected.length}/${selected.length} PASS${requested?` (${requested})`:''}`);
