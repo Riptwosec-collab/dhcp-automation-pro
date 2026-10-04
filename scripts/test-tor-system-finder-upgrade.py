@@ -83,21 +83,24 @@ for needle in ['COPY NAME', 'COPY PHONE', 'COPY EMAIL', 'tor-owner-grid', 'resol
 assert '[owner?.prefix,owner?.name]' not in ui, 'display/copy name must not prepend the TOR title'
 assert '.owner-split-copy{display:none!important}' in css, 'legacy combined PREFIX/NAME/PHONE/EMAIL quick-copy panel must be hidden in v1'
 
-# Exactly the six requested operational copy blocks plus one mail draft.
+# v1.1 uses four visible copy cards. URL normal/abnormal are one dropdown-driven card.
 for needle in [
     'MONITOR ORIGINAL',
-    'URL NORMAL',
-    'URL ABNORMAL',
+    'URL STATUS',
     'MONITOR + RESOLUTION',
-    'TICKET ACTION',
     'MAIL COMPLETION',
+    'id="torUrlStatus"',
+    'URL ปกติ',
+    'URL ไม่ปกติ',
     'COPY MAIL',
     'buildOperationalBlocks(',
     'buildMailDraft(',
     'data-copy-value',
     'copyTorValue',
 ]:
-    assert needle in ui, f'missing copy/mail behavior: {needle}'
+    assert needle in ui, f'missing v1.1 copy/mail behavior: {needle}'
+for forbidden in ['TICKET ACTION', 'COPY TICKET ACTION']:
+    assert forbidden not in ui, f'v1.1 removed copy card still present: {forbidden}'
 assert 'To:' not in ui, 'Finder enhancement must not auto-create a mail recipient field'
 assert 'sendMail' not in ui and 'mailto:' not in ui, 'Finder enhancement must not send mail'
 
@@ -131,7 +134,8 @@ for test_file in [
     'scripts/test-tor-system-finder-owner-core.js',
     'scripts/test-tor-system-finder-ui-state.js',
     'scripts/test-tor-system-finder-review-regressions.js',
+    'scripts/test-tor-copy-block-v1-1.js',
 ]:
     subprocess.run(['node', test_file], cwd=root, check=True)
 
-print('TOR System Finder integrated Analyze System v1 contract: OK')
+print('TOR System Finder integrated Analyze System v1.1 contract: OK')
