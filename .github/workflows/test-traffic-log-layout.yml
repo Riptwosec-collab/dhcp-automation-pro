@@ -73,18 +73,8 @@ jobs:
         run: python scripts/add-tor-system-finder-upgrade.py
       - name: Verify TOR core v1 early
         run: node scripts/test-tor-system-finder-core.js
-      - name: TOR owner diagnostic - normalize record
-        run: node scripts/test-tor-system-finder-owner-core.js normalize-record
-      - name: TOR owner diagnostic - parallel owners
-        run: node scripts/test-tor-system-finder-owner-core.js parallel-owners
-      - name: TOR owner diagnostic - sequential contacts
-        run: node scripts/test-tor-system-finder-owner-core.js sequential-contacts
-      - name: TOR owner diagnostic - strip titles
-        run: node scripts/test-tor-system-finder-owner-core.js strip-titles
-      - name: TOR owner diagnostic - dedupe contacts
-        run: node scripts/test-tor-system-finder-owner-core.js dedupe-contacts
-      - name: TOR owner diagnostic - group contact chunks
-        run: node scripts/test-tor-system-finder-owner-core.js group-contact-chunks
+      - name: Verify TOR owner v1 early
+        run: node scripts/test-tor-system-finder-owner-core.js
       - name: Verify TOR review regressions early
         run: node scripts/test-tor-system-finder-review-regressions.js
       - name: Verify TOR integrated Analyze System v1 early
