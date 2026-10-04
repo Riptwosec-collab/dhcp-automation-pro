@@ -71,10 +71,11 @@
     const selected=status==='abnormal'?'abnormal':'normal';
     const urlStatus=selected==='abnormal'?String(blocks?.urlAbnormal||''):String(blocks?.urlNormal||'');
     const monitorOriginal=String(blocks?.monitorOriginal||'');
+    const normalResolution=String(blocks?.urlNormal||'');
     return {
       status:selected,
       urlStatus,
-      combinedResolution:monitorOriginal&&urlStatus?`${monitorOriginal}\nแก้ไขโดย : ${urlStatus}`:monitorOriginal,
+      combinedResolution:monitorOriginal&&normalResolution?`${monitorOriginal}\nแก้ไขโดย : ${normalResolution}`:monitorOriginal,
     };
   }
 
